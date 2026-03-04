@@ -201,7 +201,7 @@ const Dashboard = () => {
               key={c.key}
               title={`${c.emoji} ${c.title}`}
               data={materialEntries.map(e => ({ name: e.material.code, value: e.kpis[c.key] }))}
-              gradient={c.gradient}
+              gradient={c.gradient as [string, string]}
             />
           ))}
           {/* Disabled card */}
