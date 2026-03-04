@@ -302,6 +302,13 @@ const Dashboard = () => {
         </div>
       </section>
 
+      {/* Methodology disclaimer */}
+      <footer className="max-w-7xl mx-auto px-5 pb-10 pt-4">
+        <p className="text-[10px] leading-relaxed text-muted-foreground/60 text-center max-w-4xl mx-auto">
+          Los factores de conversión utilizados se basan en metodologías y referencias técnicas reconocidas internacionalmente, como el GHG Protocol, el EPA Waste Reduction Model (WARM) y literatura especializada del sector de reciclaje, lo que permite estimar de forma consistente y verificable los impactos ambientales asociados a la recuperación de materiales.
+        </p>
+      </footer>
+
       {shareOpen && <ShareModal onClose={() => setShareOpen(false)} />}
     </div>
   );
