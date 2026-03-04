@@ -1,10 +1,8 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface UseLoopAnimationOptions {
   targetValue: number;
   riseDuration?: number;
-  holdDuration?: number;
-  fallDuration?: number;
 }
 
 interface UseLoopAnimationResult {
@@ -17,33 +15,28 @@ function easeInOutCubic(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
-const DEFAULT_RISE = 2500;
-const DEFAULT_HOLD = 1800;
-const DEFAULT_FALL = 700;
-
 export function useLoopAnimation({
   targetValue,
-  riseDuration = DEFAULT_RISE,
-  holdDuration = DEFAULT_HOLD,
-  fallDuration = DEFAULT_FALL,
+  riseDuration = 2500,
 }: UseLoopAnimationOptions): UseLoopAnimationResult {
   const [displayValue, setDisplayValue] = useState(0);
   const [progress, setProgress] = useState(0);
   const [isPulsing, setIsPulsing] = useState(false);
   const rafRef = useRef<number>(0);
-  const targetRef = useRef(targetValue);
-  const pulsedRef = useRef(false);
-
-  useEffect(() => {
-    targetRef.current = targetValue;
-  }, [targetValue]);
-
-  const totalCycle = riseDuration + holdDuration + fallDuration;
+  const doneRef = useRef(false);
 
   useEffect(() => {
     if (targetValue === 0) {
       setDisplayValue(0);
       setProgress(0);
+      doneRef.current = false;
+      return;
+    }
+
+    // If already done animating, just snap to new value
+    if (doneRef.current) {
+      setDisplayValue(targetValue);
+      setProgress(1);
       return;
     }
 
@@ -51,34 +44,28 @@ export function useLoopAnimation({
 
     const tick = (now: number) => {
       if (!startTime) startTime = now;
-      const elapsed = (now - startTime) % totalCycle;
-      const tv = targetRef.current;
+      const elapsed = now - startTime;
+      const t = Math.min(elapsed / riseDuration, 1);
+      const p = easeInOutCubic(t);
 
-      let p: number;
-      if (elapsed < riseDuration) {
-        p = easeInOutCubic(elapsed / riseDuration);
-        pulsedRef.current = false;
-      } else if (elapsed < riseDuration + holdDuration) {
-        p = 1;
-        if (!pulsedRef.current) {
-          pulsedRef.current = true;
-          setIsPulsing(true);
-          setTimeout(() => setIsPulsing(false), 200);
-        }
+      setProgress(p);
+      setDisplayValue(p * targetValue);
+
+      if (t < 1) {
+        rafRef.current = requestAnimationFrame(tick);
       } else {
-        p = 1 - easeInOutCubic((elapsed - riseDuration - holdDuration) / fallDuration);
+        // Done — pulse and stay
+        doneRef.current = true;
+        setIsPulsing(true);
+        setTimeout(() => setIsPulsing(false), 200);
       }
-
-      setProgress(tv > 0 ? p : 0);
-      setDisplayValue(tv > 0 ? p * tv : 0);
-      rafRef.current = requestAnimationFrame(tick);
     };
 
     rafRef.current = requestAnimationFrame(tick);
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [targetValue, totalCycle, riseDuration, holdDuration, fallDuration]);
+  }, [targetValue, riseDuration]);
 
   return { displayValue, progress, isPulsing };
 }
