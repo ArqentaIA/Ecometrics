@@ -21,14 +21,11 @@ const Navigation = ({ showBell }: NavigationProps) => {
       style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
       <div className="max-w-7xl mx-auto px-5 h-12 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <img src={logoIrmIcon} alt="IRM Group" className="w-7 h-7 rounded-md object-contain" />
-          <div className="flex items-center gap-1.5">
-            <span className="font-heading font-semibold text-[13px] tracking-tight">
-              {showBell ? "PANEL DE ANÁLISIS" : "EcoMetrics"}
-            </span>
-            <span className="text-[11px] opacity-50">|</span>
-            <span className="text-[11px] opacity-50 font-normal">IRM Group</span>
-          </div>
+          <img src={logoImr} alt="IMR Group" className="h-8 object-contain" />
+          <span className="text-[11px] opacity-50 mx-1">|</span>
+          <span className="font-heading font-semibold text-[13px] tracking-tight">
+            {showBell ? "PANEL DE ANÁLISIS" : "EcoMetrics"}
+          </span>
         </div>
 
         <div className="flex items-center h-full">
