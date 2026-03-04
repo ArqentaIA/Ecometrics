@@ -385,6 +385,29 @@
     animation: spin-slow 800ms linear infinite;
   }
 
+  /* Sync scan animation */
+  @keyframes syncScan {
+    0% { left: -30%; }
+    100% { left: 100%; }
+  }
+  .sync-scan-bar {
+    position: absolute;
+    top: 0;
+    left: -30%;
+    width: 30%;
+    height: 100%;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.6), hsl(var(--primary)), hsl(var(--primary) / 0.6), transparent);
+    animation: syncScan 3s ease-in-out infinite;
+  }
+  @keyframes syncPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+  .sync-pulse {
+    animation: syncPulse 2s ease-in-out infinite;
+  }
+
   /* Scrollbar - Windows 11 thin style */
   ::-webkit-scrollbar {
     width: 6px;
