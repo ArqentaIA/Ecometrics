@@ -10,6 +10,7 @@ interface Props {
   lastUpdated: Date | null;
   currentMonth: number;
   currentYear: number;
+  variant?: "sidebar" | "fullwidth";
 }
 
 const useCountUp = (target: number, duration = 1000) => {
@@ -45,6 +46,7 @@ const useCountUp = (target: number, duration = 1000) => {
 const ControlOperativoPeriodoCard = ({
   totalKg, materialesRegistrados, materialesTotales,
   capturasConfirmadas, lastUpdated, currentMonth, currentYear,
+  variant = "sidebar",
 }: Props) => {
   const navigate = useNavigate();
   const [animatedPct, setAnimatedPct] = useState(0);
@@ -70,10 +72,10 @@ const ControlOperativoPeriodoCard = ({
     prevKg.current = totalKg;
   }, [totalKg]);
 
-  // Radial gauge geometry
-  const size = 180;
-  const strokeWidth = 14;
-  const radius = (size - strokeWidth) / 2;
+  const isFullWidth = variant === "fullwidth";
+  const gaugeSize = isFullWidth ? 220 : 180;
+  const strokeWidth = isFullWidth ? 16 : 14;
+  const radius = (gaugeSize - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (animatedPct / 100) * circumference;
 
@@ -89,12 +91,12 @@ const ControlOperativoPeriodoCard = ({
 
   return (
     <div
-      className="win-card rounded-xl p-5 bg-card"
+      className={`win-card rounded-xl bg-card ${isFullWidth ? "p-7" : "p-5"}`}
       style={{ boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-1">
-        <h3 className="font-heading font-bold text-[15px] tracking-tight text-foreground">
+        <h3 className={`font-heading font-bold tracking-tight text-foreground ${isFullWidth ? "text-lg" : "text-[15px]"}`}>
           CONTROL OPERATIVO DEL PERIODO
         </h3>
         <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary">
@@ -103,127 +105,129 @@ const ControlOperativoPeriodoCard = ({
       </div>
       <p className="text-[11px] text-muted-foreground mb-5">Estado en tiempo real</p>
 
-      {/* Radial Progress */}
-      <div className="flex flex-col items-center mb-5">
-        <div className="relative" style={{ width: size, height: size }}>
-          <svg width={size} height={size} className="transform -rotate-90">
-            <circle
-              cx={size / 2} cy={size / 2} r={radius}
-              fill="none" stroke="hsl(var(--muted))" strokeWidth={strokeWidth}
-              opacity={0.25}
-            />
-            <circle
-              cx={size / 2} cy={size / 2} r={radius}
-              fill="none" stroke="hsl(var(--primary))" strokeWidth={strokeWidth}
-              strokeLinecap="round"
-              strokeDasharray={circumference}
-              strokeDashoffset={offset}
-              style={{
-                transition: "stroke-dashoffset 0.9s cubic-bezier(0.4, 0, 0.2, 1)",
-                filter: "drop-shadow(0 0 8px hsl(var(--primary) / 0.3))",
-              }}
-            />
-          </svg>
-          {/* Center text */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span
-              className={`font-heading text-[26px] font-bold tracking-tight leading-none text-foreground tabular-nums ${
-                pulse ? "animate-pulse" : ""
-              }`}
-            >
-              {animatedKg.toLocaleString("es-MX", { maximumFractionDigits: 1 })}
+      <div className={isFullWidth ? "flex gap-8 items-start" : ""}>
+        {/* Left: Radial */}
+        <div className={`flex flex-col items-center ${isFullWidth ? "shrink-0" : "mb-5"}`}>
+          <div className="relative" style={{ width: gaugeSize, height: gaugeSize }}>
+            <svg width={gaugeSize} height={gaugeSize} className="transform -rotate-90">
+              <circle
+                cx={gaugeSize / 2} cy={gaugeSize / 2} r={radius}
+                fill="none" stroke="hsl(var(--muted))" strokeWidth={strokeWidth}
+                opacity={0.25}
+              />
+              <circle
+                cx={gaugeSize / 2} cy={gaugeSize / 2} r={radius}
+                fill="none" stroke="hsl(var(--primary))" strokeWidth={strokeWidth}
+                strokeLinecap="round"
+                strokeDasharray={circumference}
+                strokeDashoffset={offset}
+                style={{
+                  transition: "stroke-dashoffset 0.9s cubic-bezier(0.4, 0, 0.2, 1)",
+                  filter: "drop-shadow(0 0 8px hsl(var(--primary) / 0.3))",
+                }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span
+                className={`font-heading font-bold tracking-tight leading-none text-foreground tabular-nums ${
+                  isFullWidth ? "text-[32px]" : "text-[26px]"
+                } ${pulse ? "animate-pulse" : ""}`}
+              >
+                {animatedKg.toLocaleString("es-MX", { maximumFractionDigits: 1 })}
+              </span>
+              <span className="text-[10px] text-muted-foreground mt-1">KG Totales Capturados</span>
+            </div>
+          </div>
+
+          <div className="text-xs text-muted-foreground mt-2">
+            Materiales registrados: <span className="font-bold text-foreground">{materialesRegistrados} / {materialesTotales}</span>
+          </div>
+
+          {materialesRegistrados === 0 ? (
+            <div className="mt-2 text-center">
+              <p className="text-[11px] text-muted-foreground italic mb-1.5">Aún no hay materiales con registro</p>
+              <button
+                onClick={() => navigate("/capture")}
+                className="text-[11px] text-primary font-semibold hover:underline"
+              >
+                Ir a Captura →
+              </button>
+            </div>
+          ) : materialesRegistrados === materialesTotales ? (
+            <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+              ✓ Catálogo completo
             </span>
-            <span className="text-[10px] text-muted-foreground mt-1">KG Totales Capturados</span>
+          ) : pendientes > 0 ? (
+            <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 bg-amber-500/10 px-2.5 py-1 rounded-full">
+              Pendientes: {pendientes}
+            </span>
+          ) : null}
+        </div>
+
+        {/* Right: Details */}
+        <div className={isFullWidth ? "flex-1 min-w-0" : ""}>
+          {/* Progress bar */}
+          <div className={isFullWidth ? "mb-6" : "mb-5 mt-0"}>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[11px] font-semibold text-foreground">Registro del catálogo</span>
+              <span className="text-[11px] text-muted-foreground">
+                {materialesRegistrados} activos • {pendientes} pendientes
+              </span>
+            </div>
+            <div className={`rounded-full bg-muted/40 overflow-hidden ${isFullWidth ? "h-3" : "h-2"}`}>
+              <div
+                className="h-full rounded-full bg-primary"
+                style={{
+                  width: `${pct}%`,
+                  transition: "width 0.7s cubic-bezier(0.4, 0, 0.2, 1)",
+                }}
+              />
+            </div>
           </div>
-        </div>
 
-        {/* Materials registered text */}
-        <div className="text-xs text-muted-foreground mt-2">
-          Materiales registrados: <span className="font-bold text-foreground">{materialesRegistrados} / {materialesTotales}</span>
-        </div>
-
-        {/* Status badge */}
-        {materialesRegistrados === 0 ? (
-          <div className="mt-2 text-center">
-            <p className="text-[11px] text-muted-foreground italic mb-1.5">Aún no hay materiales con registro</p>
-            <button
-              onClick={() => { /* already on capture */ }}
-              className="text-[11px] text-primary font-semibold hover:underline"
-            >
-              Comenzar captura →
-            </button>
-          </div>
-        ) : materialesRegistrados === materialesTotales ? (
-          <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
-            ✓ Catálogo completo
-          </span>
-        ) : pendientes > 0 ? (
-          <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 bg-amber-500/10 px-2.5 py-1 rounded-full">
-            Pendientes: {pendientes}
-          </span>
-        ) : null}
-      </div>
-
-      {/* Progress bar — Registro del catálogo */}
-      <div className="mb-5">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[11px] font-semibold text-foreground">Registro del catálogo</span>
-          <span className="text-[11px] text-muted-foreground">
-            {materialesRegistrados} activos • {pendientes} pendientes
-          </span>
-        </div>
-        <div className="h-2 rounded-full bg-muted/40 overflow-hidden">
+          {/* Micro KPIs */}
           <div
-            className="h-full rounded-full bg-primary"
-            style={{
-              width: `${pct}%`,
-              transition: "width 0.7s cubic-bezier(0.4, 0, 0.2, 1)",
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Micro KPIs — 3 chips */}
-      <div
-        className="grid grid-cols-1 gap-2 mb-5"
-        style={{ animation: "fadeSlideUp 400ms 200ms both" }}
-      >
-        {[
-          {
-            icon: "📦",
-            label: "Materiales con registro",
-            value: `${materialesRegistrados} / ${materialesTotales}`,
-          },
-          {
-            icon: "✅",
-            label: "Capturas confirmadas",
-            value: `${capturasConfirmadas} / ${materialesTotales}`,
-          },
-          {
-            icon: "🕐",
-            label: "Última actualización",
-            value: lastUpdated ? formatTs(lastUpdated) : "Sin datos",
-          },
-        ].map(chip => (
-          <div
-            key={chip.label}
-            className="flex items-center justify-between rounded-lg bg-accent/40 px-3 py-2"
+            className={`gap-2 ${isFullWidth ? "grid grid-cols-3" : "grid grid-cols-1"}`}
+            style={{ animation: "fadeSlideUp 400ms 200ms both" }}
           >
-            <span className="text-[11px] text-muted-foreground flex items-center gap-1.5">
-              <span>{chip.icon}</span> {chip.label}
-            </span>
-            <span className="text-[11px] font-bold text-foreground">{chip.value}</span>
+            {[
+              { icon: "📦", label: "Materiales con registro", value: `${materialesRegistrados} / ${materialesTotales}` },
+              { icon: "✅", label: "Capturas confirmadas", value: `${capturasConfirmadas} / ${materialesTotales}` },
+              { icon: "🕐", label: "Última actualización", value: lastUpdated ? formatTs(lastUpdated) : "Sin datos" },
+            ].map(chip => (
+              <div
+                key={chip.label}
+                className={`flex items-center justify-between rounded-lg bg-accent/40 px-3 ${isFullWidth ? "py-3" : "py-2"}`}
+              >
+                <span className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                  <span>{chip.icon}</span> {chip.label}
+                </span>
+                <span className="text-[11px] font-bold text-foreground">{chip.value}</span>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      {/* CTA */}
-      <button
-        onClick={() => navigate("/dashboard")}
-        className="win-btn-accent w-full h-9 text-[13px] font-semibold"
-      >
-        📊 Ver Dashboard →
-      </button>
+          {/* CTA — only for sidebar */}
+          {!isFullWidth && (
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="win-btn-accent w-full h-9 text-[13px] font-semibold mt-5"
+            >
+              📊 Ver Dashboard →
+            </button>
+          )}
+
+          {/* CTA — fullwidth: go to capture */}
+          {isFullWidth && (
+            <button
+              onClick={() => navigate("/capture")}
+              className="win-btn-accent h-9 text-[13px] font-semibold mt-5 px-6"
+            >
+              📋 Ir a Captura de Datos →
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import Navigation from "@/components/Navigation";
-import HorizontalBarChart from "@/components/HorizontalBarChart";
+import ControlOperativoPeriodoCard from "@/components/ControlOperativoPeriodoCard";
 import ShareModal from "@/components/ShareModal";
 import RadialGauge from "@/components/charts/RadialGauge";
 import AreaChartSVG from "@/components/charts/AreaChartSVG";
@@ -11,7 +11,7 @@ import FinancialLineChart from "@/components/charts/FinancialLineChart";
 import DonutChart from "@/components/charts/DonutChart";
 
 const Dashboard = () => {
-  const { kpiTotals, targets, materialEntries, monthlyHistory, refreshData, lastUpdated, totalKg } = useEcoMetrics();
+  const { kpiTotals, targets, materialEntries, monthlyHistory, refreshData, lastUpdated, totalKg, currentMonth, currentYear } = useEcoMetrics();
   const [refreshing, setRefreshing] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [sortCol, setSortCol] = useState<string | null>(null);
@@ -25,13 +25,6 @@ const Dashboard = () => {
   const pct = (v: number, t: number) => t > 0 ? Math.min((v / t) * 100, 100) : 0;
   const pctBadge = (p: number) => p >= 80 ? "win-badge-success" : p >= 60 ? "win-badge-warning" : "win-badge-critical";
 
-  const chartConfigs = [
-    { emoji: "🌳", title: "Árboles Preservados por Material", key: "arboles" as const, gradient: ["#2e7d32", "#66bb6a"] },
-    { emoji: "♻️", title: "CO₂e kG Evitado por Material", key: "co2" as const, gradient: ["#d32f2f", "#ef9a9a"] },
-    { emoji: "⚡", title: "Energía Ahorrada kWh por Material", key: "energia" as const, gradient: ["#f57f17", "#ffcc80"] },
-    { emoji: "💧", title: "Agua Conservada Litros por Material", key: "agua" as const, gradient: ["#1565c0", "#90caf9"] },
-    { emoji: "💰", title: "Costo Evitado por Material", key: "costo" as const, gradient: ["#6a1b9a", "#ce93d8"] },
-  ];
 
   const sortedEntries = useMemo(() => {
     if (!sortCol) return materialEntries;
@@ -214,19 +207,18 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Ranking Charts */}
+      {/* Control Operativo del Periodo */}
       <section className="max-w-7xl mx-auto px-5 mb-7">
-        <h2 className="font-heading text-lg font-bold tracking-tight mb-3">📊 Ranking de Materiales por Indicador</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {chartConfigs.map(c => (
-            <HorizontalBarChart
-              key={c.key}
-              title={`${c.emoji} ${c.title}`}
-              data={materialEntries.map(e => ({ name: e.material.code, value: e.kpis[c.key] }))}
-              gradient={c.gradient as [string, string]}
-            />
-          ))}
-        </div>
+        <ControlOperativoPeriodoCard
+          totalKg={totalKg}
+          materialesRegistrados={materialEntries.filter(e => e.kg > 0).length}
+          materialesTotales={materialEntries.length}
+          capturasConfirmadas={0}
+          lastUpdated={lastUpdated}
+          currentMonth={currentMonth}
+          currentYear={currentYear}
+          variant="fullwidth"
+        />
       </section>
 
       {/* Material Detail Table — Windows 11 DataGrid */}
