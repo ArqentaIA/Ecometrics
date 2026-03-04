@@ -1,22 +1,15 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 
 interface UseLoopAnimationOptions {
-  /** The real KPI value (animation target) */
   targetValue: number;
-  /** Rise duration in ms (default 1500) */
   riseDuration?: number;
-  /** Hold duration in ms (default 3000) */
   holdDuration?: number;
-  /** Fall duration in ms (default 700) */
   fallDuration?: number;
 }
 
 interface UseLoopAnimationResult {
-  /** Current animated display value (0 → targetValue → 0 loop) */
   displayValue: number;
-  /** Progress 0–1 for chart reveal masks */
   progress: number;
-  /** True during the brief pulse at peak */
   isPulsing: boolean;
 }
 
@@ -24,19 +17,24 @@ function easeInOutCubic(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
+// Fixed 5s total cycle: 2500ms rise, 1800ms hold, 700ms fall
+const DEFAULT_RISE = 2500;
+const DEFAULT_HOLD = 1800;
+const DEFAULT_FALL = 700;
+
 export function useLoopAnimation({
   targetValue,
-  riseDuration = 1500,
-  holdDuration = 3000,
-  fallDuration = 700,
+  riseDuration = DEFAULT_RISE,
+  holdDuration = DEFAULT_HOLD,
+  fallDuration = DEFAULT_FALL,
 }: UseLoopAnimationOptions): UseLoopAnimationResult {
   const [displayValue, setDisplayValue] = useState(0);
   const [progress, setProgress] = useState(0);
   const [isPulsing, setIsPulsing] = useState(false);
   const rafRef = useRef<number>(0);
   const targetRef = useRef(targetValue);
+  const pulsedRef = useRef(false);
 
-  // Keep target in sync
   useEffect(() => {
     targetRef.current = targetValue;
   }, [targetValue]);
@@ -48,24 +46,22 @@ export function useLoopAnimation({
     const tick = (now: number) => {
       if (!startTime) startTime = now;
       const elapsed = (now - startTime) % totalCycle;
+      const phaseStart = elapsed < riseDuration;
       const tv = targetRef.current;
 
       let p: number;
       if (elapsed < riseDuration) {
-        // Rising phase
         p = easeInOutCubic(elapsed / riseDuration);
+        pulsedRef.current = false;
       } else if (elapsed < riseDuration + holdDuration) {
-        // Hold phase
         p = 1;
-        // Pulse at the very start of hold
-        if (elapsed - riseDuration < 50) {
+        if (!pulsedRef.current) {
+          pulsedRef.current = true;
           setIsPulsing(true);
           setTimeout(() => setIsPulsing(false), 200);
         }
       } else {
-        // Falling phase
-        const fallElapsed = elapsed - riseDuration - holdDuration;
-        p = 1 - easeInOutCubic(fallElapsed / fallDuration);
+        p = 1 - easeInOutCubic((elapsed - riseDuration - holdDuration) / fallDuration);
       }
 
       setProgress(tv > 0 ? p : 0);
@@ -90,4 +86,3 @@ export function useLoopAnimation({
 
   return { displayValue, progress, isPulsing };
 }
-
