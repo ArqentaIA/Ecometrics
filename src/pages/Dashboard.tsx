@@ -25,13 +25,6 @@ const Dashboard = () => {
   const pct = (v: number, t: number) => t > 0 ? Math.min((v / t) * 100, 100) : 0;
   const pctBadge = (p: number) => p >= 80 ? "win-badge-success" : p >= 60 ? "win-badge-warning" : "win-badge-critical";
 
-  const chartConfigs = [
-    { emoji: "🌳", title: "Árboles Preservados por Material", key: "arboles" as const, gradient: ["#2e7d32", "#66bb6a"] },
-    { emoji: "♻️", title: "CO₂e kG Evitado por Material", key: "co2" as const, gradient: ["#d32f2f", "#ef9a9a"] },
-    { emoji: "⚡", title: "Energía Ahorrada kWh por Material", key: "energia" as const, gradient: ["#f57f17", "#ffcc80"] },
-    { emoji: "💧", title: "Agua Conservada Litros por Material", key: "agua" as const, gradient: ["#1565c0", "#90caf9"] },
-    { emoji: "💰", title: "Costo Evitado por Material", key: "costo" as const, gradient: ["#6a1b9a", "#ce93d8"] },
-  ];
 
   const sortedEntries = useMemo(() => {
     if (!sortCol) return materialEntries;
