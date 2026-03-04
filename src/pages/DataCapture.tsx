@@ -16,7 +16,7 @@ const DataCapture = () => {
     materialEntries, setMaterialKg, clearAll, totalKg, targets,
     currentMonth, setCurrentMonth, currentYear, setCurrentYear,
   } = useEcoMetrics();
-  const navigate = (path: string) => window.location.href = path;
+  
   const [activeTab, setActiveTab] = useState(0);
   const [dragOver, setDragOver] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<{ name: string; size: number } | null>(null);
