@@ -31,7 +31,7 @@ const EcoMetricsContext = createContext<EcoMetricsState | null>(null);
 export function EcoMetricsProvider({ children }: { children: React.ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(1); // Feb = 1 (0-indexed)
-  const [currentYear, setCurrentYear] = useState(2025);
+  const [currentYear, setCurrentYear] = useState(2026);
   const [kgMap, setKgMap] = useState<Record<string, number>>(() => {
     const map: Record<string, number> = {};
     MATERIALS.forEach(m => { map[m.code] = m.mockKg; });
