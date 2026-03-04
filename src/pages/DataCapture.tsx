@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import Navigation from "@/components/Navigation";
+import ControlOperativoPeriodoCard from "@/components/ControlOperativoPeriodoCard";
 import { MONTHS } from "@/data/materials";
 
 interface CaptureState {
