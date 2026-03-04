@@ -46,6 +46,7 @@ const useCountUp = (target: number, duration = 1000) => {
 const ControlOperativoPeriodoCard = ({
   totalKg, materialesRegistrados, materialesTotales,
   capturasConfirmadas, lastUpdated, currentMonth, currentYear,
+  variant = "sidebar",
 }: Props) => {
   const navigate = useNavigate();
   const [animatedPct, setAnimatedPct] = useState(0);
