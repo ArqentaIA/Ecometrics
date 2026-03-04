@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useLoopAnimation } from "@/hooks/useLoopAnimation";
 
 interface DataPoint {
   label: string;
@@ -15,9 +16,8 @@ interface ColumnChartProps {
 }
 
 const ColumnChart = ({ title, emoji, data, color, unit, trend }: ColumnChartProps) => {
-  const [show, setShow] = useState(false);
-  useEffect(() => { setTimeout(() => setShow(true), 200); }, []);
-
+  const lastVal = data[data.length - 1]?.value ?? 0;
+  const { displayValue, progress, isPulsing } = useLoopAnimation({ targetValue: lastVal });
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
   const w = 380;
@@ -30,8 +30,6 @@ const ColumnChart = ({ title, emoji, data, color, unit, trend }: ColumnChartProp
   const maxVal = Math.max(...data.map(d => d.value), 1);
   const barWidth = Math.min(chartW / data.length * 0.6, 24);
   const gap = chartW / data.length;
-
-  const lastVal = data[data.length - 1]?.value ?? 0;
 
   return (
     <div className="win-card p-5 min-h-[320px] hover:shadow-lg transition-shadow duration-300">
@@ -47,12 +45,14 @@ const ColumnChart = ({ title, emoji, data, color, unit, trend }: ColumnChartProp
         )}
       </div>
       <div className="font-heading text-[24px] font-bold tracking-tight mb-2" style={{ color }}>
-        {lastVal.toLocaleString("es-MX", { maximumFractionDigits: 1 })} <span className="text-xs font-normal text-muted-foreground">{unit}</span>
+        <span style={{ transform: isPulsing ? "scale(1.03)" : "scale(1)", display: "inline-block", transition: "transform 0.2s" }}>
+          {displayValue.toLocaleString("es-MX", { maximumFractionDigits: 1 })}
+        </span>{" "}
+        <span className="text-xs font-normal text-muted-foreground">{unit}</span>
       </div>
 
       <svg width="100%" viewBox={`0 0 ${w} ${h}`} className="overflow-visible"
         onMouseLeave={() => setHoverIdx(null)}>
-        {/* Grid */}
         {[0, 0.25, 0.5, 0.75, 1].map(f => {
           const y = py + chartH - f * chartH;
           const val = f * maxVal;
@@ -66,9 +66,9 @@ const ColumnChart = ({ title, emoji, data, color, unit, trend }: ColumnChartProp
           );
         })}
 
-        {/* Columns */}
         {data.map((d, i) => {
-          const barH = (d.value / maxVal) * chartH;
+          const fullBarH = (d.value / maxVal) * chartH;
+          const barH = fullBarH * progress;
           const x = px + i * gap + (gap - barWidth) / 2;
           const y = py + chartH - barH;
           const isHovered = hoverIdx === i;
@@ -78,22 +78,18 @@ const ColumnChart = ({ title, emoji, data, color, unit, trend }: ColumnChartProp
               onMouseEnter={() => setHoverIdx(i)}
               className="cursor-pointer">
               <rect
-                x={x} y={show ? y : py + chartH}
+                x={x} y={y}
                 width={barWidth}
-                height={show ? barH : 0}
+                height={barH}
                 rx={4} ry={4}
                 fill={color}
                 opacity={isHovered ? 1 : 0.8}
-                style={{
-                  transition: `y 0.6s cubic-bezier(0.4,0,0.2,1) ${i * 0.05}s, height 0.6s cubic-bezier(0.4,0,0.2,1) ${i * 0.05}s, opacity 0.2s`,
-                  filter: isHovered ? `drop-shadow(0 2px 6px ${color}50)` : "none",
-                }}
+                style={{ filter: isHovered ? `drop-shadow(0 2px 6px ${color}50)` : "none" }}
               />
               <text x={x + barWidth / 2} y={py + chartH + 13} textAnchor="middle" fontSize="7" fill="hsl(var(--muted-foreground))">
                 {d.label}
               </text>
 
-              {/* Tooltip */}
               {isHovered && (
                 <g>
                   <rect x={x + barWidth / 2 - 32} y={y - 26} width={64} height={20} rx={6}
