@@ -214,19 +214,18 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Ranking Charts */}
+      {/* Control Operativo del Periodo */}
       <section className="max-w-7xl mx-auto px-5 mb-7">
-        <h2 className="font-heading text-lg font-bold tracking-tight mb-3">📊 Ranking de Materiales por Indicador</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {chartConfigs.map(c => (
-            <HorizontalBarChart
-              key={c.key}
-              title={`${c.emoji} ${c.title}`}
-              data={materialEntries.map(e => ({ name: e.material.code, value: e.kpis[c.key] }))}
-              gradient={c.gradient as [string, string]}
-            />
-          ))}
-        </div>
+        <ControlOperativoPeriodoCard
+          totalKg={totalKg}
+          materialesRegistrados={materialEntries.filter(e => e.kg > 0).length}
+          materialesTotales={materialEntries.length}
+          capturasConfirmadas={0}
+          lastUpdated={lastUpdated}
+          currentMonth={currentMonth}
+          currentYear={currentYear}
+          variant="fullwidth"
+        />
       </section>
 
       {/* Material Detail Table — Windows 11 DataGrid */}
