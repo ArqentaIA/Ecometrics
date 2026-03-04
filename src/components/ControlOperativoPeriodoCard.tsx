@@ -10,6 +10,7 @@ interface Props {
   lastUpdated: Date | null;
   currentMonth: number;
   currentYear: number;
+  variant?: "sidebar" | "fullwidth";
 }
 
 const useCountUp = (target: number, duration = 1000) => {
