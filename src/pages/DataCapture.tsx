@@ -29,94 +29,104 @@ const DataCapture = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
 
-      {/* Breadcrumb */}
-      <div className="max-w-7xl mx-auto px-4 py-3">
-        <div className="text-sm text-muted-foreground">
-          Home › Captura de Datos › {MONTHS[currentMonth]} {currentYear}
+      {/* Windows 11 page header area */}
+      <div className="max-w-7xl mx-auto px-5 pt-6 pb-2">
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-4">
+          <span className="hover:text-foreground cursor-pointer transition-colors">Home</span>
+          <span className="opacity-40">›</span>
+          <span className="hover:text-foreground cursor-pointer transition-colors">Captura de Datos</span>
+          <span className="opacity-40">›</span>
+          <span className="text-foreground font-medium">{MONTHS[currentMonth]} {currentYear}</span>
         </div>
+
+        <h1 className="font-heading text-2xl font-bold tracking-tight mb-5">Captura de Datos</h1>
       </div>
 
-      {/* Period Selector */}
-      <div className="max-w-7xl mx-auto px-4 mb-4">
-        <div className="flex items-center gap-4 flex-wrap">
-          <div className="flex gap-1 flex-wrap">
+      {/* Period Selector — Windows 11 SegmentedControl style */}
+      <div className="max-w-7xl mx-auto px-5 mb-5">
+        <div className="flex items-center gap-5 flex-wrap">
+          <div className="flex gap-0.5 bg-secondary rounded-lg p-0.5">
             {MONTHS.map((m, i) => (
               <button
                 key={m}
                 onClick={() => setCurrentMonth(i)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 ${
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-150 ${
                   i === currentMonth
-                    ? "bg-btn-dark text-btn-dark-foreground shadow"
-                    : "bg-card text-foreground border border-border hover:bg-secondary"
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-card/50"
                 }`}
               >
                 {m}
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-1">
-            <button onClick={() => setCurrentYear(currentYear - 1)} className="fluent-btn-outline px-2 py-1 text-xs">−</button>
+          <div className="flex items-center gap-0.5 bg-secondary rounded-lg p-0.5">
+            <button onClick={() => setCurrentYear(currentYear - 1)}
+              className="win-btn-subtle px-2 py-1 text-xs rounded-md">−</button>
             <span className="px-3 py-1 text-sm font-semibold">{currentYear}</span>
-            <button onClick={() => setCurrentYear(currentYear + 1)} className="fluent-btn-outline px-2 py-1 text-xs">+</button>
+            <button onClick={() => setCurrentYear(currentYear + 1)}
+              className="win-btn-subtle px-2 py-1 text-xs rounded-md">+</button>
           </div>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="max-w-7xl mx-auto px-4 mb-6">
-        <div className="flex gap-6 border-b border-border">
+      {/* Tabs — Windows 11 Pivot */}
+      <div className="max-w-7xl mx-auto px-5 mb-6">
+        <div className="flex gap-0 border-b border-border">
           {["📋 Captura por Material", "📂 Subir Excel / CSV"].map((t, i) => (
             <button
               key={t}
               onClick={() => setActiveTab(i)}
-              className={`pb-2 text-sm font-medium transition-all duration-150 border-b-2 ${
+              className={`relative pb-3 px-4 text-sm transition-all duration-150 ${
                 activeTab === i
-                  ? "border-primary text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
+                  ? "text-foreground font-semibold"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {t}
+              {activeTab === i && (
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-[3px] bg-primary rounded-t-full" />
+              )}
             </button>
           ))}
         </div>
       </div>
 
       {activeTab === 0 ? (
-        <div className="max-w-7xl mx-auto px-4 pb-8 flex gap-6">
+        <div className="max-w-7xl mx-auto px-5 pb-8 flex gap-5">
           {/* Material List */}
           <div className="flex-1 min-w-0">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="font-heading text-lg font-bold">Materiales</h2>
-              <button onClick={clearAll} className="fluent-btn-outline text-xs px-3 py-1">Limpiar todo</button>
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-sm font-semibold text-foreground">Materiales</span>
+              <button onClick={clearAll} className="win-btn-standard text-xs px-3">Limpiar todo</button>
             </div>
-            <div className="space-y-2 max-h-[70vh] overflow-y-auto pr-2">
+            <div className="space-y-1.5 max-h-[72vh] overflow-y-auto pr-1">
               {materialEntries.map((entry, idx) => (
                 <div
                   key={entry.material.code}
-                  className={`fluent-card p-3 flex items-center gap-4 transition-all duration-150 ${
-                    entry.kg > 0 ? "border-l-[3px] !border-l-primary bg-secondary/30" : ""
+                  className={`win-card p-3 flex items-center gap-3 transition-all duration-150 ${
+                    entry.kg > 0 ? "border-l-[3px] !border-l-primary" : ""
                   }`}
-                  style={{ cursor: "default" }}
-                  onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-1px)")}
-                  onMouseLeave={e => (e.currentTarget.style.transform = "translateY(0)")}
+                  style={entry.kg > 0 ? { background: "hsl(120 20% 97%)" } : {}}
                 >
-                  <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">
+                  <div className="w-7 h-7 rounded-md bg-primary text-primary-foreground flex items-center justify-center text-[11px] font-bold shrink-0">
                     {idx + 1}
                   </div>
-                  <div className="min-w-[140px]">
-                    <div className="text-sm font-semibold">{entry.material.description}</div>
-                    <div className="text-xs text-muted-foreground">{entry.material.code}</div>
+                  <div className="min-w-[130px]">
+                    <div className="text-[13px] font-semibold leading-tight">{entry.material.description}</div>
+                    <div className="text-[11px] text-muted-foreground">{entry.material.code}</div>
                   </div>
                   <input
                     type="number"
                     value={entry.kg || ""}
                     onChange={e => setMaterialKg(entry.material.code, parseFloat(e.target.value) || 0)}
-                    className="fluent-input w-28 text-right font-medium"
+                    className="win-input !w-28 text-right font-medium"
                     placeholder="0.00 kg"
                     min="0"
                     step="0.01"
                   />
-                  <div className="flex flex-wrap gap-1.5 flex-1">
+                  <div className="flex flex-wrap gap-1 flex-1">
                     {entry.kg > 0 ? (
                       <>
                         <span className="kpi-chip">🌳 {entry.kpis.arboles > 0 ? entry.kpis.arboles.toFixed(1) : "—"}</span>
@@ -132,43 +142,52 @@ const DataCapture = () => {
             </div>
           </div>
 
-          {/* Sticky KPI Summary */}
+          {/* Sticky KPI Summary — Windows 11 Flyout style */}
           <div className="w-80 shrink-0">
-            <div className="sticky top-20 acrylic rounded-2xl p-5" style={{ boxShadow: "var(--shadow-acrylic)" }}>
+            <div className="sticky top-16 win-acrylic rounded-xl p-5"
+              style={{ boxShadow: "var(--shadow-flyout)" }}>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-heading font-bold text-base">Resumen del Período</h3>
-                <span className="kpi-chip text-xs">{MONTHS[currentMonth]} {currentYear}</span>
+                <h3 className="font-heading font-bold text-[15px]">Resumen del Período</h3>
+                <span className="win-badge win-badge-success">{MONTHS[currentMonth]} {currentYear}</span>
               </div>
-              <div className="text-center mb-4">
-                <div className="text-3xl font-heading font-bold">{totalKg.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</div>
-                <div className="text-xs text-muted-foreground">KG Totales</div>
+              <div className="text-center mb-5 pb-4 border-b border-border">
+                <div className="text-3xl font-heading font-bold tracking-tight">
+                  {totalKg.toLocaleString("es-MX", { maximumFractionDigits: 1 })}
+                </div>
+                <div className="text-[11px] text-muted-foreground mt-0.5">KG Totales Capturados</div>
               </div>
-              <div className="space-y-3">
-                {kpiRows.map(k => (
-                  <div key={k.label} className={k.disabled ? "opacity-40" : ""}>
-                    <div className="flex items-center justify-between text-sm mb-1">
-                      <span>{k.emoji} {k.label}</span>
-                      <span className="font-bold font-heading">
-                        {k.disabled ? "—" : k.value.toLocaleString("es-MX", { maximumFractionDigits: 1 })}
-                        {!k.disabled && <span className="text-xs text-muted-foreground ml-1">{k.unit}</span>}
-                      </span>
+              <div className="space-y-3.5">
+                {kpiRows.map(k => {
+                  const p = pct(k.value, k.target);
+                  return (
+                    <div key={k.label} className={k.disabled ? "opacity-35" : ""}>
+                      <div className="flex items-center justify-between text-[13px] mb-1">
+                        <span className="flex items-center gap-1.5">
+                          <span>{k.emoji}</span>
+                          <span className="text-xs">{k.label}</span>
+                        </span>
+                        <span className="font-bold font-heading text-sm">
+                          {k.disabled ? "—" : k.value.toLocaleString("es-MX", { maximumFractionDigits: 1 })}
+                          {!k.disabled && <span className="text-[10px] text-muted-foreground ml-1 font-normal">{k.unit}</span>}
+                        </span>
+                      </div>
+                      <div className="win-progress">
+                        <div
+                          className="win-progress-fill bg-primary"
+                          style={{ width: `${p}%` }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-[10px] text-muted-foreground mt-0.5">
+                        <span>{p.toFixed(0)}% del objetivo</span>
+                        {k.disabled && <span className="text-primary">Próximamente</span>}
+                      </div>
                     </div>
-                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-primary rounded-full transition-all duration-300"
-                        style={{ width: `${pct(k.value, k.target)}%` }}
-                      />
-                    </div>
-                    <div className="flex justify-between text-[10px] text-muted-foreground mt-0.5">
-                      <span>{pct(k.value, k.target).toFixed(0)}% del objetivo</span>
-                      {k.disabled && <span className="text-primary text-[10px]">Próximamente</span>}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               <button
                 onClick={() => navigate("/dashboard")}
-                className="fluent-btn-primary w-full mt-5 h-10"
+                className="win-btn-accent w-full mt-5 h-9 text-[13px] font-semibold"
               >
                 💾 Guardar y Ver Dashboard →
               </button>
@@ -177,11 +196,11 @@ const DataCapture = () => {
         </div>
       ) : (
         /* Tab 2: Upload */
-        <div className="max-w-7xl mx-auto px-4 pb-8">
+        <div className="max-w-7xl mx-auto px-5 pb-8">
           <div className="max-w-xl mx-auto">
             <div
               className={`border-2 border-dashed rounded-xl h-48 flex flex-col items-center justify-center transition-all duration-150 ${
-                dragOver ? "border-primary bg-primary/5" : "border-primary/50"
+                dragOver ? "border-primary bg-primary/5" : "border-border"
               }`}
               onDragOver={e => { e.preventDefault(); setDragOver(true); }}
               onDragLeave={() => setDragOver(false)}
@@ -192,21 +211,21 @@ const DataCapture = () => {
                 if (file) setUploadedFile({ name: file.name, size: file.size });
               }}
             >
-              <span className="text-4xl mb-2">📁</span>
+              <span className="text-3xl mb-2">📁</span>
               <p className="text-sm text-muted-foreground">Arrastra y suelta tu archivo Excel o CSV aquí</p>
-              <p className="text-xs text-muted-foreground mt-1">o haz clic para seleccionar</p>
+              <p className="text-[11px] text-muted-foreground mt-1">o haz clic para seleccionar</p>
             </div>
             <div className="flex gap-3 mt-4">
-              <button className="fluent-btn-outline text-sm">📥 Descargar Plantilla</button>
+              <button className="win-btn-standard text-sm">📥 Descargar Plantilla</button>
             </div>
             {uploadedFile && (
-              <div className="mt-4 fluent-card p-4 flex items-center gap-3">
+              <div className="mt-4 win-card p-4 flex items-center gap-3">
                 <span className="text-xl">✅</span>
                 <div className="flex-1">
                   <div className="text-sm font-medium">{uploadedFile.name}</div>
-                  <div className="text-xs text-muted-foreground">{(uploadedFile.size / 1024).toFixed(1)} KB</div>
+                  <div className="text-[11px] text-muted-foreground">{(uploadedFile.size / 1024).toFixed(1)} KB</div>
                 </div>
-                <button className="fluent-btn-primary text-sm px-4">Procesar Archivo</button>
+                <button className="win-btn-accent text-sm px-4">Procesar Archivo</button>
               </div>
             )}
           </div>

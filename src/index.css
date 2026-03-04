@@ -6,38 +6,47 @@
 
 @layer base {
   :root {
-    --font-body: 'Segoe UI Variable', 'Inter', system-ui, sans-serif;
+    --font-body: 'Segoe UI Variable', 'Inter', system-ui, -apple-system, sans-serif;
     --font-heading: 'Plus Jakarta Sans', 'Segoe UI Variable', sans-serif;
 
-    --background: 120 14% 95%;
-    --foreground: 120 30% 14%;
+    /* Windows 11 Mica-tinted greens */
+    --background: 120 10% 96%;
+    --foreground: 120 20% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 120 30% 14%;
+    --card-foreground: 120 20% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 120 30% 14%;
+    --popover-foreground: 120 20% 10%;
 
     --primary: 122 39% 49%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 120 18% 94%;
-    --secondary-foreground: 120 30% 14%;
+    --secondary: 120 12% 93%;
+    --secondary-foreground: 120 20% 10%;
 
-    --muted: 120 14% 90%;
-    --muted-foreground: 120 12% 53%;
+    --muted: 120 8% 90%;
+    --muted-foreground: 120 8% 46%;
 
-    --accent: 120 18% 94%;
-    --accent-foreground: 120 30% 14%;
+    --accent: 120 14% 94%;
+    --accent-foreground: 120 20% 10%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 120 18% 90%;
-    --input: 120 18% 90%;
+    --border: 120 10% 88%;
+    --input: 120 10% 88%;
     --ring: 122 39% 49%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
+
+    /* Windows 11 specific */
+    --win-surface: 0 0% 100%;
+    --win-surface-stroke: 0 0% 0% / 0.06;
+    --win-card-stroke: 0 0% 0% / 0.04;
+    --win-subtle-fill: 0 0% 0% / 0.04;
+    --win-subtle-fill-hover: 0 0% 0% / 0.06;
+    --win-smoke: 0 0% 0% / 0.3;
 
     --nav: 120 30% 23%;
     --nav-foreground: 0 0% 100%;
@@ -53,9 +62,10 @@
     --kpi-cost: 282 69% 35%;
     --kpi-materials: 174 100% 21%;
 
-    --shadow-card: 0 2px 8px rgba(45,74,45,0.08);
-    --shadow-card-hover: 0 8px 24px rgba(45,74,45,0.14);
-    --shadow-acrylic: 0 8px 32px rgba(0,0,0,0.12);
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-card-hover: 0 4px 16px rgba(0,0,0,0.10), 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-flyout: 0 8px 32px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.06);
+    --shadow-dialog: 0 32px 64px rgba(0,0,0,0.18), 0 2px 21px rgba(0,0,0,0.08);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -75,89 +85,319 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
+    letter-spacing: -0.01em;
   }
 }
 
 @layer components {
-  .acrylic {
+  /* === Windows 11 Mica Material === */
+  .win-mica {
+    background: hsl(120 10% 96% / 0.85);
+    backdrop-filter: blur(60px) saturate(150%);
+    -webkit-backdrop-filter: blur(60px) saturate(150%);
+  }
+
+  /* === Windows 11 Acrylic Material === */
+  .win-acrylic {
     background: rgba(255, 255, 255, 0.72);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(20px) saturate(125%);
+    -webkit-backdrop-filter: blur(20px) saturate(125%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.06);
   }
-  .acrylic-strong {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.6);
+  .win-acrylic-strong {
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(30px) saturate(150%);
+    -webkit-backdrop-filter: blur(30px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: var(--shadow-flyout);
   }
-  .fluent-card {
-    @apply bg-card rounded-2xl;
-    border: 1px solid hsl(var(--border));
+
+  /* === Windows 11 Card (WinUI 3 LayeredCard) === */
+  .win-card {
+    @apply bg-card rounded-lg;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: var(--shadow-card);
-    transition: transform 200ms ease, box-shadow 200ms ease;
+    transition: transform 200ms cubic-bezier(0.1, 0.9, 0.2, 1), box-shadow 200ms ease;
   }
-  .fluent-card:hover {
-    transform: translateY(-2px);
+  .win-card-interactive:hover {
+    transform: translateY(-1px);
     box-shadow: var(--shadow-card-hover);
   }
-  .fluent-input {
-    @apply rounded-lg border border-input bg-card px-3 py-2 text-sm;
+
+  /* === Windows 11 Input (TextBox) === */
+  .win-input {
+    @apply bg-card px-3 py-2 text-sm w-full;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
     transition: all 150ms ease;
-  }
-  .fluent-input:focus {
     outline: none;
-    border-color: hsl(var(--primary));
-    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.25);
   }
-  .fluent-btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium;
+  .win-input::placeholder {
+    color: hsl(var(--muted-foreground));
+  }
+  .win-input:hover {
+    background: hsl(var(--accent));
+  }
+  .win-input:focus {
+    border-bottom-color: hsl(var(--primary));
+    box-shadow: 0 0 0 0px transparent;
+    background: hsl(var(--card));
+  }
+
+  /* === Windows 11 Buttons === */
+  .win-btn {
+    @apply inline-flex items-center justify-center gap-2 text-sm font-medium;
+    padding: 5px 12px;
+    min-height: 32px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
     transition: all 150ms ease;
+    cursor: pointer;
+    user-select: none;
   }
-  .fluent-btn:active {
+  .win-btn:active {
     transform: scale(0.97);
+    opacity: 0.8;
   }
-  .fluent-btn-primary {
-    @apply fluent-btn text-primary-foreground;
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--btn-dark)));
+
+  .win-btn-standard {
+    @apply win-btn bg-card text-foreground;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
   }
-  .fluent-btn-primary:hover {
-    filter: brightness(1.1);
-    transform: translateY(-1px);
+  .win-btn-standard:hover {
+    background: hsl(var(--accent));
   }
-  .fluent-btn-outline {
-    @apply fluent-btn bg-card border border-border text-foreground;
+
+  .win-btn-accent {
+    @apply win-btn text-primary-foreground;
+    background: hsl(var(--primary));
+    border: 1px solid transparent;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
   }
-  .fluent-btn-outline:hover {
-    @apply bg-secondary;
-    transform: translateY(-1px);
+  .win-btn-accent:hover {
+    filter: brightness(1.08);
+    transform: translateY(-0.5px);
   }
+
+  .win-btn-subtle {
+    @apply win-btn text-foreground;
+    background: transparent;
+    border: none;
+  }
+  .win-btn-subtle:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  /* === Windows 11 Navigation (TabView / Pivot) === */
+  .win-nav-item {
+    @apply relative px-4 py-2 text-sm;
+    color: hsl(var(--muted-foreground));
+    transition: all 150ms ease;
+    cursor: pointer;
+    border-radius: 6px 6px 0 0;
+  }
+  .win-nav-item:hover {
+    color: hsl(var(--foreground));
+    background: rgba(0, 0, 0, 0.03);
+  }
+  .win-nav-item-active {
+    color: hsl(var(--foreground));
+    font-weight: 600;
+  }
+  .win-nav-item-active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 3px;
+    background: hsl(var(--primary));
+    border-radius: 3px 3px 0 0;
+  }
+
+  /* === Windows 11 Toggle Switch === */
+  .win-toggle {
+    width: 40px;
+    height: 20px;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.45);
+    background: transparent;
+    transition: all 150ms ease;
+    position: relative;
+    cursor: pointer;
+  }
+  .win-toggle-on {
+    background: hsl(var(--primary));
+    border-color: hsl(var(--primary));
+  }
+  .win-toggle-thumb {
+    position: absolute;
+    top: 3px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: hsl(var(--foreground));
+    transition: all 200ms cubic-bezier(0.1, 0.9, 0.2, 1);
+  }
+  .win-toggle-on .win-toggle-thumb {
+    transform: translateX(20px);
+    background: hsl(var(--primary-foreground));
+  }
+
+  /* === Windows 11 Progress Bar === */
+  .win-progress {
+    height: 4px;
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .win-progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 500ms cubic-bezier(0.1, 0.9, 0.2, 1);
+  }
+
+  /* === Windows 11 InfoBadge === */
+  .win-badge {
+    @apply inline-flex items-center px-2 py-0.5 text-[11px] font-medium rounded-full;
+  }
+  .win-badge-success {
+    background: hsl(var(--primary) / 0.12);
+    color: hsl(var(--kpi-trees));
+  }
+  .win-badge-warning {
+    background: hsl(var(--kpi-energy) / 0.15);
+    color: hsl(var(--kpi-energy));
+  }
+  .win-badge-critical {
+    background: hsl(var(--destructive) / 0.12);
+    color: hsl(var(--destructive));
+  }
+  .win-badge-info {
+    background: hsl(var(--kpi-water) / 0.12);
+    color: hsl(var(--kpi-water));
+  }
+
+  /* === KPI Chip (Windows 11 style) === */
   .kpi-chip {
-    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium;
-    background: hsl(120 30% 94%);
+    @apply inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium;
+    background: hsl(120 14% 94%);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    border-radius: 6px;
     color: hsl(var(--foreground));
   }
 
+  /* === Windows 11 Title Bar === */
+  .win-titlebar {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    -webkit-app-region: drag;
+  }
+
+  /* === Windows 11 Tooltip === */
+  .win-tooltip {
+    background: hsl(var(--card));
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-flyout);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    color: hsl(var(--foreground));
+  }
+
+  /* === Windows 11 Dialog Overlay === */
+  .win-overlay {
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  /* === Windows 11 Select / ComboBox === */
+  .win-select {
+    @apply text-sm;
+    padding: 5px 28px 5px 12px;
+    min-height: 32px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.14);
+    background: hsl(var(--card));
+    color: hsl(var(--foreground));
+    transition: all 150ms ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    cursor: pointer;
+  }
+  .win-select:hover {
+    background-color: hsl(var(--accent));
+  }
+  .win-select:focus {
+    outline: none;
+    border-bottom-color: hsl(var(--primary));
+  }
+
+  /* === Animations === */
   @keyframes fadeSlideUp {
     from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0); }
   }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+  }
   .animate-fade-slide-up {
-    animation: fadeSlideUp 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation: fadeSlideUp 300ms cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+  }
+  .animate-fade-in {
+    animation: fadeIn 200ms ease forwards;
+  }
+  .animate-scale-in {
+    animation: scaleIn 250ms cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
   }
   @keyframes barGrow {
     from { width: 0; }
   }
   .animate-bar-grow {
-    animation: barGrow 600ms ease-out forwards;
+    animation: barGrow 600ms cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
   }
   @keyframes spin-slow {
     to { transform: rotate(360deg); }
   }
   .animate-spin-slow {
     animation: spin-slow 800ms linear infinite;
+  }
+
+  /* Scrollbar - Windows 11 thin style */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.25);
   }
 }
