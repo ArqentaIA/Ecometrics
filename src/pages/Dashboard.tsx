@@ -11,7 +11,7 @@ import FinancialLineChart from "@/components/charts/FinancialLineChart";
 import DonutChart from "@/components/charts/DonutChart";
 
 const Dashboard = () => {
-  const { kpiTotals, targets, materialEntries, monthlyHistory, refreshData, lastUpdated, totalKg } = useEcoMetrics();
+  const { kpiTotals, targets, materialEntries, monthlyHistory, refreshData, lastUpdated, totalKg, currentMonth, currentYear } = useEcoMetrics();
   const [refreshing, setRefreshing] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [sortCol, setSortCol] = useState<string | null>(null);
