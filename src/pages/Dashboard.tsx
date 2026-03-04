@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import Navigation from "@/components/Navigation";
-import HorizontalBarChart from "@/components/HorizontalBarChart";
+import ControlOperativoPeriodoCard from "@/components/ControlOperativoPeriodoCard";
 import ShareModal from "@/components/ShareModal";
 import RadialGauge from "@/components/charts/RadialGauge";
 import AreaChartSVG from "@/components/charts/AreaChartSVG";
