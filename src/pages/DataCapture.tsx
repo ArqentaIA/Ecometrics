@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import Navigation from "@/components/Navigation";
+import ControlOperativoPeriodoCard from "@/components/ControlOperativoPeriodoCard";
 import { MONTHS } from "@/data/materials";
 
 interface CaptureState {
@@ -16,7 +16,7 @@ const DataCapture = () => {
     materialEntries, setMaterialKg, clearAll, totalKg, targets,
     currentMonth, setCurrentMonth, currentYear, setCurrentYear,
   } = useEcoMetrics();
-  const navigate = useNavigate();
+  
   const [activeTab, setActiveTab] = useState(0);
   const [dragOver, setDragOver] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<{ name: string; size: number } | null>(null);
@@ -228,53 +228,22 @@ const DataCapture = () => {
             </div>
           </div>
 
-          {/* Sticky summary — simplified */}
-          <div className="w-72 shrink-0">
-            <div className="sticky top-16 win-acrylic rounded-xl p-5" style={{ boxShadow: "var(--shadow-flyout)" }}>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-heading font-bold text-[15px]">Resumen del Período</h3>
-                <span className="win-badge win-badge-success">{MONTHS[currentMonth]} {currentYear}</span>
-              </div>
-
-              <div className="text-center mb-5 pb-4 border-b border-border">
-                <div className="text-3xl font-heading font-bold tracking-tight">
-                  {totalKg.toLocaleString("es-MX", { maximumFractionDigits: 1 })}
-                </div>
-                <div className="text-[11px] text-muted-foreground mt-0.5">KG Totales Capturados</div>
-              </div>
-
-              <div className="space-y-2 mb-5">
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Materiales con registro</span>
-                  <span className="font-semibold">{materialEntries.filter(e => e.kg > 0).length} / {materialEntries.length}</span>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Capturas confirmadas</span>
-                  <span className="font-semibold">
-                    {Object.values(captureStates).filter(s => s.confirmed).length} / {materialEntries.length}
-                  </span>
-                </div>
-                <div className="win-progress mt-2">
-                  <div
-                    className="win-progress-fill bg-primary"
-                    style={{ width: `${(Object.values(captureStates).filter(s => s.confirmed).length / materialEntries.length) * 100}%` }}
-                  />
-                </div>
-                <div className="text-[10px] text-muted-foreground text-center">
-                  Progreso de captura
-                </div>
-              </div>
-
-              <div className="text-[11px] text-muted-foreground text-center mb-4 p-2 rounded-md bg-accent/50">
-                Los indicadores ambientales se calculan automáticamente y están disponibles en el Dashboard.
-              </div>
-
-              <button
-                onClick={() => navigate("/dashboard")}
-                className="win-btn-accent w-full h-9 text-[13px] font-semibold"
-              >
-                📊 Ver Dashboard →
-              </button>
+          {/* Control Operativo del Periodo */}
+          <div className="w-80 shrink-0">
+            <div className="sticky top-16">
+              <ControlOperativoPeriodoCard
+                totalKg={totalKg}
+                materialesRegistrados={materialEntries.filter(e => e.kg > 0).length}
+                materialesTotales={materialEntries.length}
+                capturasConfirmadas={Object.values(captureStates).filter(s => s.confirmed).length}
+                lastUpdated={
+                  Object.values(captureStates)
+                    .filter(s => s.timestamp)
+                    .sort((a, b) => (b.timestamp!.getTime() - a.timestamp!.getTime()))[0]?.timestamp ?? null
+                }
+                currentMonth={currentMonth}
+                currentYear={currentYear}
+              />
             </div>
           </div>
         </div>
