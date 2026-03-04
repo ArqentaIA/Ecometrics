@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import { useNavigate } from "react-router-dom";
-import logoIrm from "@/assets/logo-irm.png";
+import logoImr from "@/assets/logo-imr.png";
 
 const Login = () => {
   const { login } = useEcoMetrics();
@@ -40,7 +40,7 @@ const Login = () => {
         <div className="win-acrylic-strong rounded-xl p-8">
           {/* Logo */}
           <div className="flex flex-col items-center mb-7">
-            <img src={logoIrm} alt="IRM Group" className="h-16 object-contain mb-4" />
+            <img src={logoImr} alt="IMR Group" className="h-20 object-contain mb-4" />
             <h1 className="font-heading text-[28px] font-bold text-foreground mt-2 tracking-tight">EcoMetrics</h1>
             <p className="text-xs text-muted-foreground mt-1">Inicia sesión para continuar</p>
           </div>
