@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import { useNavigate } from "react-router-dom";
-import logoIrm from "@/assets/logo-irm.png";
+import logoImr from "@/assets/logo-imr.png";
 
 const Login = () => {
   const { login } = useEcoMetrics();
