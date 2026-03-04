@@ -17,7 +17,6 @@ function easeInOutCubic(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
-// Fixed 5s total cycle: 2500ms rise, 1800ms hold, 700ms fall
 const DEFAULT_RISE = 2500;
 const DEFAULT_HOLD = 1800;
 const DEFAULT_FALL = 700;
@@ -39,14 +38,20 @@ export function useLoopAnimation({
     targetRef.current = targetValue;
   }, [targetValue]);
 
-  const animate = useCallback(() => {
-    const totalCycle = riseDuration + holdDuration + fallDuration;
+  const totalCycle = riseDuration + holdDuration + fallDuration;
+
+  useEffect(() => {
+    if (targetValue === 0) {
+      setDisplayValue(0);
+      setProgress(0);
+      return;
+    }
+
     let startTime: number | null = null;
 
     const tick = (now: number) => {
       if (!startTime) startTime = now;
       const elapsed = (now - startTime) % totalCycle;
-      const phaseStart = elapsed < riseDuration;
       const tv = targetRef.current;
 
       let p: number;
@@ -70,19 +75,10 @@ export function useLoopAnimation({
     };
 
     rafRef.current = requestAnimationFrame(tick);
-  }, [riseDuration, holdDuration, fallDuration]);
-
-  useEffect(() => {
-    if (targetValue === 0) {
-      setDisplayValue(0);
-      setProgress(0);
-      return;
-    }
-    animate();
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [targetValue, animate]);
+  }, [targetValue, totalCycle, riseDuration, holdDuration, fallDuration]);
 
   return { displayValue, progress, isPulsing };
 }
