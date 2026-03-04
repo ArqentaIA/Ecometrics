@@ -2,8 +2,13 @@ import { useState, useMemo } from "react";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import Navigation from "@/components/Navigation";
 import HorizontalBarChart from "@/components/HorizontalBarChart";
-import MiniLineChart from "@/components/MiniLineChart";
 import ShareModal from "@/components/ShareModal";
+import RadialGauge from "@/components/charts/RadialGauge";
+import AreaChartSVG from "@/components/charts/AreaChartSVG";
+import ColumnChart from "@/components/charts/ColumnChart";
+import LiquidGauge from "@/components/charts/LiquidGauge";
+import FinancialLineChart from "@/components/charts/FinancialLineChart";
+import DonutChart from "@/components/charts/DonutChart";
 
 const Dashboard = () => {
   const { kpiTotals, targets, materialEntries, monthlyHistory, refreshData, lastUpdated, totalKg } = useEcoMetrics();
