@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
-import logoIrmIcon from "@/assets/logo-irm-icon.png";
+import logoImr from "@/assets/logo-imr.png";
 
 interface NavigationProps {
   showBell?: boolean;
