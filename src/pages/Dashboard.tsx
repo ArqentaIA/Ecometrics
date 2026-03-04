@@ -91,7 +91,7 @@ const Dashboard = () => {
       <section className="relative overflow-hidden" style={{ background: "linear-gradient(135deg, #c8e6c9, #dcedc8)" }}>
         <div className="max-w-7xl mx-auto px-4 py-8 flex items-center justify-between flex-wrap gap-6">
           <div>
-            <h1 className="font-heading text-2xl font-bold text-foreground">MES DE FEBRERO 2025</h1>
+            <h1 className="font-heading text-2xl font-bold text-foreground">MES DE FEBRERO 2026</h1>
             <p className="text-sm text-muted-foreground mt-1">Resumen de impacto ambiental acumulado</p>
           </div>
           <div className="flex gap-4 flex-wrap">
