@@ -158,48 +158,55 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* KPI Cards — Windows 11 Settings card style */}
+      {/* KPI Dashboard — Executive Visual Grid */}
       <section className="max-w-7xl mx-auto px-5 mb-7">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {kpiCards.map(k => {
-            const p = pct(k.value, k.target);
-            const trend = prevMonth && currMonth ? ((currMonth[k.key as keyof typeof currMonth] as number) / (prevMonth[k.key as keyof typeof prevMonth] as number) - 1) * 100 : 0;
-            return (
-              <div key={k.key} className={`win-card win-card-interactive p-5 relative ${k.disabled ? "opacity-35 pointer-events-none" : ""}`}>
-                {k.disabled && (
-                  <span className="absolute top-3 right-3 win-badge win-badge-info text-[10px]">Próximamente</span>
-                )}
-                <div className="flex items-center gap-2.5 mb-3">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base"
-                    style={{ background: `${k.color}15` }}>
-                    {k.emoji}
-                  </div>
-                  <span className="text-xs text-muted-foreground font-medium">{k.label}</span>
-                </div>
-                <div className="font-heading text-[32px] font-bold tracking-tight leading-none mb-1.5">
-                  {k.disabled ? "—" : k.value.toLocaleString("es-MX", { maximumFractionDigits: 1 })}
-                  <span className="text-xs font-normal text-muted-foreground ml-1.5">{k.unit}</span>
-                </div>
-                <span className={`win-badge ${pctBadge(p)} mb-2`}>
-                  {p.toFixed(0)}% DEL OBJETIVO
-                </span>
-                <div className="win-progress mt-2 mb-1.5">
-                  <div className="win-progress-fill" style={{ width: `${p}%`, background: k.color }} />
-                </div>
-                <div className="flex justify-between text-[10px] text-muted-foreground">
-                  <span>0</span>
-                  <span>Meta {k.target.toLocaleString()} {k.unit}</span>
-                </div>
-                {!k.disabled && (
-                  <div className="text-[10px] text-muted-foreground mt-2 text-right">
-                    <span style={{ color: trend >= 0 ? "hsl(var(--kpi-trees))" : "hsl(var(--destructive))" }}>
-                      {trend >= 0 ? "↑" : "↓"} {Math.abs(trend).toFixed(1)}%
-                    </span> vs mes anterior
-                  </div>
-                )}
-              </div>
-            );
-          })}
+        <h2 className="font-heading text-lg font-bold tracking-tight mb-3">📊 Indicadores Clave de Impacto</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Row 1 */}
+          <RadialGauge
+            emoji="🌳" label="Árboles Preservados"
+            value={kpiTotals.arboles} target={targets.arboles}
+            unit="equiv." color="#22C55E"
+            trend={prevMonth && currMonth ? ((currMonth.arboles / prevMonth.arboles - 1) * 100) : 0}
+          />
+          <AreaChartSVG
+            emoji="♻️" title="CO₂e Evitado"
+            data={monthlyHistory.map(h => ({ label: h.month, value: h.co2 }))}
+            lineColor="#16A34A" areaColor="#22C55E" unit="kg CO₂"
+            trend={prevMonth && currMonth ? ((currMonth.co2 / prevMonth.co2 - 1) * 100) : 0}
+          />
+          <ColumnChart
+            emoji="⚡" title="Energía Ahorrada"
+            data={monthlyHistory.map(h => ({ label: h.month, value: h.energia }))}
+            color="#FACC15" unit="kWh"
+            trend={prevMonth && currMonth ? ((currMonth.energia / prevMonth.energia - 1) * 100) : 0}
+          />
+          {/* Row 2 */}
+          <LiquidGauge
+            emoji="💧" label="Agua Conservada"
+            value={kpiTotals.agua} target={targets.agua}
+            unit="Litros" color="#38BDF8"
+            trend={prevMonth && currMonth ? ((currMonth.agua / prevMonth.agua - 1) * 100) : 0}
+          />
+          <FinancialLineChart
+            emoji="💰" title="Costo Evitado Acumulado"
+            data={monthlyHistory.map(h => ({ label: h.month, value: h.costo }))}
+            color="#9333EA" unit="MXN"
+            trend={prevMonth && currMonth ? ((currMonth.costo / prevMonth.costo - 1) * 100) : 0}
+          />
+          <DonutChart
+            emoji="📦" title="Materiales Recuperados"
+            segments={materialEntries
+              .filter(e => e.kg > 0)
+              .sort((a, b) => b.kg - a.kg)
+              .slice(0, 8)
+              .map((e, i) => ({
+                label: e.material.code,
+                value: e.kg,
+                color: ["#22C55E", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#F97316", "#EC4899"][i % 8],
+              }))}
+            unit="kg totales"
+          />
         </div>
       </section>
 
@@ -215,28 +222,6 @@ const Dashboard = () => {
               gradient={c.gradient as [string, string]}
             />
           ))}
-          <div className="win-card p-5 opacity-35 flex flex-col items-center justify-center relative min-h-[300px]">
-            <span className="absolute top-3 right-3 win-badge win-badge-info text-[10px]">Próximamente</span>
-            <span className="text-4xl mb-3">📦</span>
-            <p className="text-xs text-muted-foreground text-center">Fórmula de conversión próximamente disponible</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Monthly Trends */}
-      <section className="max-w-7xl mx-auto px-5 mb-7">
-        <h2 className="font-heading text-lg font-bold tracking-tight mb-3">📈 Tendencia Mensual — Todos los Indicadores</h2>
-        <div className="win-card p-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {trendConfigs.map(tc => (
-              <MiniLineChart
-                key={tc.key}
-                title={`${tc.emoji} ${tc.title}`}
-                data={monthlyHistory.map(h => ({ label: h.month, value: h[tc.key] }))}
-                color={tc.color}
-              />
-            ))}
-          </div>
         </div>
       </section>
 
