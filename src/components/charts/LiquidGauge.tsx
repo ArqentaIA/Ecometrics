@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useLoopAnimation } from "@/hooks/useLoopAnimation";
 
 interface LiquidGaugeProps {
   value: number;
@@ -11,13 +11,10 @@ interface LiquidGaugeProps {
 }
 
 const LiquidGauge = ({ value, target, label, unit, color, emoji, trend }: LiquidGaugeProps) => {
-  const [animatedPct, setAnimatedPct] = useState(0);
-  const pct = target > 0 ? Math.min((value / target) * 100, 100) : 0;
+  const { displayValue, progress, isPulsing } = useLoopAnimation({ targetValue: value });
 
-  useEffect(() => {
-    const timer = setTimeout(() => setAnimatedPct(pct), 150);
-    return () => clearTimeout(timer);
-  }, [pct]);
+  const pct = target > 0 ? Math.min((value / target) * 100, 100) : 0;
+  const animatedPct = target > 0 ? Math.min((displayValue / target) * 100, 100) : 0;
 
   const size = 160;
   const r = size / 2;
@@ -45,22 +42,16 @@ const LiquidGauge = ({ value, target, label, unit, color, emoji, trend }: Liquid
             </linearGradient>
           </defs>
 
-          {/* Circle border */}
           <circle cx={r} cy={r} r={r - 4} fill="none" stroke={color} strokeWidth="2" opacity={0.2} />
           <circle cx={r} cy={r} r={r - 2} fill="hsl(var(--card))" />
 
-          {/* Liquid fill with wave */}
           <g clipPath={`url(#${clipId})`}>
-            {/* Static fill */}
             <rect x={0} y={fillY} width={size} height={size}
-              fill={`url(#${waveId}-grad)`}
-              style={{ transition: "y 1.2s cubic-bezier(0.4,0,0.2,1)" }} />
+              fill={`url(#${waveId}-grad)`} />
             
-            {/* Wave 1 */}
             <path
               d={`M0 ${fillY} Q${size * 0.25} ${fillY - 8} ${size * 0.5} ${fillY} T${size} ${fillY} V${size} H0 Z`}
               fill={color} opacity={0.3}
-              style={{ transition: "d 1.2s" }}
             >
               <animateTransform
                 attributeName="transform" type="translate"
@@ -69,7 +60,6 @@ const LiquidGauge = ({ value, target, label, unit, color, emoji, trend }: Liquid
               />
             </path>
             
-            {/* Wave 2 */}
             <path
               d={`M0 ${fillY + 3} Q${size * 0.3} ${fillY - 5} ${size * 0.6} ${fillY + 3} T${size} ${fillY + 3} V${size} H0 Z`}
               fill={color} opacity={0.2}
@@ -81,27 +71,28 @@ const LiquidGauge = ({ value, target, label, unit, color, emoji, trend }: Liquid
               />
             </path>
 
-            {/* Reflection */}
             <rect x={size * 0.3} y={fillY + 5} width={size * 0.15} height={size * 0.4}
-              rx={8} fill="white" opacity={0.08}
-              style={{ transition: "y 1.2s cubic-bezier(0.4,0,0.2,1)" }} />
+              rx={8} fill="white" opacity={0.08} />
           </g>
         </svg>
 
-        {/* Center text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="font-heading text-[22px] font-bold tracking-tight leading-none"
-            style={{ color: animatedPct > 55 ? "white" : color, transition: "color 0.5s", textShadow: animatedPct > 55 ? "0 1px 3px rgba(0,0,0,0.3)" : "none" }}>
-            {value.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+            style={{
+              color: animatedPct > 55 ? "white" : color,
+              textShadow: animatedPct > 55 ? "0 1px 3px rgba(0,0,0,0.3)" : "none",
+              transform: isPulsing ? "scale(1.03)" : "scale(1)",
+              transition: "transform 0.2s ease-in-out",
+            }}>
+            {displayValue.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
           </span>
           <span className="text-[9px] mt-0.5"
-            style={{ color: animatedPct > 55 ? "rgba(255,255,255,0.8)" : "hsl(var(--muted-foreground))", transition: "color 0.5s" }}>
+            style={{ color: animatedPct > 55 ? "rgba(255,255,255,0.8)" : "hsl(var(--muted-foreground))" }}>
             {unit}
           </span>
         </div>
       </div>
 
-      {/* Footer */}
       <div className="mt-3 text-center">
         <div className="text-[11px] text-muted-foreground">
           Meta: {target.toLocaleString("es-MX")} {unit}

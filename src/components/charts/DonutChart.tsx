@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useLoopAnimation } from "@/hooks/useLoopAnimation";
 
 interface Segment {
   label: string;
@@ -14,22 +15,22 @@ interface DonutChartProps {
 }
 
 const DonutChart = ({ title, emoji, segments, unit }: DonutChartProps) => {
-  const [show, setShow] = useState(false);
-  useEffect(() => { setTimeout(() => setShow(true), 200); }, []);
-
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
   const total = segments.reduce((s, seg) => s + seg.value, 0);
+  const { displayValue, progress, isPulsing } = useLoopAnimation({ targetValue: total });
+
   const size = 160;
   const r = 58;
   const strokeWidth = 22;
   const circumference = 2 * Math.PI * r;
 
+  // Scale the visible portion of the donut by progress
   let accumulated = 0;
   const arcs = segments.map((seg, i) => {
     const pct = total > 0 ? seg.value / total : 0;
     const offset = circumference * (1 - accumulated);
-    const length = circumference * pct;
+    const length = circumference * pct * progress; // scale by progress
     accumulated += pct;
     return { ...seg, pct, offset: offset - circumference * 0.25, length, index: i };
   });
@@ -52,27 +53,28 @@ const DonutChart = ({ title, emoji, segments, unit }: DonutChartProps) => {
                 fill="none"
                 stroke={arc.color}
                 strokeWidth={hoverIdx === arc.index ? strokeWidth + 4 : strokeWidth}
-                strokeDasharray={`${show ? arc.length : 0} ${circumference}`}
+                strokeDasharray={`${arc.length} ${circumference}`}
                 strokeDashoffset={-arc.offset}
                 strokeLinecap="butt"
                 onMouseEnter={() => setHoverIdx(arc.index)}
                 className="cursor-pointer"
                 style={{
-                  transition: `stroke-dasharray 0.8s cubic-bezier(0.4,0,0.2,1) ${arc.index * 0.1}s, stroke-width 0.2s`,
                   filter: hoverIdx === arc.index ? `drop-shadow(0 0 6px ${arc.color}60)` : "none",
                 }}
               />
             ))}
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-heading text-[20px] font-bold tracking-tight leading-none text-foreground">
-              {total.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+            <span
+              className="font-heading text-[20px] font-bold tracking-tight leading-none text-foreground"
+              style={{ transform: isPulsing ? "scale(1.03)" : "scale(1)", transition: "transform 0.2s" }}
+            >
+              {displayValue.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
             </span>
             <span className="text-[9px] text-muted-foreground">{unit}</span>
           </div>
         </div>
 
-        {/* Legend */}
         <div className="flex flex-col gap-1.5 min-w-0">
           {segments.map((seg, i) => (
             <div key={i}
@@ -90,7 +92,6 @@ const DonutChart = ({ title, emoji, segments, unit }: DonutChartProps) => {
         </div>
       </div>
 
-      {/* Tooltip overlay */}
       {hoverIdx !== null && segments[hoverIdx] && (
         <div className="mt-3 text-center text-[11px] text-muted-foreground animate-fade-in">
           <span className="font-semibold text-foreground">{segments[hoverIdx].label}:</span>{" "}

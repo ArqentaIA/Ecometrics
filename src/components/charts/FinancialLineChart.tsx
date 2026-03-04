@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useLoopAnimation } from "@/hooks/useLoopAnimation";
 
 interface DataPoint {
   label: string;
@@ -15,9 +16,6 @@ interface FinancialLineChartProps {
 }
 
 const FinancialLineChart = ({ title, emoji, data, color, unit, trend }: FinancialLineChartProps) => {
-  const [show, setShow] = useState(false);
-  useEffect(() => { setTimeout(() => setShow(true), 200); }, []);
-
   const [tooltip, setTooltip] = useState<{ x: number; y: number; val: number; label: string } | null>(null);
 
   // Build cumulative data
@@ -26,6 +24,9 @@ const FinancialLineChart = ({ title, emoji, data, color, unit, trend }: Financia
     acc.push({ label: d.label, value: prev + d.value });
     return acc;
   }, []);
+
+  const lastVal = cumulative[cumulative.length - 1]?.value ?? 0;
+  const { displayValue, progress, isPulsing } = useLoopAnimation({ targetValue: lastVal });
 
   const w = 380;
   const h = 180;
@@ -45,7 +46,7 @@ const FinancialLineChart = ({ title, emoji, data, color, unit, trend }: Financia
   const linePath = points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
   const areaPath = `${linePath} L${points[points.length - 1].x},${py + chartH} L${points[0].x},${py + chartH} Z`;
 
-  const lastVal = cumulative[cumulative.length - 1]?.value ?? 0;
+  const clipWidth = progress * chartW;
 
   return (
     <div className="win-card p-5 min-h-[320px] hover:shadow-lg transition-shadow duration-300">
@@ -61,12 +62,14 @@ const FinancialLineChart = ({ title, emoji, data, color, unit, trend }: Financia
         )}
       </div>
       <div className="font-heading text-[24px] font-bold tracking-tight mb-2" style={{ color }}>
-        ${lastVal.toLocaleString("es-MX", { maximumFractionDigits: 0 })} <span className="text-xs font-normal text-muted-foreground">{unit}</span>
+        <span style={{ transform: isPulsing ? "scale(1.03)" : "scale(1)", display: "inline-block", transition: "transform 0.2s" }}>
+          ${displayValue.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+        </span>{" "}
+        <span className="text-xs font-normal text-muted-foreground">{unit}</span>
       </div>
 
       <svg width="100%" viewBox={`0 0 ${w} ${h}`} className="overflow-visible"
         onMouseLeave={() => setTooltip(null)}>
-        {/* Grid */}
         {[0, 0.25, 0.5, 0.75, 1].map(f => {
           const y = py + chartH - f * chartH;
           const val = f * maxVal;
@@ -85,30 +88,30 @@ const FinancialLineChart = ({ title, emoji, data, color, unit, trend }: Financia
             <stop offset="0%" stopColor={color} stopOpacity={0.25} />
             <stop offset="100%" stopColor={color} stopOpacity={0.02} />
           </linearGradient>
-          <clipPath id="finClip">
-            <rect x={px} y={0} width={show ? chartW : 0} height={h}
-              style={{ transition: "width 1.2s cubic-bezier(0.4,0,0.2,1)" }} />
+          <clipPath id="finClipLoop">
+            <rect x={px} y={0} width={clipWidth} height={h} />
           </clipPath>
         </defs>
 
-        <g clipPath="url(#finClip)">
+        <g clipPath="url(#finClipLoop)">
           <path d={areaPath} fill="url(#finGrad)" />
-          <path d={linePath} fill="none" stroke={color} strokeWidth="2.5" strokeLinejoin="round"
-            strokeDasharray="2 0" />
+          <path d={linePath} fill="none" stroke={color} strokeWidth="2.5" strokeLinejoin="round" />
         </g>
 
-        {/* Dots */}
-        {points.map((p, i) => (
-          <g key={i}
-            onMouseEnter={() => setTooltip({ x: p.x, y: p.y, val: p.value, label: p.label })}
-            className="cursor-pointer">
-            <circle cx={p.x} cy={p.y} r={12} fill="transparent" />
-            <circle cx={p.x} cy={p.y} r={i === points.length - 1 ? 5 : 3.5}
-              fill={color} stroke="white" strokeWidth="2"
-              style={{ opacity: show ? 1 : 0, transition: `opacity 0.3s ${i * 0.05}s` }} />
-            <text x={p.x} y={py + chartH + 13} textAnchor="middle" fontSize="7" fill="hsl(var(--muted-foreground))">{p.label}</text>
-          </g>
-        ))}
+        {points.map((p, i) => {
+          const pointVisible = p.x <= px + clipWidth;
+          return (
+            <g key={i}
+              onMouseEnter={() => setTooltip({ x: p.x, y: p.y, val: p.value, label: p.label })}
+              className="cursor-pointer">
+              <circle cx={p.x} cy={p.y} r={12} fill="transparent" />
+              <circle cx={p.x} cy={p.y} r={i === points.length - 1 ? 5 : 3.5}
+                fill={color} stroke="white" strokeWidth="2"
+                style={{ opacity: pointVisible ? 1 : 0 }} />
+              <text x={p.x} y={py + chartH + 13} textAnchor="middle" fontSize="7" fill="hsl(var(--muted-foreground))">{p.label}</text>
+            </g>
+          );
+        })}
 
         {tooltip && (
           <g>
