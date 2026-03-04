@@ -72,10 +72,10 @@ const ControlOperativoPeriodoCard = ({
     prevKg.current = totalKg;
   }, [totalKg]);
 
-  // Radial gauge geometry
-  const size = 180;
-  const strokeWidth = 14;
-  const radius = (size - strokeWidth) / 2;
+  const isFullWidth = variant === "fullwidth";
+  const gaugeSize = isFullWidth ? 220 : 180;
+  const strokeWidth = isFullWidth ? 16 : 14;
+  const radius = (gaugeSize - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (animatedPct / 100) * circumference;
 
