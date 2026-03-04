@@ -125,24 +125,24 @@ const Dashboard = () => {
       {/* Action Bar */}
       <div className="max-w-7xl mx-auto px-5 py-3 flex items-center justify-between flex-wrap gap-4">
         {/* Sync status block */}
-        <div className="win-card px-4 py-3 min-w-[260px]" style={{ borderRadius: 14, boxShadow: "0 4px 16px rgba(0,0,0,0.05)" }}>
+        <div className="px-4 py-3 min-w-[260px]" style={{ borderRadius: 14, boxShadow: "0 4px 16px rgba(0,0,0,0.15)", background: "linear-gradient(135deg, #1C1F26, #2A2E38)" }}>
           <div className="flex items-center gap-2.5 mb-1.5">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin-slow" style={{ animationDuration: "4s" }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00E676" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin-slow" style={{ animationDuration: "4s" }}>
               <path d="M21.5 2v6h-6M2.5 22v-6h6" />
               <path d="M2.5 11.5a10 10 0 0 1 16.5-6L21.5 8M21.5 12.5a10 10 0 0 1-16.5 6L2.5 16" />
             </svg>
-            <span className="font-heading font-semibold text-sm text-foreground">Sistema sincronizado</span>
+            <span className="font-heading font-semibold text-sm" style={{ color: "#F1F3F6" }}>Sistema sincronizado</span>
           </div>
-          <p className="text-[13px] text-muted-foreground ml-[30px]">
+          <p className="text-[13px] ml-[30px]" style={{ color: "#F1F3F6", opacity: 0.7 }}>
             {lastUpdated.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })} • {lastUpdated.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
           </p>
           {/* Scanning bar */}
-          <div className="mt-2.5 ml-[30px] h-[3px] rounded-full bg-primary/10 overflow-hidden relative">
-            <div className="sync-scan-bar" />
+          <div className="mt-2.5 ml-[30px] h-[3px] rounded-full overflow-hidden relative" style={{ background: "rgba(0,230,118,0.15)" }}>
+            <div className="sync-scan-bar" style={{ background: "#00E676" }} />
           </div>
           <div className="flex items-center gap-1.5 mt-2 ml-[30px]">
-            <span className="inline-block w-2 h-2 rounded-full bg-primary sync-pulse" />
-            <span className="text-[11px] text-muted-foreground">Verificación automática de datos</span>
+            <span className="inline-block w-2 h-2 rounded-full sync-pulse" style={{ background: "#00E676" }} />
+            <span className="text-[11px]" style={{ color: "#F1F3F6", opacity: 0.6 }}>Verificación automática de datos</span>
           </div>
         </div>
 
