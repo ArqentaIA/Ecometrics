@@ -55,9 +55,9 @@ const DataCapture = () => {
             ))}
           </div>
           <div className="flex items-center gap-1">
-            <button onClick={() => setCurrentYear(y => y - 1)} className="fluent-btn-outline px-2 py-1 text-xs">−</button>
+            <button onClick={() => setCurrentYear(currentYear - 1)} className="fluent-btn-outline px-2 py-1 text-xs">−</button>
             <span className="px-3 py-1 text-sm font-semibold">{currentYear}</span>
-            <button onClick={() => setCurrentYear(y => y + 1)} className="fluent-btn-outline px-2 py-1 text-xs">+</button>
+            <button onClick={() => setCurrentYear(currentYear + 1)} className="fluent-btn-outline px-2 py-1 text-xs">+</button>
           </div>
         </div>
       </div>
