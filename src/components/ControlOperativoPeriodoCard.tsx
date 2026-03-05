@@ -53,7 +53,7 @@ const ControlOperativoPeriodoCard = ({
         <h3 className={`font-heading font-bold tracking-tight text-foreground ${isFullWidth ? "text-lg" : "text-[15px]"}`}>
           CONTROL OPERATIVO DEL PERIODO
         </h3>
-        <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary">
+        <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: "rgba(11,61,145,0.12)", color: "#0B3D91" }}>
           {MONTHS[currentMonth]} {currentYear}
         </span>
       </div>
