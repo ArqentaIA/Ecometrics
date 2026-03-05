@@ -80,7 +80,7 @@ const Dashboard = () => {
             src={recyclingHero}
             alt=""
             className="absolute right-0 top-0 h-full object-cover object-right"
-            style={{ width: "50%", opacity: 0.7 }}
+            style={{ width: "25%", opacity: 0.7 }}
           />
           <div className="absolute inset-0" style={{
             background: "linear-gradient(to right, hsl(120 30% 82%) 35%, hsl(120 30% 82% / 0.6) 50%, transparent 75%)",
