@@ -75,7 +75,7 @@ const ControlOperativoPeriodoCard = ({
                 strokeLinecap="round"
                 strokeDasharray={circumference}
                 strokeDashoffset={offset}
-                style={{ filter: "drop-shadow(0 0 8px hsl(var(--primary) / 0.3))" }}
+                style={{ filter: "drop-shadow(0 0 8px rgba(11,61,145,0.3))" }}
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
