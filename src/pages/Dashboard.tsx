@@ -86,7 +86,7 @@ const Dashboard = () => {
             background: "linear-gradient(to right, hsl(120 30% 82%) 35%, hsl(120 30% 82% / 0.6) 50%, transparent 75%)",
           }} />
         </div>
-        <div className="max-w-7xl mx-auto px-5 py-7 flex items-center justify-between flex-wrap gap-5 relative z-10">
+        <div className="max-w-7xl mx-auto px-5 py-7 flex items-center justify-start flex-wrap gap-5 relative z-10">
           <div>
             <h1 className="font-heading text-[26px] font-bold text-foreground tracking-tight">MES DE FEBRERO 2026</h1>
             <p className="text-[13px] text-muted-foreground mt-1">Resumen de impacto ambiental acumulado</p>
