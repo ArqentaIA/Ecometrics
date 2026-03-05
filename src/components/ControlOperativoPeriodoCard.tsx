@@ -71,11 +71,11 @@ const ControlOperativoPeriodoCard = ({
               />
               <circle
                 cx={gaugeSize / 2} cy={gaugeSize / 2} r={radius}
-                fill="none" stroke="hsl(var(--primary))" strokeWidth={strokeWidth}
+                fill="none" stroke="#0B3D91" strokeWidth={strokeWidth}
                 strokeLinecap="round"
                 strokeDasharray={circumference}
                 strokeDashoffset={offset}
-                style={{ filter: "drop-shadow(0 0 8px hsl(var(--primary) / 0.3))" }}
+                style={{ filter: "drop-shadow(0 0 8px rgba(11,61,145,0.3))" }}
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -106,7 +106,7 @@ const ControlOperativoPeriodoCard = ({
               </button>
             </div>
           ) : materialesRegistrados === materialesTotales ? (
-            <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+            <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ color: "#0B3D91", background: "rgba(11,61,145,0.12)" }}>
               ✓ Catálogo completo
             </span>
           ) : pendientes > 0 ? (
@@ -128,8 +128,8 @@ const ControlOperativoPeriodoCard = ({
             </div>
             <div className={`rounded-full bg-muted/40 overflow-hidden ${isFullWidth ? "h-3" : "h-2"}`}>
               <div
-                className="h-full rounded-full bg-primary"
-                style={{ width: `${animatedPct}%` }}
+                className="h-full rounded-full"
+                style={{ width: `${animatedPct}%`, background: "#0B3D91" }}
               />
             </div>
           </div>
