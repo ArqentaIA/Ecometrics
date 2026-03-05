@@ -74,7 +74,19 @@ const Dashboard = () => {
         background: "linear-gradient(135deg, hsl(120 30% 82% / 0.5), hsl(90 25% 86% / 0.5))",
         borderBottom: "1px solid rgba(0,0,0,0.04)",
       }}>
-        <div className="max-w-7xl mx-auto px-5 py-7 flex items-center justify-between flex-wrap gap-5">
+        {/* Hero background image with gradient fade */}
+        <div className="absolute inset-0 pointer-events-none">
+          <img
+            src={recyclingHero}
+            alt=""
+            className="absolute right-0 top-0 h-full object-cover object-right"
+            style={{ width: "70%", opacity: 0.7 }}
+          />
+          <div className="absolute inset-0" style={{
+            background: "linear-gradient(to right, hsl(120 30% 82%) 35%, hsl(120 30% 82% / 0.6) 50%, transparent 75%)",
+          }} />
+        </div>
+        <div className="max-w-7xl mx-auto px-5 py-7 flex items-center justify-between flex-wrap gap-5 relative z-10">
           <div>
             <h1 className="font-heading text-[26px] font-bold text-foreground tracking-tight">MES DE FEBRERO 2026</h1>
             <p className="text-[13px] text-muted-foreground mt-1">Resumen de impacto ambiental acumulado</p>
@@ -92,23 +104,6 @@ const Dashboard = () => {
               </div>
             ))}
           </div>
-          {/* SVG landscape illustration */}
-          <svg viewBox="0 0 200 120" className="w-44 h-24 hidden lg:block opacity-60" fill="none">
-            <path d="M0 100 Q50 60 100 80 T200 70 V120 H0Z" fill="#a5d6a7" opacity="0.5" />
-            <path d="M0 110 Q80 80 160 95 T200 90 V120 H0Z" fill="#c8e6c9" opacity="0.6" />
-            <polygon points="40,90 50,50 60,90" fill="#1a3a1a" />
-            <polygon points="70,85 80,40 90,85" fill="#2e7d32" />
-            <polygon points="55,88 65,55 75,88" fill="#4caf50" />
-            <rect x="130" y="60" width="3" height="30" fill="#666" />
-            <circle cx="131" cy="55" r="8" fill="none" stroke="#4caf50" strokeWidth="1.5" />
-            <line x1="131" y1="55" x2="139" y2="52" stroke="#4caf50" strokeWidth="1" />
-            <line x1="131" y1="55" x2="137" y2="60" stroke="#4caf50" strokeWidth="1" />
-            <line x1="131" y1="55" x2="135" y2="48" stroke="#4caf50" strokeWidth="1" />
-            <rect x="155" y="70" width="3" height="20" fill="#666" />
-            <circle cx="156" cy="65" r="7" fill="none" stroke="#4caf50" strokeWidth="1.5" />
-            <line x1="156" y1="65" x2="163" y2="63" stroke="#4caf50" strokeWidth="1" />
-            <line x1="156" y1="65" x2="161" y2="69" stroke="#4caf50" strokeWidth="1" />
-          </svg>
         </div>
       </section>
 
