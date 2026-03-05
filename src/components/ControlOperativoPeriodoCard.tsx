@@ -128,8 +128,8 @@ const ControlOperativoPeriodoCard = ({
             </div>
             <div className={`rounded-full bg-muted/40 overflow-hidden ${isFullWidth ? "h-3" : "h-2"}`}>
               <div
-                className="h-full rounded-full bg-primary"
-                style={{ width: `${animatedPct}%` }}
+                className="h-full rounded-full"
+                style={{ width: `${animatedPct}%`, background: "#0B3D91" }}
               />
             </div>
           </div>
