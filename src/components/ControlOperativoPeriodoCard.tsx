@@ -106,7 +106,7 @@ const ControlOperativoPeriodoCard = ({
               </button>
             </div>
           ) : materialesRegistrados === materialesTotales ? (
-            <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
+            <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ color: "#0B3D91", background: "rgba(11,61,145,0.12)" }}>
               ✓ Catálogo completo
             </span>
           ) : pendientes > 0 ? (
