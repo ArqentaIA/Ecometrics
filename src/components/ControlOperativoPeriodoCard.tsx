@@ -71,7 +71,7 @@ const ControlOperativoPeriodoCard = ({
               />
               <circle
                 cx={gaugeSize / 2} cy={gaugeSize / 2} r={radius}
-                fill="none" stroke="hsl(var(--primary))" strokeWidth={strokeWidth}
+                fill="none" stroke="#0B3D91" strokeWidth={strokeWidth}
                 strokeLinecap="round"
                 strokeDasharray={circumference}
                 strokeDashoffset={offset}
