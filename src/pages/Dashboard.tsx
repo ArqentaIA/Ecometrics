@@ -70,6 +70,30 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background">
       <Navigation showBell />
 
+      {/* Hero Banner — Windows 11 Settings header style */}
+      <section className="relative overflow-hidden" style={{
+        background: "linear-gradient(135deg, hsl(120 30% 82% / 0.5), hsl(90 25% 86% / 0.5))",
+        borderBottom: "1px solid rgba(0,0,0,0.04)",
+      }}>
+        {/* Hero background image with gradient fade */}
+        <div className="absolute inset-0 pointer-events-none">
+          <img
+            src={recyclingHero}
+            alt=""
+            className="absolute right-0 top-0 h-full object-cover object-right"
+            style={{ width: "25%", opacity: 0.7 }}
+          />
+          <div className="absolute inset-0" style={{
+            background: "linear-gradient(to right, hsl(120 30% 82%) 35%, hsl(120 30% 82% / 0.6) 50%, transparent 75%)",
+          }} />
+        </div>
+        <div className="max-w-7xl mx-auto px-5 py-5 flex items-center gap-6 relative z-10">
+          <img src={logoImrGris} alt="IRM Group" className="h-20 w-auto object-contain" />
+          <div className="mr-[30%] ml-auto text-right">
+            <h1 className="font-heading text-[28px] font-bold text-foreground tracking-tight uppercase">Resumen de Impacto Ambiental Acumulado</h1>
+          </div>
+        </div>
+      </section>
 
       {/* Filter Bar — Windows 11 CommandBar style */}
       <div className="bg-filter-bar text-filter-bar-foreground">
