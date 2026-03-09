@@ -189,6 +189,7 @@ const Dashboard = () => {
               }))}
             unit="kg totales"
           />
+          <ReincorporatedDonut />
         </div>
       </section>
 
