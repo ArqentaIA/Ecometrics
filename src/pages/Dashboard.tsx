@@ -170,7 +170,7 @@ const Dashboard = () => {
             trend={prevMonth && currMonth ? ((currMonth.agua / prevMonth.agua - 1) * 100) : 0}
           />
           <FinancialLineChart
-            emoji="💰" title="Costo Evitado Acumulado"
+            emoji="💰" title="Impacto Económico en la Comunidad"
             data={monthlyHistory.map(h => ({ label: h.month, value: h.costo }))}
             color="#9333EA" unit="MXN"
             trend={prevMonth && currMonth ? ((currMonth.costo / prevMonth.costo - 1) * 100) : 0}
