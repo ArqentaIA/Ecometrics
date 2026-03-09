@@ -9,6 +9,7 @@ import ColumnChart from "@/components/charts/ColumnChart";
 import LiquidGauge from "@/components/charts/LiquidGauge";
 import FinancialLineChart from "@/components/charts/FinancialLineChart";
 import HorizontalBar3D from "@/components/charts/HorizontalBar3D";
+import ReincorporatedDonut from "@/components/charts/ReincorporatedDonut";
 import recyclingHero from "@/assets/recycling-hero.png";
 import logoImrGris from "@/assets/logo-imr-gris.png";
 
