@@ -88,8 +88,8 @@ const Dashboard = () => {
           }} />
         </div>
         <div className="max-w-7xl mx-auto px-5 py-5 flex items-center gap-6 relative z-10">
-          <img src={logoImrGris} alt="IRM Group" className="h-14 w-auto object-contain" />
-          <div className="ml-auto text-right">
+          <img src={logoImrGris} alt="IRM Group" className="h-20 w-auto object-contain" />
+          <div className="mr-[30%] ml-auto text-right">
             <h1 className="font-heading text-[26px] font-bold text-foreground tracking-tight">MES DE FEBRERO 2026</h1>
             <p className="text-[13px] text-muted-foreground mt-1">Resumen de impacto ambiental acumulado</p>
           </div>
