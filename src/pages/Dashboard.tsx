@@ -10,6 +10,7 @@ import LiquidGauge from "@/components/charts/LiquidGauge";
 import FinancialLineChart from "@/components/charts/FinancialLineChart";
 import DonutChart from "@/components/charts/DonutChart";
 import recyclingHero from "@/assets/recycling-hero.png";
+import logoImrGris from "@/assets/logo-imr-gris.png";
 
 const Dashboard = () => {
   const { kpiTotals, targets, materialEntries, monthlyHistory, refreshData, lastUpdated, totalKg, currentMonth, currentYear } = useEcoMetrics();
