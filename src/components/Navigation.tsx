@@ -20,10 +20,7 @@ const Navigation = ({ showBell }: NavigationProps) => {
     <nav className="sticky top-0 z-50 bg-nav text-nav-foreground"
       style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
       <div className="max-w-7xl mx-auto px-5 h-12 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-        </div>
-        </div>
-
+        <div className="flex items-center gap-2.5" />
         <div className="flex items-center h-full">
           {links.map(l => {
             const isActive = location.pathname === l.to;
