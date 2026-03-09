@@ -91,19 +91,6 @@ const Dashboard = () => {
             <h1 className="font-heading text-[26px] font-bold text-foreground tracking-tight">MES DE FEBRERO 2026</h1>
             <p className="text-[13px] text-muted-foreground mt-1">Resumen de impacto ambiental acumulado</p>
           </div>
-          <div className="flex gap-3 flex-wrap mr-auto">
-            {[
-              { emoji: "🌳", label: "Árboles", val: kpiTotals.arboles.toFixed(1) },
-              { emoji: "♻️", label: "CO₂e", val: `${kpiTotals.co2.toFixed(1)} kg` },
-              { emoji: "💧", label: "Agua", val: `${kpiTotals.agua.toFixed(0)} L` },
-            ].map(p => (
-              <div key={p.label} className="win-acrylic rounded-lg px-4 py-2.5 text-center min-w-[100px]">
-                <span className="text-lg">{p.emoji}</span>
-                <div className="font-heading font-bold text-base tracking-tight">{p.val}</div>
-                <div className="text-[10px] text-muted-foreground">{p.label}</div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
