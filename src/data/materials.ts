@@ -4,29 +4,35 @@ export interface Material {
   code: string;
   mockKg: number;
   factorArboles: number | null;
+  factorCo2: number | null;
   factorEnergia: number | null;
   aguaFactor: number | null;
   costoDisp: number;
   isPaper: boolean;
 }
 
+// EPA WARM v16 (Dec 2023) — lifecycle avoided emissions
+// CO₂e: MTCO2E/short ton ÷ 0.907185 = kg CO₂e/kg
+// Energía: MMBTU/short ton × 293.07 kWh/MMBTU / 907.185
+// Agua: literatura especializada (L/kg)
+// Árboles: solo fibra vegetal (papel/cartón)
 export const MATERIALS: Material[] = [
-  { id: 1, description: "CARTON", code: "CARTON", mockKg: 4821, factorArboles: 3, factorEnergia: 4, aguaFactor: 26000, costoDisp: 900, isPaper: true },
-  { id: 2, description: "ENVASES DE PET", code: "PET", mockKg: 130, factorArboles: 2.5, factorEnergia: 5, aguaFactor: 18000, costoDisp: 1200, isPaper: false },
-  { id: 3, description: "ENVASES PET VERDE", code: "PET VERDE", mockKg: 6, factorArboles: null, factorEnergia: null, aguaFactor: null, costoDisp: 1200, isPaper: false },
-  { id: 4, description: "Polipropileno Alta Densidad", code: "HDPP", mockKg: 331, factorArboles: 1.8, factorEnergia: 5, aguaFactor: 18000, costoDisp: 300, isPaper: false },
-  { id: 5, description: "ENVASE CARTON LECHE", code: "LECHERO", mockKg: 540, factorArboles: 3, factorEnergia: 4, aguaFactor: 26000, costoDisp: 1200, isPaper: true },
-  { id: 6, description: "PAPEL DE ARCHIVO", code: "ARCHIVO BCO", mockKg: 2274, factorArboles: 3.3, factorEnergia: 4, aguaFactor: 26000, costoDisp: 900, isPaper: true },
-  { id: 7, description: "PAPEL ARCHIVO COLOR", code: "COLOR", mockKg: 39, factorArboles: 3.3, factorEnergia: 4, aguaFactor: 26000, costoDisp: 900, isPaper: true },
-  { id: 8, description: "CARTON DELGADO", code: "CAPLE", mockKg: 390, factorArboles: 3, factorEnergia: 4, aguaFactor: 26000, costoDisp: 900, isPaper: true },
-  { id: 9, description: "ARCHIVO MUERTO", code: "A. MUERTO", mockKg: 960, factorArboles: 3.3, factorEnergia: 4, aguaFactor: 26000, costoDisp: 900, isPaper: true },
-  { id: 10, description: "FIERRO VIEJO", code: "FIERRO", mockKg: 166.5, factorArboles: 1.9, factorEnergia: 6, aguaFactor: 7000, costoDisp: 1000, isPaper: false },
-  { id: 11, description: "ALUMINIO BOTE", code: "ALUM BOTE", mockKg: 21.2, factorArboles: 9, factorEnergia: 14, aguaFactor: 9000, costoDisp: 1000, isPaper: false },
-  { id: 12, description: "ALUMINIO MACIZO", code: "ALUM MACIZO", mockKg: 55, factorArboles: 9, factorEnergia: 14, aguaFactor: 9000, costoDisp: 1000, isPaper: false },
-  { id: 13, description: "VIDRIO", code: "VIDRIO", mockKg: 136, factorArboles: null, factorEnergia: null, aguaFactor: null, costoDisp: 800, isPaper: false },
-  { id: 14, description: "SUERO", code: "SUERO", mockKg: 180, factorArboles: null, factorEnergia: null, aguaFactor: null, costoDisp: 1200, isPaper: false },
-  { id: 15, description: "TAPAROSCA", code: "taprosca", mockKg: 280, factorArboles: null, factorEnergia: null, aguaFactor: null, costoDisp: 1200, isPaper: false },
-  { id: 16, description: "BOLSA DE PLASTICO", code: "bolsa plastico", mockKg: 46, factorArboles: null, factorEnergia: null, aguaFactor: null, costoDisp: 1200, isPaper: false },
+  { id: 1,  description: "CARTON",                    code: "CARTON",         mockKg: 4821,  factorArboles: 0.005, factorCo2: 0.82,  factorEnergia: 3.2,  aguaFactor: 10,    costoDisp: 900,  isPaper: true },
+  { id: 2,  description: "ENVASES DE PET",            code: "PET",            mockKg: 130,   factorArboles: null,  factorCo2: 1.00,  factorEnergia: 5.3,  aguaFactor: 17,    costoDisp: 1200, isPaper: false },
+  { id: 3,  description: "ENVASES PET VERDE",         code: "PET VERDE",      mockKg: 6,     factorArboles: null,  factorCo2: 1.00,  factorEnergia: 5.3,  aguaFactor: 17,    costoDisp: 1200, isPaper: false },
+  { id: 4,  description: "Polipropileno Alta Densidad",code: "HDPP",          mockKg: 331,   factorArboles: null,  factorCo2: 1.08,  factorEnergia: 6.1,  aguaFactor: 22,    costoDisp: 300,  isPaper: false },
+  { id: 5,  description: "ENVASE CARTON LECHE",       code: "LECHERO",        mockKg: 540,   factorArboles: 0.004, factorCo2: 0.55,  factorEnergia: 2.1,  aguaFactor: 12,    costoDisp: 1200, isPaper: true },
+  { id: 6,  description: "PAPEL DE ARCHIVO",          code: "ARCHIVO BCO",    mockKg: 2274,  factorArboles: 0.006, factorCo2: 1.10,  factorEnergia: 3.8,  aguaFactor: 28,    costoDisp: 900,  isPaper: true },
+  { id: 7,  description: "PAPEL ARCHIVO COLOR",       code: "COLOR",          mockKg: 39,    factorArboles: 0.006, factorCo2: 1.10,  factorEnergia: 3.8,  aguaFactor: 28,    costoDisp: 900,  isPaper: true },
+  { id: 8,  description: "CARTON DELGADO",            code: "CAPLE",          mockKg: 390,   factorArboles: 0.005, factorCo2: 0.82,  factorEnergia: 3.2,  aguaFactor: 10,    costoDisp: 900,  isPaper: true },
+  { id: 9,  description: "ARCHIVO MUERTO",            code: "A. MUERTO",      mockKg: 960,   factorArboles: 0.005, factorCo2: 0.96,  factorEnergia: 3.5,  aguaFactor: 10,    costoDisp: 900,  isPaper: true },
+  { id: 10, description: "FIERRO VIEJO",              code: "FIERRO",         mockKg: 166.5, factorArboles: null,  factorCo2: 1.46,  factorEnergia: 4.3,  aguaFactor: 40,    costoDisp: 1000, isPaper: false },
+  { id: 11, description: "ALUMINIO BOTE",             code: "ALUM BOTE",      mockKg: 21.2,  factorArboles: null,  factorCo2: 9.13,  factorEnergia: 47.0, aguaFactor: 35,    costoDisp: 1000, isPaper: false },
+  { id: 12, description: "ALUMINIO MACIZO",           code: "ALUM MACIZO",    mockKg: 55,    factorArboles: null,  factorCo2: 9.13,  factorEnergia: 47.0, aguaFactor: 35,    costoDisp: 1000, isPaper: false },
+  { id: 13, description: "VIDRIO",                    code: "VIDRIO",         mockKg: 136,   factorArboles: null,  factorCo2: 0.30,  factorEnergia: 0.6,  aguaFactor: 2,     costoDisp: 800,  isPaper: false },
+  { id: 14, description: "SUERO",                     code: "SUERO",          mockKg: 180,   factorArboles: null,  factorCo2: 0.19,  factorEnergia: null,  aguaFactor: 5,     costoDisp: 1200, isPaper: false },
+  { id: 15, description: "TAPAROSCA",                 code: "taprosca",       mockKg: 280,   factorArboles: null,  factorCo2: 1.08,  factorEnergia: 6.1,  aguaFactor: 22,    costoDisp: 1200, isPaper: false },
+  { id: 16, description: "BOLSA DE PLASTICO",         code: "bolsa plastico", mockKg: 46,    factorArboles: null,  factorCo2: 0.92,  factorEnergia: 5.1,  aguaFactor: 17,    costoDisp: 1200, isPaper: false },
 ];
 
 export interface MaterialKPIs {
@@ -39,15 +45,10 @@ export interface MaterialKPIs {
 }
 
 export function calculateKPIs(material: Material, kg: number): MaterialKPIs {
-  const arboles = material.isPaper
-    ? kg * 0.017
-    : material.factorArboles != null
-      ? (kg / 1000) * material.factorArboles
-      : 0;
-
-  const co2 = material.factorEnergia != null ? (kg / 1000) * material.factorEnergia : 0;
-  const energia = material.factorEnergia != null ? (kg / 1000) * material.factorEnergia : 0;
-  const agua = material.aguaFactor != null ? (kg / 1000) * material.aguaFactor : 0;
+  const arboles = material.factorArboles != null ? kg * material.factorArboles : 0;
+  const co2 = material.factorCo2 != null ? kg * material.factorCo2 : 0;
+  const energia = material.factorEnergia != null ? kg * material.factorEnergia : 0;
+  const agua = material.aguaFactor != null ? kg * material.aguaFactor : 0;
   const costo = kg * (material.costoDisp / 1000);
 
   return { arboles, co2, energia, agua, costo, materiasPrimas: 0 };
