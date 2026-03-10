@@ -1,6 +1,5 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
-import logoImr from "@/assets/logo-imr.png";
 
 interface NavigationProps {
   showBell?: boolean;
@@ -8,13 +7,21 @@ interface NavigationProps {
 
 const Navigation = ({ showBell }: NavigationProps) => {
   const location = useLocation();
-  const { logout } = useEcoMetrics();
+  const navigate = useNavigate();
+  const { logout, user } = useEcoMetrics();
 
   const links = [
     { to: "/dashboard", label: "Dashboard" },
     { to: "/capture", label: "Captura" },
     { to: "#", label: "Histórico" },
   ];
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
+  };
+
+  const initials = user?.email?.charAt(0).toUpperCase() ?? "U";
 
   return (
     <nav className="sticky top-0 z-50 bg-nav text-nav-foreground"
@@ -43,10 +50,10 @@ const Navigation = ({ showBell }: NavigationProps) => {
               <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-destructive rounded-full border border-nav" />
             </button>
           )}
-          <button onClick={logout}
+          <button onClick={handleLogout}
             className="flex items-center gap-2 px-2.5 py-1 rounded-md hover:bg-nav-foreground/10 transition-colors text-[13px]">
-            <div className="w-6 h-6 rounded-full bg-primary/30 flex items-center justify-center text-[10px] font-bold">A</div>
-            <span className="hidden sm:inline">Admin</span>
+            <div className="w-6 h-6 rounded-full bg-primary/30 flex items-center justify-center text-[10px] font-bold">{initials}</div>
+            <span className="hidden sm:inline truncate max-w-[120px]">{user?.email ?? "Usuario"}</span>
           </button>
         </div>
       </div>

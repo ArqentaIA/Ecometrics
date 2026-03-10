@@ -11,14 +11,19 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      login();
+    setError(null);
+    const result = await login(email, password);
+    if (result.error) {
+      setError(result.error);
+      setLoading(false);
+    } else {
       navigate("/dashboard");
-    }, 800);
+    }
   };
 
   return (
@@ -38,12 +43,17 @@ const Login = () => {
 
       <div className="animate-fade-slide-up relative z-10 w-full max-w-[400px] mx-4">
         <div className="win-acrylic-strong rounded-xl p-8">
-          {/* Logo */}
           <div className="flex flex-col items-center mb-7">
             <img src={logoImr} alt="IMR Group" className="h-20 object-contain mb-4" />
             <h1 className="font-heading text-[28px] font-bold text-foreground mt-2 tracking-tight">EcoMetrics</h1>
             <p className="text-xs text-muted-foreground mt-1">Inicia sesión para continuar</p>
           </div>
+
+          {error && (
+            <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

@@ -35,7 +35,14 @@ const DataCapture = () => {
     }));
   }, [setMaterialKg]);
 
-  const handleConfirm = useCallback((code: string) => {
+  const { saveCapture } = useEcoMetrics();
+
+  const handleConfirm = useCallback(async (code: string) => {
+    const result = await saveCapture(code);
+    if (result.error) {
+      console.error("Error saving capture:", result.error);
+      return;
+    }
     const now = new Date();
     setCaptureStates(prev => ({
       ...prev,
@@ -47,7 +54,7 @@ const DataCapture = () => {
         [code]: { ...prev[code], feedbackVisible: false },
       }));
     }, 2000);
-  }, []);
+  }, [saveCapture]);
 
   const formatTimestamp = (d: Date) => {
     const day = d.getDate().toString().padStart(2, "0");
