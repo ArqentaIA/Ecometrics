@@ -43,7 +43,7 @@ const ReincorporatedRidgeline = () => {
   const p = progress;
 
   // Grid lines
-  const gridLines = [0.25, 0.5, 0.75, 1].map(f => chartH - f * (chartH - 10));
+  const gridLines = [0.25, 0.5, 0.75, 1].map(f => baseY - f * (chartH - 10));
 
   const categories = [
     { label: "Pendiente", value: pendiente, color: "hsl(var(--muted-foreground) / 0.25)", dotClass: "bg-muted-foreground/25" },
