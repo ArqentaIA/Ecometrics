@@ -14,7 +14,7 @@ interface CaptureState {
 
 const DataCapture = () => {
   const {
-    materialEntries, setMaterialKg, clearAll, totalKg, targets,
+    materialEntries, setMaterialKg, clearAll,
     currentMonth, setCurrentMonth, currentYear, setCurrentYear,
   } = useEcoMetrics();
   
