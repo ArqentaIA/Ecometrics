@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import Navigation from "@/components/Navigation";
-import ControlOperativoPeriodoCard from "@/components/ControlOperativoPeriodoCard";
 import ImpactCards from "@/components/ImpactCards";
 import { MONTHS } from "@/data/materials";
 import { IMPACT_FORMULAS } from "@/data/impactFormulas";
