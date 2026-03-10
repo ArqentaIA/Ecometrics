@@ -22,7 +22,7 @@ const DataCapture = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [dragOver, setDragOver] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<{ name: string; size: number } | null>(null);
-
+  const [openImpact, setOpenImpact] = useState<Record<string, boolean>>({});
   // Track capture state per material
   const [captureStates, setCaptureStates] = useState<Record<string, CaptureState>>({});
 
