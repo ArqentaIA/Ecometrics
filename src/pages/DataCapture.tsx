@@ -241,6 +241,14 @@ const DataCapture = () => {
                 );
               })}
             </div>
+
+            {/* Leyenda de metodología */}
+            <div className="mt-4 win-card p-4 border border-border">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                <span className="font-semibold text-foreground">Metodología: </span>
+                Los factores de conversión utilizados se basan en metodologías y referencias técnicas reconocidas internacionalmente, como el GHG Protocol, la EPA Waste Reduction Model (WARM) v16 (diciembre 2023) y literatura especializada del sector de reciclaje, lo que permite estimar de forma consistente y verificable los impactos ambientales asociados a la recuperación de materiales.
+              </p>
+            </div>
           </div>
         </div>
       ) : (

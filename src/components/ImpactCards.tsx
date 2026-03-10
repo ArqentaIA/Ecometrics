@@ -10,7 +10,7 @@ const ImpactCards = ({ materialCode, kg }: ImpactCardsProps) => {
   if (!formulas || formulas.length === 0) return null;
 
   return (
-    <div className="mt-3 grid gap-2" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))" }}>
+    <div className="mt-3 grid gap-2" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(175px, 1fr))" }}>
       {formulas.map((f) => {
         const c = IMPACT_COLORS[f.label] ?? IMPACT_COLORS["CO₂e Evitado"];
         const res = (kg * f.factor).toLocaleString("es-MX", { maximumFractionDigits: 2 });
@@ -41,6 +41,9 @@ const ImpactCards = ({ materialCode, kg }: ImpactCardsProps) => {
                 {f.unidad}
               </span>
             </div>
+            <span className="text-[10px] text-muted-foreground mt-1 leading-tight">
+              {f.fuente}
+            </span>
           </div>
         );
       })}
