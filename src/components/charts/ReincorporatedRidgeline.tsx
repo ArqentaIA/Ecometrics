@@ -32,7 +32,7 @@ const ReincorporatedRidgeline = () => {
     return `M ${x0} ${baseY} C ${cp1x} ${baseY}, ${cx - hw * 0.15} ${baseY - peakH}, ${cx} ${baseY - peakH} C ${cx + hw * 0.15} ${baseY - peakH}, ${cp2x} ${baseY}, ${x1} ${baseY} Z`;
   };
 
-  const baseY = chartH;
+  const baseY = padT + chartH;
   const mw = W / 3.2;
 
   // Positions — slightly overlapping
