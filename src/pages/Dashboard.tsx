@@ -9,7 +9,7 @@ import ColumnChart from "@/components/charts/ColumnChart";
 import LiquidGauge from "@/components/charts/LiquidGauge";
 import FinancialLineChart from "@/components/charts/FinancialLineChart";
 import HorizontalBar3D from "@/components/charts/HorizontalBar3D";
-import ReincorporatedDonut from "@/components/charts/ReincorporatedDonut";
+import ReincorporatedRidgeline from "@/components/charts/ReincorporatedRidgeline";
 import recyclingHero from "@/assets/recycling-hero.png";
 import logoImrGris from "@/assets/logo-imr-gris.png";
 
@@ -189,7 +189,7 @@ const Dashboard = () => {
               }))}
             unit="kg totales"
           />
-          <ReincorporatedDonut />
+          <ReincorporatedRidgeline />
         </div>
       </section>
 
