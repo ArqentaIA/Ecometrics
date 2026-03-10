@@ -242,25 +242,6 @@ const DataCapture = () => {
               })}
             </div>
           </div>
-
-          {/* Control Operativo del Periodo */}
-          <div className="w-80 shrink-0">
-            <div className="sticky top-16">
-              <ControlOperativoPeriodoCard
-                totalKg={totalKg}
-                materialesRegistrados={materialEntries.filter(e => e.kg > 0).length}
-                materialesTotales={materialEntries.length}
-                capturasConfirmadas={Object.values(captureStates).filter(s => s.confirmed).length}
-                lastUpdated={
-                  Object.values(captureStates)
-                    .filter(s => s.timestamp)
-                    .sort((a, b) => (b.timestamp!.getTime() - a.timestamp!.getTime()))[0]?.timestamp ?? null
-                }
-                currentMonth={currentMonth}
-                currentYear={currentYear}
-              />
-            </div>
-          </div>
         </div>
       ) : (
         /* Tab 2: Upload */
