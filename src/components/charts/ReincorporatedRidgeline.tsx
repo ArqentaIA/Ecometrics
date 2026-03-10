@@ -10,10 +10,11 @@ const ReincorporatedRidgeline = () => {
   const { displayValue, progress, isPulsing } = useLoopAnimation({ targetValue: reincorporado });
 
   const W = 340;
-  const H = 180;
+  const H = 200;
+  const padT = 20;
   const padL = 0;
   const padB = 24;
-  const chartH = H - padB;
+  const chartH = H - padB - padT;
 
   // Normalize heights relative to max value
   const maxVal = reincorporado;
@@ -31,7 +32,7 @@ const ReincorporatedRidgeline = () => {
     return `M ${x0} ${baseY} C ${cp1x} ${baseY}, ${cx - hw * 0.15} ${baseY - peakH}, ${cx} ${baseY - peakH} C ${cx + hw * 0.15} ${baseY - peakH}, ${cp2x} ${baseY}, ${x1} ${baseY} Z`;
   };
 
-  const baseY = chartH;
+  const baseY = padT + chartH;
   const mw = W / 3.2;
 
   // Positions — slightly overlapping
@@ -42,7 +43,7 @@ const ReincorporatedRidgeline = () => {
   const p = progress;
 
   // Grid lines
-  const gridLines = [0.25, 0.5, 0.75, 1].map(f => chartH - f * (chartH - 10));
+  const gridLines = [0.25, 0.5, 0.75, 1].map(f => baseY - f * (chartH - 10));
 
   const categories = [
     { label: "Pendiente", value: pendiente, color: "hsl(var(--muted-foreground) / 0.25)", dotClass: "bg-muted-foreground/25" },
