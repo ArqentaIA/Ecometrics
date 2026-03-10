@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import Navigation from "@/components/Navigation";
-import ControlOperativoPeriodoCard from "@/components/ControlOperativoPeriodoCard";
 import ImpactCards from "@/components/ImpactCards";
 import { MONTHS } from "@/data/materials";
 import { IMPACT_FORMULAS } from "@/data/impactFormulas";
@@ -15,7 +14,7 @@ interface CaptureState {
 
 const DataCapture = () => {
   const {
-    materialEntries, setMaterialKg, clearAll, totalKg, targets,
+    materialEntries, setMaterialKg, clearAll,
     currentMonth, setCurrentMonth, currentYear, setCurrentYear,
   } = useEcoMetrics();
   
@@ -130,7 +129,7 @@ const DataCapture = () => {
       </div>
 
       {activeTab === 0 ? (
-        <div className="max-w-6xl mx-auto px-5 pb-8 flex gap-5">
+        <div className="max-w-6xl mx-auto px-5 pb-8">
           {/* Material List — clean entry */}
           <div className="flex-1 min-w-0">
             <div className="flex justify-between items-center mb-3">
@@ -241,25 +240,6 @@ const DataCapture = () => {
                   </div>
                 );
               })}
-            </div>
-          </div>
-
-          {/* Control Operativo del Periodo */}
-          <div className="w-80 shrink-0">
-            <div className="sticky top-16">
-              <ControlOperativoPeriodoCard
-                totalKg={totalKg}
-                materialesRegistrados={materialEntries.filter(e => e.kg > 0).length}
-                materialesTotales={materialEntries.length}
-                capturasConfirmadas={Object.values(captureStates).filter(s => s.confirmed).length}
-                lastUpdated={
-                  Object.values(captureStates)
-                    .filter(s => s.timestamp)
-                    .sort((a, b) => (b.timestamp!.getTime() - a.timestamp!.getTime()))[0]?.timestamp ?? null
-                }
-                currentMonth={currentMonth}
-                currentYear={currentYear}
-              />
             </div>
           </div>
         </div>
