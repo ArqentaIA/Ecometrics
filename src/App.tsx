@@ -30,15 +30,15 @@ const AppRoutes = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <EcoMetricsProvider>
+    <EcoMetricsProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
         <BrowserRouter>
           <AppRoutes />
         </BrowserRouter>
-      </EcoMetricsProvider>
-    </TooltipProvider>
+      </TooltipProvider>
+    </EcoMetricsProvider>
   </QueryClientProvider>
 );
 
