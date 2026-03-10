@@ -10,10 +10,11 @@ const ReincorporatedRidgeline = () => {
   const { displayValue, progress, isPulsing } = useLoopAnimation({ targetValue: reincorporado });
 
   const W = 340;
-  const H = 180;
+  const H = 200;
+  const padT = 20;
   const padL = 0;
   const padB = 24;
-  const chartH = H - padB;
+  const chartH = H - padB - padT;
 
   // Normalize heights relative to max value
   const maxVal = reincorporado;
