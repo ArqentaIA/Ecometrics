@@ -28,6 +28,12 @@ const Dashboard = () => {
   const pct = (v: number, t: number) => t > 0 ? Math.min((v / t) * 100, 100) : 0;
   const pctBadge = (p: number) => p >= 80 ? "win-badge-success" : p >= 60 ? "win-badge-warning" : "win-badge-critical";
 
+  // Yield calculations
+  const totalKgNetos = useMemo(() =>
+    materialEntries.reduce((s, e) => s + e.kg * (e.material.yieldInfo.yield / 100), 0),
+    [materialEntries]
+  );
+  const totalPerdida = totalKg - totalKgNetos;
 
   const sortedEntries = useMemo(() => {
     if (!sortCol) return materialEntries;
@@ -51,9 +57,11 @@ const Dashboard = () => {
   };
 
   const exportCSV = () => {
-    const headers = ["#", "Descripción", "Código", "KG", "Árboles", "CO₂e kg", "Energía kWh", "Agua L", "Costo $"];
+    const headers = ["#", "Descripción", "Código", "KG Brutos", "Yield %", "KG Netos", "Árboles", "CO₂e kg", "Energía kWh", "Agua L", "Costo $"];
     const rows = materialEntries.map((e, i) => [
       i + 1, e.material.description, e.material.code, e.kg,
+      e.material.yieldInfo.yield,
+      (e.kg * (e.material.yieldInfo.yield / 100)).toFixed(1),
       e.kpis.arboles.toFixed(2), e.kpis.co2.toFixed(2), e.kpis.energia.toFixed(2),
       e.kpis.agua.toFixed(0), e.kpis.costo.toFixed(2),
     ]);
@@ -71,22 +79,14 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background">
       <Navigation showBell />
 
-      {/* Hero Banner — Windows 11 Settings header style */}
+      {/* Hero Banner */}
       <section className="relative overflow-hidden" style={{
         background: "linear-gradient(135deg, hsl(120 30% 82% / 0.5), hsl(90 25% 86% / 0.5))",
         borderBottom: "1px solid rgba(0,0,0,0.04)",
       }}>
-        {/* Hero background image with gradient fade */}
         <div className="absolute inset-0 pointer-events-none">
-          <img
-            src={recyclingHero}
-            alt=""
-            className="absolute right-0 top-0 h-full object-cover object-right"
-            style={{ width: "25%", opacity: 0.7 }}
-          />
-          <div className="absolute inset-0" style={{
-            background: "linear-gradient(to right, hsl(120 30% 82%) 35%, hsl(120 30% 82% / 0.6) 50%, transparent 75%)",
-          }} />
+          <img src={recyclingHero} alt="" className="absolute right-0 top-0 h-full object-cover object-right" style={{ width: "25%", opacity: 0.7 }} />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to right, hsl(120 30% 82%) 35%, hsl(120 30% 82% / 0.6) 50%, transparent 75%)" }} />
         </div>
         <div className="max-w-7xl mx-auto px-5 py-5 flex items-center gap-6 relative z-10">
           <img src={logoImrGris} alt="IRM Group" className="h-20 w-auto object-contain" />
@@ -96,7 +96,7 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Filter Bar — Windows 11 CommandBar style */}
+      {/* Filter Bar */}
       <div className="bg-filter-bar text-filter-bar-foreground">
         <div className="max-w-7xl mx-auto px-5 h-11 flex items-center gap-3">
           {["Año: 2026", "Mes: Febrero", "Categoría: Todas", "Material: Todos"].map(f => (
@@ -109,7 +109,6 @@ const Dashboard = () => {
 
       {/* Action Bar */}
       <div className="max-w-7xl mx-auto px-5 py-3 flex items-center justify-between flex-wrap gap-4">
-        {/* Sync status block */}
         <div className="px-4 py-3 min-w-[260px]" style={{ borderRadius: 14, boxShadow: "0 4px 16px rgba(0,0,0,0.15)", background: "linear-gradient(135deg, #1C1F26, #2A2E38)" }}>
           <div className="flex items-center gap-2.5 mb-1.5">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00E676" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin-slow" style={{ animationDuration: "4s" }}>
@@ -121,7 +120,6 @@ const Dashboard = () => {
           <p className="text-[13px] ml-[30px]" style={{ color: "#F1F3F6", opacity: 0.7 }}>
             {lastUpdated.toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })} • {lastUpdated.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
           </p>
-          {/* Scanning bar */}
           <div className="mt-2.5 ml-[30px] h-[3px] rounded-full overflow-hidden relative" style={{ background: "rgba(0,230,118,0.15)" }}>
             <div className="sync-scan-bar" style={{ background: "#00E676" }} />
           </div>
@@ -140,9 +138,12 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* KPI Dashboard — Executive Visual Grid */}
+      {/* KPI Dashboard */}
       <section className="max-w-7xl mx-auto px-5 mb-7">
-        <h2 className="font-heading text-lg font-bold tracking-tight mb-3">📊 Indicadores Clave de Impacto</h2>
+        <h2 className="font-heading text-lg font-bold tracking-tight mb-1">📊 Indicadores Clave de Impacto</h2>
+        <p className="text-[10px] text-muted-foreground italic mb-3">
+          Calculado sobre KG netos (KG capturados × yield del material). Fuente de yield: datos técnicos de planta IRM + literatura especializada de reciclaje.
+        </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Row 1 */}
           <RadialGauge
@@ -194,6 +195,8 @@ const Dashboard = () => {
           <div className="lg:col-span-2">
             <ControlOperativoPeriodoCard
               totalKg={totalKg}
+              totalKgNetos={totalKgNetos}
+              totalPerdida={totalPerdida}
               materialesRegistrados={materialEntries.filter(e => e.kg > 0).length}
               materialesTotales={materialEntries.length}
               capturasConfirmadas={0}
@@ -206,7 +209,7 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Material Detail Table — Windows 11 DataGrid */}
+      {/* Material Detail Table */}
       <section className="max-w-7xl mx-auto px-5 mb-12">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-heading text-lg font-bold tracking-tight">📋 Detalle Completo por Material</h2>
@@ -221,7 +224,9 @@ const Dashboard = () => {
                     { key: "", label: "#" },
                     { key: "", label: "Descripción" },
                     { key: "", label: "Código" },
-                    { key: "kg", label: "KG Capturado" },
+                    { key: "kg", label: "KG Brutos" },
+                    { key: "", label: "Yield %" },
+                    { key: "", label: "KG Netos" },
                     { key: "arboles", label: "🌳 Árboles" },
                     { key: "co2", label: "♻️ CO₂e kg" },
                     { key: "energia", label: "⚡ Energía kWh" },
@@ -241,31 +246,40 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {sortedEntries.map((e, i) => (
-                  <tr
-                    key={e.material.code}
-                    className={`transition-colors duration-100 hover:bg-accent/50 ${
-                      i % 2 === 0 ? "bg-card" : "bg-accent/20"
-                    } ${e.kg > 0 ? "border-l-[3px] border-l-primary" : ""}`}
-                  >
-                    <td className="px-3 py-2 text-muted-foreground">{e.material.id}</td>
-                    <td className="px-3 py-2 font-medium">{e.material.description}</td>
-                    <td className="px-3 py-2 text-muted-foreground text-xs">{e.material.code}</td>
-                    <td className="px-3 py-2 font-semibold">{e.kg.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
-                    <td className="px-3 py-2">{e.kpis.arboles > 0 ? e.kpis.arboles.toFixed(2) : <span className="text-muted-foreground">—</span>}</td>
-                    <td className="px-3 py-2">{e.kpis.co2 > 0 ? e.kpis.co2.toFixed(2) : <span className="text-muted-foreground">—</span>}</td>
-                    <td className="px-3 py-2">{e.kpis.energia > 0 ? e.kpis.energia.toFixed(2) : <span className="text-muted-foreground">—</span>}</td>
-                    <td className="px-3 py-2">{e.kpis.agua > 0 ? e.kpis.agua.toFixed(0) : <span className="text-muted-foreground">—</span>}</td>
-                    <td className="px-3 py-2">${e.kpis.costo.toFixed(2)}</td>
-                    <td className="px-3 py-2 text-muted-foreground group relative">
-                      —
-                      <span className="hidden group-hover:block absolute -top-7 left-0 win-tooltip whitespace-nowrap z-10">Próximamente</span>
-                    </td>
-                  </tr>
-                ))}
+                {sortedEntries.map((e, i) => {
+                  const kgNetos = e.kg * (e.material.yieldInfo.yield / 100);
+                  return (
+                    <tr
+                      key={e.material.code}
+                      className={`transition-colors duration-100 hover:bg-accent/50 ${
+                        i % 2 === 0 ? "bg-card" : "bg-accent/20"
+                      } ${e.kg > 0 ? "border-l-[3px] border-l-primary" : ""}`}
+                    >
+                      <td className="px-3 py-2 text-muted-foreground">{e.material.id}</td>
+                      <td className="px-3 py-2 font-medium">{e.material.description}</td>
+                      <td className="px-3 py-2 text-muted-foreground text-xs">{e.material.code}</td>
+                      <td className="px-3 py-2 font-semibold">{e.kg.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
+                      <td className="px-3 py-2 text-muted-foreground font-medium">{e.material.yieldInfo.yield}%</td>
+                      <td className="px-3 py-2 font-medium text-muted-foreground/80">
+                        {kgNetos > 0 ? kgNetos.toLocaleString("es-MX", { maximumFractionDigits: 1 }) : "—"}
+                      </td>
+                      <td className="px-3 py-2">{e.kpis.arboles > 0 ? e.kpis.arboles.toFixed(2) : <span className="text-muted-foreground">—</span>}</td>
+                      <td className="px-3 py-2">{e.kpis.co2 > 0 ? e.kpis.co2.toFixed(2) : <span className="text-muted-foreground">—</span>}</td>
+                      <td className="px-3 py-2">{e.kpis.energia > 0 ? e.kpis.energia.toFixed(2) : <span className="text-muted-foreground">—</span>}</td>
+                      <td className="px-3 py-2">{e.kpis.agua > 0 ? e.kpis.agua.toFixed(0) : <span className="text-muted-foreground">—</span>}</td>
+                      <td className="px-3 py-2">${e.kpis.costo.toFixed(2)}</td>
+                      <td className="px-3 py-2 text-muted-foreground group relative">
+                        —
+                        <span className="hidden group-hover:block absolute -top-7 left-0 win-tooltip whitespace-nowrap z-10">Próximamente</span>
+                      </td>
+                    </tr>
+                  );
+                })}
                 <tr className="bg-secondary font-bold" style={{ color: "hsl(var(--kpi-trees))" }}>
                   <td className="px-3 py-2.5" colSpan={3}>TOTALES</td>
                   <td className="px-3 py-2.5">{totalKg.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
+                  <td className="px-3 py-2.5">—</td>
+                  <td className="px-3 py-2.5">{totalKgNetos.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
                   <td className="px-3 py-2.5">{kpiTotals.arboles.toFixed(2)}</td>
                   <td className="px-3 py-2.5">{kpiTotals.co2.toFixed(2)}</td>
                   <td className="px-3 py-2.5">{kpiTotals.energia.toFixed(2)}</td>
