@@ -129,7 +129,7 @@ const DataCapture = () => {
       </div>
 
       {activeTab === 0 ? (
-        <div className="max-w-6xl mx-auto px-5 pb-8 flex gap-5">
+        <div className="max-w-6xl mx-auto px-5 pb-8">
           {/* Material List — clean entry */}
           <div className="flex-1 min-w-0">
             <div className="flex justify-between items-center mb-3">
