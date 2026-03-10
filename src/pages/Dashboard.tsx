@@ -189,22 +189,17 @@ const Dashboard = () => {
               }))}
             unit="kg totales"
           />
-          <ReincorporatedRidgeline />
+          <ControlOperativoPeriodoCard
+            totalKg={totalKg}
+            materialesRegistrados={materialEntries.filter(e => e.kg > 0).length}
+            materialesTotales={materialEntries.length}
+            capturasConfirmadas={0}
+            lastUpdated={lastUpdated}
+            currentMonth={currentMonth}
+            currentYear={currentYear}
+            variant="fullwidth"
+          />
         </div>
-      </section>
-
-      {/* Control Operativo del Periodo */}
-      <section className="max-w-7xl mx-auto px-5 mb-7">
-        <ControlOperativoPeriodoCard
-          totalKg={totalKg}
-          materialesRegistrados={materialEntries.filter(e => e.kg > 0).length}
-          materialesTotales={materialEntries.length}
-          capturasConfirmadas={0}
-          lastUpdated={lastUpdated}
-          currentMonth={currentMonth}
-          currentYear={currentYear}
-          variant="fullwidth"
-        />
       </section>
 
       {/* Material Detail Table — Windows 11 DataGrid */}
