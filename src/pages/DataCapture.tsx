@@ -215,6 +215,15 @@ const DataCapture = () => {
                           <div className="text-[11px] text-muted-foreground italic">Sin registro</div>
                         )}
                       </div>
+                      {/* Ver impacto toggle */}
+                      {IMPACT_FORMULAS[entry.material.code] && (
+                        <button
+                          onClick={() => setOpenImpact(prev => ({ ...prev, [entry.material.code]: !prev[entry.material.code] }))}
+                          className="shrink-0 text-xs font-medium px-3 py-1.5 rounded-md border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 transition-colors whitespace-nowrap"
+                        >
+                          {openImpact[entry.material.code] ? "▲ Ocultar" : "🌿 Ver impacto"}
+                        </button>
+                      )}
                     </div>
 
                     {/* Pending warning */}
@@ -223,6 +232,11 @@ const DataCapture = () => {
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
                         Pendiente de confirmar
                       </div>
+                    )}
+
+                    {/* Impact cards expandable */}
+                    {openImpact[entry.material.code] && (
+                      <ImpactCards materialCode={entry.material.code} kg={entry.kg} />
                     )}
                   </div>
                 );
