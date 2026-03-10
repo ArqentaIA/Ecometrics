@@ -22,7 +22,6 @@ const DataCapture = () => {
   const [dragOver, setDragOver] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<{ name: string; size: number } | null>(null);
   const [openImpact, setOpenImpact] = useState<Record<string, boolean>>({});
-  // Track capture state per material
   const [captureStates, setCaptureStates] = useState<Record<string, CaptureState>>({});
 
   const getState = (code: string): CaptureState =>
@@ -42,7 +41,6 @@ const DataCapture = () => {
       ...prev,
       [code]: { confirmed: true, pending: false, timestamp: now, feedbackVisible: true },
     }));
-    // Reset feedback after 2s
     setTimeout(() => {
       setCaptureStates(prev => ({
         ...prev,
@@ -130,7 +128,6 @@ const DataCapture = () => {
 
       {activeTab === 0 ? (
         <div className="max-w-6xl mx-auto px-5 pb-8">
-          {/* Material List — clean entry */}
           <div className="flex-1 min-w-0">
             <div className="flex justify-between items-center mb-3">
               <span className="text-sm font-semibold text-foreground">Materiales</span>
@@ -141,6 +138,7 @@ const DataCapture = () => {
               {materialEntries.map((entry, idx) => {
                 const state = getState(entry.material.code);
                 const ts = state.timestamp ? formatTimestamp(state.timestamp) : null;
+                const kgNetos = entry.kg * (entry.material.yieldInfo.yield / 100);
 
                 return (
                   <div
@@ -162,7 +160,7 @@ const DataCapture = () => {
                         <div className="text-[11px] text-muted-foreground">{entry.material.code}</div>
                       </div>
 
-                      {/* Input — no spinners */}
+                      {/* Input */}
                       <input
                         type="text"
                         inputMode="decimal"
@@ -223,6 +221,12 @@ const DataCapture = () => {
                           {openImpact[entry.material.code] ? "▲ Ocultar" : "🌿 Ver impacto"}
                         </button>
                       )}
+                    </div>
+
+                    {/* Yield info line */}
+                    <div className="mt-1.5 ml-12 text-[11px] text-muted-foreground">
+                      Yield: <span className="font-medium">{entry.material.yieldInfo.yield}%</span> → KG netos estimados: <span className="font-semibold text-foreground">{kgNetos.toLocaleString("es-MX", { maximumFractionDigits: 1 })} kg</span>
+                      <span className="ml-2 italic">(pérdida típica: {entry.material.yieldInfo.perdida})</span>
                     </div>
 
                     {/* Pending warning */}

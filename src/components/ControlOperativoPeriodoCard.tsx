@@ -4,6 +4,8 @@ import { useLoopAnimation } from "@/hooks/useLoopAnimation";
 
 interface Props {
   totalKg: number;
+  totalKgNetos?: number;
+  totalPerdida?: number;
   materialesRegistrados: number;
   materialesTotales: number;
   capturasConfirmadas: number;
@@ -14,7 +16,7 @@ interface Props {
 }
 
 const ControlOperativoPeriodoCard = ({
-  totalKg, materialesRegistrados, materialesTotales,
+  totalKg, totalKgNetos = 0, totalPerdida = 0, materialesRegistrados, materialesTotales,
   capturasConfirmadas, lastUpdated, currentMonth, currentYear,
   variant = "sidebar",
 }: Props) => {
@@ -23,7 +25,6 @@ const ControlOperativoPeriodoCard = ({
   const pendientes = materialesTotales - materialesRegistrados;
   const isFullWidth = variant === "fullwidth";
 
-  // Loop animations
   const { displayValue: animatedKg, progress: kgProgress, isPulsing } = useLoopAnimation({ targetValue: totalKg });
   const { progress: pctProgress } = useLoopAnimation({ targetValue: pct });
 
@@ -148,6 +149,21 @@ const ControlOperativoPeriodoCard = ({
                 <span className="text-[11px] font-bold text-foreground">{chip.value}</span>
               </div>
             ))}
+          </div>
+
+          {/* Pérdida Estimada por Proceso */}
+          <div className="mt-4 rounded-lg px-4 py-3" style={{ background: "rgba(11,61,145,0.06)", border: "1px solid rgba(11,61,145,0.12)" }}>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+                <span>⚠️</span> Pérdida Estimada por Proceso
+              </span>
+              <span className="text-sm font-bold tabular-nums" style={{ color: "#0B3D91" }}>
+                {totalPerdida.toLocaleString("es-MX", { maximumFractionDigits: 1 })} kg
+              </span>
+            </div>
+            <div className="mt-1.5 text-[10px] text-muted-foreground">
+              {totalKg.toLocaleString("es-MX", { maximumFractionDigits: 1 })} kg brutos − {totalKgNetos.toLocaleString("es-MX", { maximumFractionDigits: 1 })} kg netos = {totalPerdida.toLocaleString("es-MX", { maximumFractionDigits: 1 })} kg de pérdida estimada
+            </div>
           </div>
 
           {!isFullWidth && (
