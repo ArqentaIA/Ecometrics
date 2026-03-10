@@ -189,16 +189,20 @@ const Dashboard = () => {
               }))}
             unit="kg totales"
           />
-          <ControlOperativoPeriodoCard
-            totalKg={totalKg}
-            materialesRegistrados={materialEntries.filter(e => e.kg > 0).length}
-            materialesTotales={materialEntries.length}
-            capturasConfirmadas={0}
-            lastUpdated={lastUpdated}
-            currentMonth={currentMonth}
-            currentYear={currentYear}
-            variant="fullwidth"
-          />
+          {/* Row 3 */}
+          <ReincorporatedRidgeline />
+          <div className="lg:col-span-2">
+            <ControlOperativoPeriodoCard
+              totalKg={totalKg}
+              materialesRegistrados={materialEntries.filter(e => e.kg > 0).length}
+              materialesTotales={materialEntries.length}
+              capturasConfirmadas={0}
+              lastUpdated={lastUpdated}
+              currentMonth={currentMonth}
+              currentYear={currentYear}
+              variant="fullwidth"
+            />
+          </div>
         </div>
       </section>
 
