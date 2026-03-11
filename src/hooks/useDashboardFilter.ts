@@ -149,7 +149,16 @@ export function useDashboardFilter() {
     [materialEntries]
   );
 
-  // Monthly economic breakdown for sparkline
+  // Full-year economic breakdown (always 12 months, all captures — for shadow layer)
+  const allMonthsEconomic = useMemo(() => {
+    const byMonth: Record<number, number> = {};
+    captures.forEach(c => {
+      byMonth[c.month] = (byMonth[c.month] ?? 0) + c.result_economic_impact;
+    });
+    return Array.from({ length: 12 }, (_, i) => ({ month: i + 1, value: byMonth[i + 1] ?? 0 }));
+  }, [captures]);
+
+  // Monthly economic breakdown for filtered view
   const monthlyEconomic = useMemo(() => {
     const byMonth: Record<number, number> = {};
     filteredCaptures.forEach(c => {
