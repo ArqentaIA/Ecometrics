@@ -26,6 +26,7 @@ export interface CatalogMaterial {
   display_order: number;
   yield_source: string;
   factors_source: string;
+  default_cost_per_kg: number;
 }
 
 export interface CalculatedKPIs {
