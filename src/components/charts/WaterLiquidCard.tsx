@@ -18,7 +18,7 @@ interface WaterLiquidCardProps {
   periodLabel: string;
   dashYear: number;
   confirmedEntries: EntryData[];
-  lastUpdated: string | null;
+  lastUpdated: Date | string | null;
 }
 
 const WaterLiquidCard = ({
