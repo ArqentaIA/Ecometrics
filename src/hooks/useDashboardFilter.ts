@@ -46,6 +46,8 @@ export function useDashboardFilter() {
         query = query.eq("user_id", user.id);
       }
 
+      const { data, error } = await query;
+
       if (error) {
         console.error("Error loading dashboard captures:", error);
         return;
