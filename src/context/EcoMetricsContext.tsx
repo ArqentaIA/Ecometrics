@@ -309,7 +309,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
       isLoggedIn, user, login, logout,
       currentMonth, currentYear, setCurrentMonth, setCurrentYear,
       catalog, catalogLoading,
-      materialEntries, setMaterialKg, clearAll,
+      materialEntries, setMaterialKg, setCostPerKg, costPerKgMap, clearAll,
       kpiTotals, totalKg,
       refreshData, lastUpdated,
       savingCapture, saveCapture, loadCaptures, loadingCaptures,
