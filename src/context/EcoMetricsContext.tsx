@@ -112,6 +112,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
   const logout = useCallback(async () => {
     await supabase.auth.signOut();
     setKgMap({});
+    setCostPerKgMapState({});
     setConfirmedMap({});
     setConfirmedSnapshots([]);
   }, []);
