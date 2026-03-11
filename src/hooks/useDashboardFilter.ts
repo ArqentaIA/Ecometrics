@@ -298,6 +298,8 @@ export function useDashboardFilter() {
     allMonthsArboles,
     monthlyAgua,
     allMonthsAgua,
+    monthlyKgNetos,
+    allMonthsKgNetos,
     loading,
     lastUpdated,
     refreshData: loadDashboardCaptures,
