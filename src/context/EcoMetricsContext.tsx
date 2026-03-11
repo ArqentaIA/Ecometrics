@@ -58,7 +58,7 @@ interface EcoMetricsState {
 
 const EcoMetricsContext = createContext<EcoMetricsState | null>(null);
 
-const EMPTY_TOTALS: KPITotals = { arboles: 0, co2: 0, energia: 0, agua: 0, kgBrutos: 0, kgNetos: 0 };
+const EMPTY_TOTALS: KPITotals = { arboles: 0, co2: 0, energia: 0, agua: 0, kgBrutos: 0, kgNetos: 0, economicImpact: 0 };
 
 export function EcoMetricsProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
