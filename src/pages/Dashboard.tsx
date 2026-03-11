@@ -222,11 +222,11 @@ const Dashboard = () => {
             unit="Litros" color="#38BDF8"
             trend={0}
           />
-          <FinancialLineChart
-            emoji="💰" title="Impacto Económico en la Comunidad"
-            data={[{ label: "Actual", value: totals.economicImpact }]}
-            color="#9333EA" unit="MXN"
-            trend={0}
+          <EconomicImpactCard
+            total={totals.economicImpact}
+            monthlyData={monthlyEconomic}
+            periodLabel={periodLabel}
+            color="#9333EA"
           />
           <HorizontalBar3D
             emoji="📦" title="Materiales Reciclados Recuperados"
