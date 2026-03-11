@@ -8,7 +8,7 @@ import RadialGauge from "@/components/charts/RadialGauge";
 import AreaChartSVG from "@/components/charts/AreaChartSVG";
 import ColumnChart from "@/components/charts/ColumnChart";
 import LiquidGauge from "@/components/charts/LiquidGauge";
-import FinancialLineChart from "@/components/charts/FinancialLineChart";
+import EconomicImpactCard from "@/components/charts/EconomicImpactCard";
 import HorizontalBar3D from "@/components/charts/HorizontalBar3D";
 import ReincorporatedRidgeline from "@/components/charts/ReincorporatedRidgeline";
 import recyclingHero from "@/assets/recycling-hero.png";
