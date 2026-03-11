@@ -25,6 +25,7 @@ export interface KPITotals {
   agua: number;
   kgBrutos: number;
   kgNetos: number;
+  economicImpact: number;
 }
 
 interface EcoMetricsState {
