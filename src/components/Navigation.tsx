@@ -13,7 +13,6 @@ const Navigation = ({ showBell }: NavigationProps) => {
   const links = [
     { to: "/dashboard", label: "Dashboard" },
     { to: "/capture", label: "Captura" },
-    { to: "#", label: "Histórico" },
   ];
 
   const handleLogout = async () => {
