@@ -108,6 +108,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
   }, []);
 
   const isLoggedIn = !!user;
+  const { role: userRole, roleLabel, permissions, loading: roleLoading } = useUserRole(user);
 
   const login = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
