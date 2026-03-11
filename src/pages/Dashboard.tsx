@@ -27,6 +27,7 @@ const Dashboard = () => {
     materialEntries, confirmedEntries, monthlyEconomic, allMonthsEconomic,
     monthlyCo2, allMonthsCo2,
     monthlyEnergia, allMonthsEnergia,
+    monthlyArboles, allMonthsArboles,
     loading, lastUpdated, refreshData, catalogLoading,
   } = useDashboardFilter();
 
