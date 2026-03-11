@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       material_captures: {
         Row: {
+          cost_per_kg_applied: number | null
           created_at: string
           factor_agua_applied: number | null
           factor_arboles_applied: number | null
@@ -33,6 +34,7 @@ export type Database = {
           result_agua: number | null
           result_arboles: number | null
           result_co2: number | null
+          result_economic_impact: number | null
           result_energia: number | null
           updated_at: string
           user_id: string
@@ -44,6 +46,7 @@ export type Database = {
           yield_applied: number | null
         }
         Insert: {
+          cost_per_kg_applied?: number | null
           created_at?: string
           factor_agua_applied?: number | null
           factor_arboles_applied?: number | null
@@ -61,6 +64,7 @@ export type Database = {
           result_agua?: number | null
           result_arboles?: number | null
           result_co2?: number | null
+          result_economic_impact?: number | null
           result_energia?: number | null
           updated_at?: string
           user_id: string
@@ -72,6 +76,7 @@ export type Database = {
           yield_applied?: number | null
         }
         Update: {
+          cost_per_kg_applied?: number | null
           created_at?: string
           factor_agua_applied?: number | null
           factor_arboles_applied?: number | null
@@ -89,6 +94,7 @@ export type Database = {
           result_agua?: number | null
           result_arboles?: number | null
           result_co2?: number | null
+          result_economic_impact?: number | null
           result_energia?: number | null
           updated_at?: string
           user_id?: string
@@ -105,6 +111,7 @@ export type Database = {
         Row: {
           code: string
           created_at: string
+          default_cost_per_kg: number | null
           default_yield: number
           display_order: number
           factor_agua: number | null
@@ -129,6 +136,7 @@ export type Database = {
         Insert: {
           code: string
           created_at?: string
+          default_cost_per_kg?: number | null
           default_yield?: number
           display_order?: number
           factor_agua?: number | null
@@ -153,6 +161,7 @@ export type Database = {
         Update: {
           code?: string
           created_at?: string
+          default_cost_per_kg?: number | null
           default_yield?: number
           display_order?: number
           factor_agua?: number | null
