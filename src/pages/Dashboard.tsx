@@ -24,7 +24,7 @@ const Dashboard = () => {
     dashYear, setDashYear,
     selectedMonths, toggleMonth, clearSelection, isAllMonths,
     confirmedTotals: totals,
-    materialEntries, confirmedEntries, monthlyEconomic,
+    materialEntries, confirmedEntries, monthlyEconomic, allMonthsEconomic,
     loading, lastUpdated, refreshData, catalogLoading,
   } = useDashboardFilter();
 
@@ -225,8 +225,19 @@ const Dashboard = () => {
           <EconomicImpactCard
             total={totals.economicImpact}
             monthlyData={monthlyEconomic}
+            allMonthsData={allMonthsEconomic}
             periodLabel={periodLabel}
             color="#9333EA"
+            dashYear={dashYear}
+            topMaterials={confirmedEntries
+              .filter(e => e.kpis.economic_impact > 0)
+              .sort((a, b) => b.kpis.economic_impact - a.kpis.economic_impact)
+              .slice(0, 3)
+              .map((e, i) => ({
+                name: e.material.name,
+                value: e.kpis.economic_impact,
+                color: ["#22C55E", "#3B82F6", "#F59E0B"][i % 3],
+              }))}
           />
           <HorizontalBar3D
             emoji="📦" title="Materiales Reciclados Recuperados"
