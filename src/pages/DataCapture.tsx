@@ -73,7 +73,7 @@ const DataCapture = () => {
   const {
     materialEntries, setMaterialKg, setCostPerKg, costPerKgMap, clearAll,
     currentMonth, setCurrentMonth, currentYear, setCurrentYear,
-    saveCapture, catalogLoading, catalog,
+    saveCapture, catalogLoading, catalog, permissions, roleLabel,
   } = useEcoMetrics();
 
   const [activeTab, setActiveTab] = useState(0);
