@@ -66,6 +66,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [kgMap, setKgMap] = useState<Record<string, number>>({});
+  const [costPerKgMap, setCostPerKgMapState] = useState<Record<string, number>>({});
   const [confirmedMap, setConfirmedMap] = useState<Record<string, boolean>>({});
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [savingCapture, setSavingCapture] = useState(false);
