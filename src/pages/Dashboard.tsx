@@ -276,18 +276,16 @@ const Dashboard = () => {
             unit="kg totales"
           />
           
-          <div className="lg:col-span-2">
-            <ControlOperativoPeriodoCard
-              totalKg={totals.kgBrutos}
+          <div className="lg:col-span-3">
+            <HeroReincorporacionIndustriaCard
+              totalKgBrutos={totals.kgBrutos}
               totalKgNetos={totals.kgNetos}
-              totalPerdida={totals.kgBrutos - totals.kgNetos}
-              materialesRegistrados={confirmedEntries.length}
-              materialesTotales={materialEntries.length}
-              capturasConfirmadas={confirmedEntries.length}
+              confirmedEntries={confirmedEntries}
+              monthlyKgNetos={monthlyKgNetos}
+              allMonthsKgNetos={allMonthsKgNetos}
               lastUpdated={lastUpdated}
-              currentMonth={currentMonth}
-              currentYear={dashYear}
-              variant="fullwidth"
+              periodLabel={periodLabel}
+              dashYear={dashYear}
             />
           </div>
         </div>
