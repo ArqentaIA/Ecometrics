@@ -28,6 +28,7 @@ const Dashboard = () => {
     monthlyCo2, allMonthsCo2,
     monthlyEnergia, allMonthsEnergia,
     monthlyArboles, allMonthsArboles,
+    monthlyAgua, allMonthsAgua,
     loading, lastUpdated, refreshData, catalogLoading,
   } = useDashboardFilter();
 
