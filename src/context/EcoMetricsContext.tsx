@@ -171,7 +171,10 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
 
       data?.forEach(row => {
         kgs[row.material_code] = Number(row.kg_brutos);
-        costs[row.material_code] = Number(row.cost_per_kg_applied ?? 0);
+        const savedCost = Number(row.cost_per_kg_applied ?? 0);
+        const catalogMat = catalog.find(c => c.code === row.material_code);
+        // Use saved cost if > 0, otherwise fall back to catalog price
+        costs[row.material_code] = savedCost > 0 ? savedCost : (catalogMat?.default_cost_per_kg ?? 0);
         confirmed[row.material_code] = row.is_confirmed ?? false;
         if (row.is_confirmed) {
           snapshots.push({
