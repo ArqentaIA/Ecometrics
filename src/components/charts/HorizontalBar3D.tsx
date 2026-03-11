@@ -1,5 +1,10 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useLoopAnimation } from "@/hooks/useLoopAnimation";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Segment {
   label: string;
@@ -21,7 +26,6 @@ const HorizontalBar3D = ({ title, emoji, segments, unit }: HorizontalBar3DProps)
   const maxVal = Math.max(...segments.map(s => s.value), 1);
 
   const barH = 26;
-  const gap = 8;
   const depth = 6;
 
   return (
@@ -44,72 +48,76 @@ const HorizontalBar3D = ({ title, emoji, segments, unit }: HorizontalBar3DProps)
         {segments.map((seg, i) => {
           const pct = total > 0 ? (seg.value / maxVal) * 100 * progress : 0;
           const isHovered = hoverIdx === i;
-          const percentage = total > 0 ? ((seg.value / total) * 100).toFixed(0) : "0";
+          const percentage = total > 0 ? ((seg.value / total) * 100).toFixed(1) : "0.0";
 
           return (
-            <div
-              key={i}
-              className="flex items-center gap-2 cursor-pointer rounded px-1 py-[3px] transition-all duration-200"
-              style={{ background: isHovered ? `${seg.color}12` : "transparent" }}
-              onMouseEnter={() => setHoverIdx(i)}
-              onMouseLeave={() => setHoverIdx(null)}
-            >
-              {/* Label */}
-              <span className="text-[10px] font-medium text-foreground w-[72px] truncate text-right">
-                {seg.label}
-              </span>
+            <Tooltip key={i}>
+              <TooltipTrigger asChild>
+                <div
+                  className="flex items-center gap-2 cursor-pointer rounded px-1 py-[3px] transition-all duration-200"
+                  style={{ background: isHovered ? `${seg.color}12` : "transparent" }}
+                  onMouseEnter={() => setHoverIdx(i)}
+                  onMouseLeave={() => setHoverIdx(null)}
+                >
+                  {/* Label */}
+                  <span className="text-[10px] font-medium text-foreground w-[72px] truncate text-right">
+                    {seg.label}
+                  </span>
 
-              {/* 3D Bar */}
-              <div className="flex-1 relative" style={{ height: barH }}>
-                {/* Background track */}
-                <div
-                  className="absolute inset-0 rounded-sm"
-                  style={{ background: "hsl(var(--muted))", height: barH - depth }}
-                />
-                {/* Top face (main bar) */}
-                <div
-                  className="absolute left-0 top-0 rounded-sm transition-all duration-500"
-                  style={{
-                    width: `${Math.max(pct, 1)}%`,
-                    height: barH - depth,
-                    background: `linear-gradient(180deg, ${seg.color}ee, ${seg.color})`,
-                    boxShadow: isHovered
-                      ? `0 2px 12px ${seg.color}50, inset 0 1px 0 rgba(255,255,255,0.3)`
-                      : `inset 0 1px 0 rgba(255,255,255,0.25)`,
-                    transform: isHovered ? "scaleY(1.1)" : "scaleY(1)",
-                    transformOrigin: "top",
-                  }}
-                />
-                {/* Bottom face (3D depth) */}
-                <div
-                  className="absolute left-0 rounded-b-sm transition-all duration-500"
-                  style={{
-                    top: barH - depth,
-                    width: `${Math.max(pct, 1)}%`,
-                    height: depth,
-                    background: `linear-gradient(180deg, ${seg.color}cc, ${seg.color}88)`,
-                  }}
-                />
-                {/* Shine highlight */}
-                <div
-                  className="absolute left-0 top-0 rounded-sm transition-all duration-500"
-                  style={{
-                    width: `${Math.max(pct, 1)}%`,
-                    height: (barH - depth) * 0.4,
-                    background: "linear-gradient(180deg, rgba(255,255,255,0.35), transparent)",
-                    pointerEvents: "none",
-                  }}
-                />
-              </div>
+                  {/* 3D Bar */}
+                  <div className="flex-1 relative" style={{ height: barH }}>
+                    <div
+                      className="absolute inset-0 rounded-sm"
+                      style={{ background: "hsl(var(--muted))", height: barH - depth }}
+                    />
+                    <div
+                      className="absolute left-0 top-0 rounded-sm transition-all duration-500"
+                      style={{
+                        width: `${Math.max(pct, 1)}%`,
+                        height: barH - depth,
+                        background: `linear-gradient(180deg, ${seg.color}ee, ${seg.color})`,
+                        boxShadow: isHovered
+                          ? `0 2px 12px ${seg.color}50, inset 0 1px 0 rgba(255,255,255,0.3)`
+                          : `inset 0 1px 0 rgba(255,255,255,0.25)`,
+                        transform: isHovered ? "scaleY(1.1)" : "scaleY(1)",
+                        transformOrigin: "top",
+                      }}
+                    />
+                    <div
+                      className="absolute left-0 rounded-b-sm transition-all duration-500"
+                      style={{
+                        top: barH - depth,
+                        width: `${Math.max(pct, 1)}%`,
+                        height: depth,
+                        background: `linear-gradient(180deg, ${seg.color}cc, ${seg.color}88)`,
+                      }}
+                    />
+                    <div
+                      className="absolute left-0 top-0 rounded-sm transition-all duration-500"
+                      style={{
+                        width: `${Math.max(pct, 1)}%`,
+                        height: (barH - depth) * 0.4,
+                        background: "linear-gradient(180deg, rgba(255,255,255,0.35), transparent)",
+                        pointerEvents: "none",
+                      }}
+                    />
+                  </div>
 
-              {/* Percentage */}
-              <span
-                className="text-[10px] font-semibold w-[32px] text-right transition-colors"
-                style={{ color: isHovered ? seg.color : "hsl(var(--muted-foreground))" }}
-              >
-                {percentage}%
-              </span>
-            </div>
+                  {/* Percentage */}
+                  <span
+                    className="text-[10px] font-semibold w-[38px] text-right transition-colors"
+                    style={{ color: isHovered ? seg.color : "hsl(var(--muted-foreground))" }}
+                  >
+                    {percentage}%
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="text-xs leading-relaxed">
+                <p className="font-bold">{seg.label}</p>
+                <p>{seg.value.toLocaleString("es-MX", { maximumFractionDigits: 0 })} kg</p>
+                <p className="text-muted-foreground">{percentage}% del total</p>
+              </TooltipContent>
+            </Tooltip>
           );
         })}
       </div>
