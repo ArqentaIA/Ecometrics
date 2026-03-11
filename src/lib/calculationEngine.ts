@@ -44,6 +44,7 @@ export interface CalculatedKPIs {
   factor_co2: number | null;
   factor_energia: number | null;
   factor_agua: number | null;
+  economic_impact: number;
 }
 
 /**
