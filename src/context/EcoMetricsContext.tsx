@@ -32,6 +32,10 @@ export interface KPITotals {
 interface EcoMetricsState {
   isLoggedIn: boolean;
   user: User | null;
+  userRole: AppRole | null;
+  roleLabel: string;
+  permissions: RolePermissions;
+  roleLoading: boolean;
   login: (email: string, password: string) => Promise<{ error: string | null }>;
   logout: () => Promise<void>;
   currentMonth: number;
