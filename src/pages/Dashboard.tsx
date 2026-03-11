@@ -218,11 +218,17 @@ const Dashboard = () => {
               .slice(0, 3)
               .map(e => ({ name: e.material.name, co2: e.kpis.co2 }))}
           />
-          <ColumnChart
-            emoji="⚡" title="Energía Ahorrada"
-            data={[{ label: "Actual", value: totals.energia }]}
-            color="#FACC15" unit="kWh"
-            trend={0}
+          <EnergyWaveCard
+            total={totals.energia}
+            monthlyData={monthlyEnergia}
+            allMonthsData={allMonthsEnergia}
+            periodLabel={periodLabel}
+            dashYear={dashYear}
+            topMaterials={confirmedEntries
+              .filter(e => e.kpis.energia > 0)
+              .sort((a, b) => b.kpis.energia - a.kpis.energia)
+              .slice(0, 3)
+              .map(e => ({ name: e.material.name, energia: e.kpis.energia }))}
           />
           <LiquidGauge
             emoji="💧" label="Agua Conservada"
