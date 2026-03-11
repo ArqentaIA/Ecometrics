@@ -244,12 +244,21 @@ const DataCapture = () => {
                       />
                       <span className="text-xs text-muted-foreground font-medium">kg</span>
 
-                      {/* Cost per kg field */}
-                      <CostInput
-                        materialCode={entry.material.code}
-                        defaultValue={costPerKgMap[entry.material.code] ?? entry.material.default_cost_per_kg ?? 0}
-                        onCommit={(code, val) => setCostPerKg(code, val)}
-                      />
+                      {/* Cost per kg field — editable only for Admin/Dirección */}
+                      {permissions.canEditPrice ? (
+                        <CostInput
+                          materialCode={entry.material.code}
+                          defaultValue={costPerKgMap[entry.material.code] ?? entry.material.default_cost_per_kg ?? 0}
+                          onCommit={(code, val) => setCostPerKg(code, val)}
+                        />
+                      ) : (
+                        <div className="flex items-center gap-1">
+                          <span className="text-[11px] text-muted-foreground whitespace-nowrap">$/kg</span>
+                          <span className="win-input !w-24 text-right font-semibold text-sm tabular-nums bg-muted/50 cursor-not-allowed opacity-75">
+                            {(costPerKgMap[entry.material.code] ?? entry.material.default_cost_per_kg ?? 0).toFixed(2)}
+                          </span>
+                        </div>
+                      )}
 
                       {/* Economic impact calculated */}
                       {entry.kg > 0 && (
