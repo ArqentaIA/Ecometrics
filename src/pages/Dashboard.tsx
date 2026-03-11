@@ -280,9 +280,9 @@ const Dashboard = () => {
                   <td className="px-3 py-2.5">{totalKg.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
                   <td className="px-3 py-2.5">—</td>
                   <td className="px-3 py-2.5">{totalKgNetos.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
-                  <td className="px-3 py-2.5">{kpiTotals.arboles.toFixed(2)}</td>
+                  <td className="px-3 py-2.5">{kpiTotals.arboles.toFixed(1)}</td>
                   <td className="px-3 py-2.5">{kpiTotals.co2.toFixed(2)}</td>
-                  <td className="px-3 py-2.5">{kpiTotals.energia.toFixed(2)}</td>
+                  <td className="px-3 py-2.5">{kpiTotals.energia.toFixed(1)}</td>
                   <td className="px-3 py-2.5">{kpiTotals.agua.toFixed(0)}</td>
                   <td className="px-3 py-2.5">${kpiTotals.costo.toFixed(2)}</td>
                   <td className="px-3 py-2.5">—</td>
