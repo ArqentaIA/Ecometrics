@@ -17,36 +17,87 @@ export type Database = {
       material_captures: {
         Row: {
           created_at: string
+          factor_agua_applied: number | null
+          factor_arboles_applied: number | null
+          factor_co2_applied: number | null
+          factor_energia_applied: number | null
+          family: string | null
           id: string
+          is_confirmed: boolean | null
           kg_brutos: number
+          kg_netos: number | null
           material_code: string
+          material_name: string | null
           month: number
           notes: string | null
+          result_agua: number | null
+          result_arboles: number | null
+          result_co2: number | null
+          result_energia: number | null
           updated_at: string
           user_id: string
+          uses_agua: boolean | null
+          uses_arboles: boolean | null
+          uses_co2: boolean | null
+          uses_energia: boolean | null
           year: number
+          yield_applied: number | null
         }
         Insert: {
           created_at?: string
+          factor_agua_applied?: number | null
+          factor_arboles_applied?: number | null
+          factor_co2_applied?: number | null
+          factor_energia_applied?: number | null
+          family?: string | null
           id?: string
+          is_confirmed?: boolean | null
           kg_brutos?: number
+          kg_netos?: number | null
           material_code: string
+          material_name?: string | null
           month: number
           notes?: string | null
+          result_agua?: number | null
+          result_arboles?: number | null
+          result_co2?: number | null
+          result_energia?: number | null
           updated_at?: string
           user_id: string
+          uses_agua?: boolean | null
+          uses_arboles?: boolean | null
+          uses_co2?: boolean | null
+          uses_energia?: boolean | null
           year: number
+          yield_applied?: number | null
         }
         Update: {
           created_at?: string
+          factor_agua_applied?: number | null
+          factor_arboles_applied?: number | null
+          factor_co2_applied?: number | null
+          factor_energia_applied?: number | null
+          family?: string | null
           id?: string
+          is_confirmed?: boolean | null
           kg_brutos?: number
+          kg_netos?: number | null
           material_code?: string
+          material_name?: string | null
           month?: number
           notes?: string | null
+          result_agua?: number | null
+          result_arboles?: number | null
+          result_co2?: number | null
+          result_energia?: number | null
           updated_at?: string
           user_id?: string
+          uses_agua?: boolean | null
+          uses_arboles?: boolean | null
+          uses_co2?: boolean | null
+          uses_energia?: boolean | null
           year?: number
+          yield_applied?: number | null
         }
         Relationships: []
       }
