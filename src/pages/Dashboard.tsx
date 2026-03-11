@@ -259,7 +259,7 @@ const Dashboard = () => {
               }))}
           />
           <HorizontalBar3D
-            emoji="📦" title="Materiales Reciclados Recuperados"
+            emoji="📦" title="Volumen Total de Material Recuperado"
             segments={confirmedEntries
               .sort((a, b) => b.kg - a.kg)
               .slice(0, 8)
@@ -268,6 +268,10 @@ const Dashboard = () => {
                 value: e.kg,
                 color: ["#22C55E", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#F97316", "#EC4899"][i % 8],
               }))}
+            extraSegments={confirmedEntries
+              .sort((a, b) => b.kg - a.kg)
+              .slice(8)
+              .map(e => ({ label: e.material.code, value: e.kg, color: "#94A3B8" }))}
             unit="kg totales"
           />
           <ReincorporatedRidgeline />
