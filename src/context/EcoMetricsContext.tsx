@@ -227,10 +227,16 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     const material = catalog.find(m => m.code === code);
     if (!material) return { error: "Material no encontrado en catálogo" };
 
+    const kg = kgMap[code] ?? 0;
+    const cost = costPerKgMap[code] ?? material.default_cost_per_kg ?? 0;
+
+    // Validations
+    if (kg <= 0) return { error: "El peso capturado debe ser mayor a cero" };
+    if (cost < 0) return { error: "El costo por kg no puede ser negativo" };
+
     setSavingCapture(true);
     try {
-      const kg = kgMap[code] ?? 0;
-      const snapshot = buildCaptureSnapshot(material, kg, user.id, currentMonth + 1, currentYear);
+      const snapshot = buildCaptureSnapshot(material, kg, user.id, currentMonth + 1, currentYear, cost);
 
       const { error } = await supabase
         .from("material_captures")
@@ -238,17 +244,14 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
 
       if (error) return { error: error.message };
 
-      // Update local confirmed state
       setConfirmedMap(prev => ({ ...prev, [code]: true }));
-
-      // Reload snapshots for dashboard
       await loadCaptures();
 
       return { error: null };
     } finally {
       setSavingCapture(false);
     }
-  }, [user, catalog, kgMap, currentMonth, currentYear, loadCaptures]);
+  }, [user, catalog, kgMap, costPerKgMap, currentMonth, currentYear, loadCaptures]);
 
   // ─── Derived: material entries with live KPIs from engine ───
   const materialEntries: MaterialEntry[] = useMemo(() =>
