@@ -4,7 +4,7 @@ import { useDashboardFilter } from "@/hooks/useDashboardFilter";
 import Navigation from "@/components/Navigation";
 import ControlOperativoPeriodoCard from "@/components/ControlOperativoPeriodoCard";
 import ShareModal from "@/components/ShareModal";
-import RadialGauge from "@/components/charts/RadialGauge";
+import TreesRingCard from "@/components/charts/TreesRingCard";
 import CO2ImpactCard from "@/components/charts/CO2ImpactCard";
 import EnergyWaveCard from "@/components/charts/EnergyWaveCard";
 import LiquidGauge from "@/components/charts/LiquidGauge";
@@ -27,6 +27,7 @@ const Dashboard = () => {
     materialEntries, confirmedEntries, monthlyEconomic, allMonthsEconomic,
     monthlyCo2, allMonthsCo2,
     monthlyEnergia, allMonthsEnergia,
+    monthlyArboles, allMonthsArboles,
     loading, lastUpdated, refreshData, catalogLoading,
   } = useDashboardFilter();
 
@@ -200,11 +201,13 @@ const Dashboard = () => {
           Indicadores consolidados de capturas confirmadas ({periodLabel}). Base de cálculo: kg netos (kg capturados × yield del material).
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <RadialGauge
-            emoji="🌳" label="Árboles Preservados"
-            value={totals.arboles} target={800}
-            unit="equiv." color="#22C55E"
-            trend={0}
+          <TreesRingCard
+            value={totals.arboles}
+            target={800}
+            monthlyData={monthlyArboles}
+            allMonthsData={allMonthsArboles}
+            periodLabel={periodLabel}
+            dashYear={dashYear}
           />
           <CO2ImpactCard
             total={totals.co2}

@@ -206,6 +206,25 @@ export function useDashboardFilter() {
     return months.map(m => ({ month: m, value: byMonth[m] ?? 0 }));
   }, [filteredCaptures, selectedMonths]);
 
+  // Full-year trees breakdown
+  const allMonthsArboles = useMemo(() => {
+    const byMonth: Record<number, number> = {};
+    captures.forEach(c => {
+      byMonth[c.month] = (byMonth[c.month] ?? 0) + c.result_arboles;
+    });
+    return Array.from({ length: 12 }, (_, i) => ({ month: i + 1, value: byMonth[i + 1] ?? 0 }));
+  }, [captures]);
+
+  // Monthly trees breakdown for filtered view
+  const monthlyArboles = useMemo(() => {
+    const byMonth: Record<number, number> = {};
+    filteredCaptures.forEach(c => {
+      byMonth[c.month] = (byMonth[c.month] ?? 0) + c.result_arboles;
+    });
+    const months = selectedMonths ?? Array.from({ length: 12 }, (_, i) => i + 1);
+    return months.map(m => ({ month: m, value: byMonth[m] ?? 0 }));
+  }, [filteredCaptures, selectedMonths]);
+
   const toggleMonth = useCallback((month: number) => {
     setSelectedMonths(prev => {
       if (!prev) {
@@ -241,6 +260,8 @@ export function useDashboardFilter() {
     allMonthsCo2,
     monthlyEnergia,
     allMonthsEnergia,
+    monthlyArboles,
+    allMonthsArboles,
     loading,
     lastUpdated,
     refreshData: loadDashboardCaptures,
