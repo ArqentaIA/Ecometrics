@@ -52,7 +52,10 @@ const Navigation = ({ showBell }: NavigationProps) => {
           )}
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[13px]">
             <div className="w-6 h-6 rounded-full bg-primary/30 flex items-center justify-center text-[10px] font-bold">{initials}</div>
-            <span className="hidden sm:inline truncate max-w-[120px]">{user?.email ?? "Usuario"}</span>
+            <div className="hidden sm:flex flex-col leading-tight">
+              <span className="truncate max-w-[120px]">{user?.email ?? "Usuario"}</span>
+              <span className="text-[10px] text-nav-foreground/50 font-medium">{roleLabel}</span>
+            </div>
           </div>
           <button onClick={handleLogout}
             title="Cerrar sesión"
