@@ -7,6 +7,7 @@ import {
   calculateIndicators,
   buildCaptureSnapshot,
 } from "@/lib/calculationEngine";
+import { useUserRole, type AppRole, type RolePermissions } from "@/hooks/useUserRole";
 
 // ─────────────────────────────────────────────
 // Types
@@ -31,6 +32,10 @@ export interface KPITotals {
 interface EcoMetricsState {
   isLoggedIn: boolean;
   user: User | null;
+  userRole: AppRole | null;
+  roleLabel: string;
+  permissions: RolePermissions;
+  roleLoading: boolean;
   login: (email: string, password: string) => Promise<{ error: string | null }>;
   logout: () => Promise<void>;
   currentMonth: number;
@@ -103,6 +108,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
   }, []);
 
   const isLoggedIn = !!user;
+  const { role: userRole, roleLabel, permissions, loading: roleLoading } = useUserRole(user);
 
   const login = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -306,7 +312,8 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
 
   return (
     <EcoMetricsContext.Provider value={{
-      isLoggedIn, user, login, logout,
+      isLoggedIn, user, userRole, roleLabel, permissions, roleLoading,
+      login, logout,
       currentMonth, currentYear, setCurrentMonth, setCurrentYear,
       catalog, catalogLoading,
       materialEntries, setMaterialKg, setCostPerKg, costPerKgMap, clearAll,
