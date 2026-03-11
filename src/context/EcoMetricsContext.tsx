@@ -7,6 +7,7 @@ import {
   calculateIndicators,
   buildCaptureSnapshot,
 } from "@/lib/calculationEngine";
+import { useUserRole, type AppRole, type RolePermissions } from "@/hooks/useUserRole";
 
 // ─────────────────────────────────────────────
 // Types
