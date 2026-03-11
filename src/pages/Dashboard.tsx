@@ -263,9 +263,9 @@ const Dashboard = () => {
                       <td className="px-3 py-2 font-medium text-muted-foreground/80">
                         {kgNetos > 0 ? kgNetos.toLocaleString("es-MX", { maximumFractionDigits: 1 }) : "—"}
                       </td>
-                      <td className="px-3 py-2">{e.kpis.arboles > 0 ? e.kpis.arboles.toFixed(2) : <span className="text-muted-foreground">—</span>}</td>
+                      <td className="px-3 py-2">{e.kpis.arboles > 0 ? e.kpis.arboles.toFixed(1) : <span className="text-muted-foreground">—</span>}</td>
                       <td className="px-3 py-2">{e.kpis.co2 > 0 ? e.kpis.co2.toFixed(2) : <span className="text-muted-foreground">—</span>}</td>
-                      <td className="px-3 py-2">{e.kpis.energia > 0 ? e.kpis.energia.toFixed(2) : <span className="text-muted-foreground">—</span>}</td>
+                      <td className="px-3 py-2">{e.kpis.energia > 0 ? e.kpis.energia.toFixed(1) : <span className="text-muted-foreground">—</span>}</td>
                       <td className="px-3 py-2">{e.kpis.agua > 0 ? e.kpis.agua.toFixed(0) : <span className="text-muted-foreground">—</span>}</td>
                       <td className="px-3 py-2">${e.kpis.costo.toFixed(2)}</td>
                       <td className="px-3 py-2 text-muted-foreground group relative">
