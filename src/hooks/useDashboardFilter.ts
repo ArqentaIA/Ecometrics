@@ -122,12 +122,16 @@ export function useDashboardFilter() {
             energia: agg.kpis.energia,
             agua: agg.kpis.agua,
             kg_netos: agg.kpis.kg_netos,
-            kg_brutos: agg.kg,
             economic_impact: agg.kpis.economic_impact,
+            yield_applied: m.default_yield,
             uses_arboles: m.uses_arboles,
             uses_co2: m.uses_co2,
             uses_energia: m.uses_energia,
             uses_agua: m.uses_agua,
+            factor_arboles: m.factor_arboles,
+            factor_co2: m.factor_co2,
+            factor_energia: m.factor_energia,
+            factor_agua: m.factor_agua,
           },
         };
       }
