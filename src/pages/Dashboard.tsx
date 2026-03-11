@@ -207,6 +207,9 @@ const Dashboard = () => {
             />
           </div>
         </div>
+        <p className="text-[11px] text-muted-foreground mt-4 px-1 border-l-2 border-primary/40 pl-3">
+          📐 Indicadores calculados sobre kg netos recuperados (kg capturados × yield del material).
+        </p>
       </section>
 
       {/* Material Detail Table */}
