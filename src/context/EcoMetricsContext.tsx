@@ -258,10 +258,10 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     catalog.map(m => ({
       material: m,
       kg: kgMap[m.code] ?? 0,
-      kpis: calculateIndicators(m, kgMap[m.code] ?? 0),
+      kpis: calculateIndicators(m, kgMap[m.code] ?? 0, costPerKgMap[m.code] ?? m.default_cost_per_kg ?? 0),
       isConfirmed: confirmedMap[m.code] ?? false,
     })),
-    [catalog, kgMap, confirmedMap]
+    [catalog, kgMap, costPerKgMap, confirmedMap]
   );
 
   // ─── Live KPI totals (for capture screen) ───
