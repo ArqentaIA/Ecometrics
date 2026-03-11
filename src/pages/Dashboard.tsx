@@ -7,7 +7,7 @@ import ShareModal from "@/components/ShareModal";
 import TreesRingCard from "@/components/charts/TreesRingCard";
 import CO2ImpactCard from "@/components/charts/CO2ImpactCard";
 import EnergyWaveCard from "@/components/charts/EnergyWaveCard";
-import LiquidGauge from "@/components/charts/LiquidGauge";
+import WaterLiquidCard from "@/components/charts/WaterLiquidCard";
 import EconomicImpactCard from "@/components/charts/EconomicImpactCard";
 import HorizontalBar3D from "@/components/charts/HorizontalBar3D";
 import ReincorporatedRidgeline from "@/components/charts/ReincorporatedRidgeline";
@@ -28,6 +28,7 @@ const Dashboard = () => {
     monthlyCo2, allMonthsCo2,
     monthlyEnergia, allMonthsEnergia,
     monthlyArboles, allMonthsArboles,
+    monthlyAgua, allMonthsAgua,
     loading, lastUpdated, refreshData, catalogLoading,
   } = useDashboardFilter();
 
@@ -233,11 +234,12 @@ const Dashboard = () => {
               .slice(0, 3)
               .map(e => ({ name: e.material.name, energia: e.kpis.energia }))}
           />
-          <LiquidGauge
-            emoji="💧" label="Agua Conservada"
-            value={totals.agua} target={230000}
-            unit="Litros" color="#38BDF8"
-            trend={0}
+          <WaterLiquidCard
+            value={totals.agua}
+            target={230000}
+            monthlyData={monthlyAgua}
+            periodLabel={periodLabel}
+            dashYear={dashYear}
           />
           <EconomicImpactCard
             total={totals.economicImpact}
