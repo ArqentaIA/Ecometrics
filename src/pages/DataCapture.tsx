@@ -13,6 +13,62 @@ interface CaptureState {
   feedbackVisible: boolean;
 }
 
+/** Small controlled input that keeps a local string so decimal points aren't lost */
+const CostInput = ({ materialCode, defaultValue, onCommit }: {
+  materialCode: string;
+  defaultValue: number;
+  onCommit: (code: string, val: number) => void;
+}) => {
+  const [raw, setRaw] = useState(() => defaultValue > 0 ? defaultValue.toFixed(2) : "");
+  const committed = useRef(defaultValue);
+
+  // Sync if external value changes (e.g. clearAll)
+  if (defaultValue !== committed.current && !document.activeElement?.closest(`[data-cost="${materialCode}"]`)) {
+    committed.current = defaultValue;
+    setRaw(defaultValue > 0 ? defaultValue.toFixed(2) : "");
+  }
+
+  return (
+    <div className="flex items-center gap-1" data-cost={materialCode}>
+      <span className="text-[11px] text-muted-foreground whitespace-nowrap">$/kg</span>
+      <input
+        type="text"
+        inputMode="decimal"
+        value={raw}
+        onChange={e => {
+          const val = e.target.value;
+          if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
+            setRaw(val);
+            const num = parseFloat(val);
+            if (!isNaN(num)) {
+              committed.current = num;
+              onCommit(materialCode, num);
+            } else if (val === "") {
+              committed.current = 0;
+              onCommit(materialCode, 0);
+            }
+          }
+        }}
+        onBlur={() => {
+          const num = parseFloat(raw);
+          if (!isNaN(num) && num >= 0) {
+            const formatted = num.toFixed(2);
+            setRaw(formatted);
+            committed.current = num;
+            onCommit(materialCode, num);
+          } else {
+            setRaw("");
+            committed.current = 0;
+            onCommit(materialCode, 0);
+          }
+        }}
+        className="win-input !w-24 text-right font-semibold text-sm tabular-nums"
+        placeholder="0.00"
+      />
+    </div>
+  );
+};
+
 const DataCapture = () => {
   const {
     materialEntries, setMaterialKg, setCostPerKg, costPerKgMap, clearAll,
