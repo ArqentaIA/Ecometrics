@@ -234,11 +234,12 @@ const Dashboard = () => {
               .slice(0, 3)
               .map(e => ({ name: e.material.name, energia: e.kpis.energia }))}
           />
-          <LiquidGauge
-            emoji="💧" label="Agua Conservada"
-            value={totals.agua} target={230000}
-            unit="Litros" color="#38BDF8"
-            trend={0}
+          <WaterLiquidCard
+            value={totals.agua}
+            target={230000}
+            monthlyData={monthlyAgua}
+            periodLabel={periodLabel}
+            dashYear={dashYear}
           />
           <EconomicImpactCard
             total={totals.economicImpact}
