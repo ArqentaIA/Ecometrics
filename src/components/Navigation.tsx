@@ -50,10 +50,15 @@ const Navigation = ({ showBell }: NavigationProps) => {
               <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-destructive rounded-full border border-nav" />
             </button>
           )}
-          <button onClick={handleLogout}
-            className="flex items-center gap-2 px-2.5 py-1 rounded-md hover:bg-nav-foreground/10 transition-colors text-[13px]">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[13px]">
             <div className="w-6 h-6 rounded-full bg-primary/30 flex items-center justify-center text-[10px] font-bold">{initials}</div>
             <span className="hidden sm:inline truncate max-w-[120px]">{user?.email ?? "Usuario"}</span>
+          </div>
+          <button onClick={handleLogout}
+            title="Cerrar sesión"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md hover:bg-destructive/20 transition-colors text-[12px] text-nav-foreground/70 hover:text-destructive-foreground">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span className="hidden sm:inline">Salir</span>
           </button>
         </div>
       </div>
