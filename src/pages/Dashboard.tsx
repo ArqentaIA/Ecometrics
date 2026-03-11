@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
+import { useDashboardFilter } from "@/hooks/useDashboardFilter";
 import Navigation from "@/components/Navigation";
 import ControlOperativoPeriodoCard from "@/components/ControlOperativoPeriodoCard";
 import ShareModal from "@/components/ShareModal";
@@ -14,11 +15,18 @@ import recyclingHero from "@/assets/recycling-hero.png";
 import logoImrGris from "@/assets/logo-imr-gris.png";
 import { formatKPI } from "@/lib/calculationEngine";
 
+const MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
 const Dashboard = () => {
+  const { currentMonth, currentYear } = useEcoMetrics();
+
   const {
-    confirmedTotals, materialEntries, refreshData, lastUpdated,
-    currentMonth, currentYear, catalogLoading,
-  } = useEcoMetrics();
+    dashYear, setDashYear,
+    selectedMonths, toggleMonth, clearSelection, isAllMonths,
+    confirmedTotals: totals,
+    materialEntries, confirmedEntries,
+    loading, lastUpdated, refreshData, catalogLoading,
+  } = useDashboardFilter();
 
   const [refreshing, setRefreshing] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -29,14 +37,6 @@ const Dashboard = () => {
     setRefreshing(true);
     setTimeout(() => { refreshData(); setRefreshing(false); }, 800);
   };
-
-  // Use confirmed totals for dashboard (REGLA DEL DASHBOARD)
-  const totals = confirmedTotals;
-
-  const confirmedEntries = useMemo(() =>
-    materialEntries.filter(e => e.isConfirmed && e.kg > 0),
-    [materialEntries]
-  );
 
   const sortedEntries = useMemo(() => {
     const entries = [...materialEntries];
@@ -76,6 +76,11 @@ const Dashboard = () => {
     a.href = url; a.download = "ecometrics-export.csv"; a.click();
   };
 
+  // Period label for display
+  const periodLabel = isAllMonths
+    ? `Acumulado ${dashYear}`
+    : selectedMonths!.map(m => MONTHS[m - 1]).join(", ") + ` ${dashYear}`;
+
   if (catalogLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -105,14 +110,53 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Filter Bar */}
+      {/* Month Multi-Select Filter Bar */}
       <div className="bg-filter-bar text-filter-bar-foreground">
-        <div className="max-w-7xl mx-auto px-5 h-11 flex items-center gap-3">
-          {["Año: 2026", "Mes: Febrero", "Categoría: Todas", "Material: Todos"].map(f => (
-            <select key={f} className="win-select !bg-filter-bar-foreground/10 !text-filter-bar-foreground !border-filter-bar-foreground/20 text-xs !min-h-[28px]">
-              <option>{f}</option>
-            </select>
-          ))}
+        <div className="max-w-7xl mx-auto px-5 h-14 flex items-center gap-4">
+          {/* Month toggles */}
+          <div className="flex gap-0.5 bg-filter-bar-foreground/10 rounded-lg p-0.5">
+            {MONTHS.map((m, i) => {
+              const monthNum = i + 1; // DB months are 1-based
+              const isActive = isAllMonths || (selectedMonths?.includes(monthNum) ?? false);
+              return (
+                <button
+                  key={m}
+                  onClick={() => toggleMonth(monthNum)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-150 ${
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-filter-bar-foreground/60 hover:text-filter-bar-foreground hover:bg-filter-bar-foreground/15"
+                  }`}
+                >
+                  {m}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Year selector */}
+          <div className="flex items-center gap-0.5 bg-filter-bar-foreground/10 rounded-lg p-0.5">
+            <button onClick={() => setDashYear(dashYear - 1)}
+              className="px-2 py-1 text-xs rounded-md text-filter-bar-foreground/80 hover:bg-filter-bar-foreground/15 transition-colors">−</button>
+            <span className="px-3 py-1 text-sm font-semibold text-filter-bar-foreground">{dashYear}</span>
+            <button onClick={() => setDashYear(dashYear + 1)}
+              className="px-2 py-1 text-xs rounded-md text-filter-bar-foreground/80 hover:bg-filter-bar-foreground/15 transition-colors">+</button>
+          </div>
+
+          {/* Clear selection button */}
+          {!isAllMonths && (
+            <button
+              onClick={clearSelection}
+              className="px-3 py-1.5 rounded-md text-xs font-medium bg-filter-bar-foreground/10 text-filter-bar-foreground/80 hover:bg-filter-bar-foreground/20 hover:text-filter-bar-foreground transition-all duration-150"
+            >
+              ✕ Limpiar selección
+            </button>
+          )}
+
+          {/* Period label */}
+          <span className="ml-auto text-xs text-filter-bar-foreground/70 font-medium">
+            {periodLabel}
+          </span>
         </div>
       </div>
 
@@ -147,11 +191,11 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* KPI Dashboard — uses confirmedTotals */}
+      {/* KPI Dashboard */}
       <section className="max-w-7xl mx-auto px-5 mb-7">
         <h2 className="font-heading text-lg font-bold tracking-tight mb-1">📊 Indicadores Clave de Impacto</h2>
         <p className="text-[10px] text-muted-foreground italic mb-3">
-          Indicadores consolidados de capturas confirmadas. Base de cálculo: kg netos (kg capturados × yield del material).
+          Indicadores consolidados de capturas confirmadas ({periodLabel}). Base de cálculo: kg netos (kg capturados × yield del material).
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <RadialGauge
@@ -207,7 +251,7 @@ const Dashboard = () => {
               capturasConfirmadas={confirmedEntries.length}
               lastUpdated={lastUpdated}
               currentMonth={currentMonth}
-              currentYear={currentYear}
+              currentYear={dashYear}
               variant="fullwidth"
             />
           </div>
