@@ -238,6 +238,7 @@ const DataCapture = () => {
                             handleKgChange(entry.material.code, parseFloat(val) || 0);
                           }
                         }}
+                        disabled={entry.isConfirmed && !permissions.canReopenCapture}
                         className="win-input !w-32 text-right font-semibold text-base tabular-nums"
                         placeholder="0.00"
                       />
