@@ -220,6 +220,8 @@ export function useDashboardFilter() {
     confirmedEntries,
     monthlyEconomic,
     allMonthsEconomic,
+    monthlyCo2,
+    allMonthsCo2,
     loading,
     lastUpdated,
     refreshData: loadDashboardCaptures,

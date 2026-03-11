@@ -5,7 +5,7 @@ import Navigation from "@/components/Navigation";
 import ControlOperativoPeriodoCard from "@/components/ControlOperativoPeriodoCard";
 import ShareModal from "@/components/ShareModal";
 import RadialGauge from "@/components/charts/RadialGauge";
-import AreaChartSVG from "@/components/charts/AreaChartSVG";
+import CO2ImpactCard from "@/components/charts/CO2ImpactCard";
 import ColumnChart from "@/components/charts/ColumnChart";
 import LiquidGauge from "@/components/charts/LiquidGauge";
 import EconomicImpactCard from "@/components/charts/EconomicImpactCard";
