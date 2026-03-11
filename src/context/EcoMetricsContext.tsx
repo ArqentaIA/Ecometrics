@@ -312,7 +312,8 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
 
   return (
     <EcoMetricsContext.Provider value={{
-      isLoggedIn, user, login, logout,
+      isLoggedIn, user, userRole, roleLabel, permissions, roleLoading,
+      login, logout,
       currentMonth, currentYear, setCurrentMonth, setCurrentYear,
       catalog, catalogLoading,
       materialEntries, setMaterialKg, setCostPerKg, costPerKgMap, clearAll,
