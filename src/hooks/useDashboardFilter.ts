@@ -6,7 +6,7 @@ import { calculateIndicators, type CatalogMaterial } from "@/lib/calculationEngi
 const EMPTY_TOTALS: KPITotals = { arboles: 0, co2: 0, energia: 0, agua: 0, kgBrutos: 0, kgNetos: 0, economicImpact: 0 };
 
 export function useDashboardFilter() {
-  const { user, catalog, catalogLoading } = useEcoMetrics();
+  const { user, catalog, catalogLoading, userRole } = useEcoMetrics();
 
   const [dashYear, setDashYear] = useState(new Date().getFullYear());
   // null = "all months" (default / cumulative mode)
