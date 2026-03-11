@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import { useDashboardFilter } from "@/hooks/useDashboardFilter";
 import Navigation from "@/components/Navigation";
-import ControlOperativoPeriodoCard from "@/components/ControlOperativoPeriodoCard";
+import HeroReincorporacionIndustriaCard from "@/components/HeroReincorporacionIndustriaCard";
 import ShareModal from "@/components/ShareModal";
 import TreesRingCard from "@/components/charts/TreesRingCard";
 import CO2ImpactCard from "@/components/charts/CO2ImpactCard";
@@ -29,6 +29,7 @@ const Dashboard = () => {
     monthlyEnergia, allMonthsEnergia,
     monthlyArboles, allMonthsArboles,
     monthlyAgua, allMonthsAgua,
+    monthlyKgNetos, allMonthsKgNetos,
     loading, lastUpdated, refreshData, catalogLoading,
   } = useDashboardFilter();
 
@@ -275,18 +276,16 @@ const Dashboard = () => {
             unit="kg totales"
           />
           
-          <div className="lg:col-span-2">
-            <ControlOperativoPeriodoCard
-              totalKg={totals.kgBrutos}
+          <div className="lg:col-span-3">
+            <HeroReincorporacionIndustriaCard
+              totalKgBrutos={totals.kgBrutos}
               totalKgNetos={totals.kgNetos}
-              totalPerdida={totals.kgBrutos - totals.kgNetos}
-              materialesRegistrados={confirmedEntries.length}
-              materialesTotales={materialEntries.length}
-              capturasConfirmadas={confirmedEntries.length}
+              confirmedEntries={confirmedEntries}
+              monthlyKgNetos={monthlyKgNetos}
+              allMonthsKgNetos={allMonthsKgNetos}
               lastUpdated={lastUpdated}
-              currentMonth={currentMonth}
-              currentYear={dashYear}
-              variant="fullwidth"
+              periodLabel={periodLabel}
+              dashYear={dashYear}
             />
           </div>
         </div>

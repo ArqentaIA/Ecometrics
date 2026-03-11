@@ -242,6 +242,25 @@ export function useDashboardFilter() {
     return months.map(m => ({ month: m, value: byMonth[m] ?? 0 }));
   }, [filteredCaptures, selectedMonths]);
 
+  // Full-year kg netos breakdown (shadow layer)
+  const allMonthsKgNetos = useMemo(() => {
+    const byMonth: Record<number, number> = {};
+    captures.forEach(c => {
+      byMonth[c.month] = (byMonth[c.month] ?? 0) + c.kg_netos;
+    });
+    return Array.from({ length: 12 }, (_, i) => ({ month: i + 1, value: byMonth[i + 1] ?? 0 }));
+  }, [captures]);
+
+  // Monthly kg netos breakdown for filtered view
+  const monthlyKgNetos = useMemo(() => {
+    const byMonth: Record<number, number> = {};
+    filteredCaptures.forEach(c => {
+      byMonth[c.month] = (byMonth[c.month] ?? 0) + c.kg_netos;
+    });
+    const months = selectedMonths ?? Array.from({ length: 12 }, (_, i) => i + 1);
+    return months.map(m => ({ month: m, value: byMonth[m] ?? 0 }));
+  }, [filteredCaptures, selectedMonths]);
+
   const toggleMonth = useCallback((month: number) => {
     setSelectedMonths(prev => {
       if (!prev) return [month];
@@ -279,6 +298,8 @@ export function useDashboardFilter() {
     allMonthsArboles,
     monthlyAgua,
     allMonthsAgua,
+    monthlyKgNetos,
+    allMonthsKgNetos,
     loading,
     lastUpdated,
     refreshData: loadDashboardCaptures,
