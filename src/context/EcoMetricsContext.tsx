@@ -181,6 +181,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
       });
 
       setKgMap(kgs);
+      setCostPerKgMapState(costs);
       setConfirmedMap(confirmed);
       setConfirmedSnapshots(snapshots);
       setLastUpdated(new Date());
