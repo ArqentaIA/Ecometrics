@@ -3,17 +3,28 @@ import { IMPACT_FORMULAS, IMPACT_COLORS } from "@/data/impactFormulas";
 interface ImpactCardsProps {
   materialCode: string;
   kg: number;
+  yieldPct: number; // 0-100
 }
 
-const ImpactCards = ({ materialCode, kg }: ImpactCardsProps) => {
+const formatByLabel = (label: string, value: number): string => {
+  if (label.includes("Árboles")) return value.toLocaleString("es-MX", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  if (label.includes("CO₂")) return value.toLocaleString("es-MX", { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+  if (label.includes("Energía")) return value.toLocaleString("es-MX", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  if (label.includes("Agua")) return value.toLocaleString("es-MX", { maximumFractionDigits: 0 });
+  return value.toLocaleString("es-MX", { maximumFractionDigits: 2 });
+};
+
+const ImpactCards = ({ materialCode, kg, yieldPct }: ImpactCardsProps) => {
   const formulas = IMPACT_FORMULAS[materialCode];
   if (!formulas || formulas.length === 0) return null;
+
+  const kgNetos = kg * (yieldPct / 100);
 
   return (
     <div className="mt-3 grid gap-2" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(175px, 1fr))" }}>
       {formulas.map((f) => {
         const c = IMPACT_COLORS[f.label] ?? IMPACT_COLORS["CO₂e Evitado"];
-        const res = (kg * f.factor).toLocaleString("es-MX", { maximumFractionDigits: 2 });
+        const res = formatByLabel(f.label, kgNetos * f.factor);
 
         return (
           <div

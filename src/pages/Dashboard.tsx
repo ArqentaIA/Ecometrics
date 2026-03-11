@@ -142,7 +142,7 @@ const Dashboard = () => {
       <section className="max-w-7xl mx-auto px-5 mb-7">
         <h2 className="font-heading text-lg font-bold tracking-tight mb-1">📊 Indicadores Clave de Impacto</h2>
         <p className="text-[10px] text-muted-foreground italic mb-3">
-          Calculado sobre KG netos (KG capturados × yield del material). Fuente de yield: datos técnicos de planta IRM + literatura especializada de reciclaje.
+          Indicadores calculados sobre kg netos recuperados (kg capturados × yield del material). Fuente de yield: datos técnicos de planta IRM + literatura especializada de reciclaje.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Row 1 */}

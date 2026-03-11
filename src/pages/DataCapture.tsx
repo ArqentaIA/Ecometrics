@@ -246,7 +246,7 @@ const DataCapture = () => {
 
                     {/* Impact cards expandable */}
                     {openImpact[entry.material.code] && (
-                      <ImpactCards materialCode={entry.material.code} kg={entry.kg} />
+                      <ImpactCards materialCode={entry.material.code} kg={entry.kg} yieldPct={entry.material.yieldInfo.yield} />
                     )}
                   </div>
                 );
