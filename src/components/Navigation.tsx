@@ -8,7 +8,7 @@ interface NavigationProps {
 const Navigation = ({ showBell }: NavigationProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout, user } = useEcoMetrics();
+  const { logout, user, roleLabel } = useEcoMetrics();
 
   const links = [
     { to: "/dashboard", label: "Dashboard" },
