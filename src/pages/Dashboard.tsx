@@ -7,7 +7,7 @@ import ShareModal from "@/components/ShareModal";
 import TreesRingCard from "@/components/charts/TreesRingCard";
 import CO2ImpactCard from "@/components/charts/CO2ImpactCard";
 import EnergyWaveCard from "@/components/charts/EnergyWaveCard";
-import LiquidGauge from "@/components/charts/LiquidGauge";
+import WaterLiquidCard from "@/components/charts/WaterLiquidCard";
 import EconomicImpactCard from "@/components/charts/EconomicImpactCard";
 import HorizontalBar3D from "@/components/charts/HorizontalBar3D";
 import ReincorporatedRidgeline from "@/components/charts/ReincorporatedRidgeline";
