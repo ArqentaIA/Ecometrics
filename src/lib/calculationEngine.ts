@@ -26,6 +26,7 @@ export interface CatalogMaterial {
   display_order: number;
   yield_source: string;
   factors_source: string;
+  default_cost_per_kg: number;
 }
 
 export interface CalculatedKPIs {
@@ -43,6 +44,7 @@ export interface CalculatedKPIs {
   factor_co2: number | null;
   factor_energia: number | null;
   factor_agua: number | null;
+  economic_impact: number;
 }
 
 /**
@@ -55,10 +57,12 @@ export interface CalculatedKPIs {
  */
 export function calculateIndicators(
   material: CatalogMaterial,
-  kgBrutos: number
+  kgBrutos: number,
+  costPerKg?: number
 ): CalculatedKPIs {
   const yieldApplied = material.default_yield;
   const kgNetos = kgBrutos * (yieldApplied / 100);
+  const appliedCost = costPerKg ?? material.default_cost_per_kg ?? 0;
 
   return {
     kg_netos: kgNetos,
@@ -79,6 +83,7 @@ export function calculateIndicators(
     factor_co2: material.factor_co2,
     factor_energia: material.factor_energia,
     factor_agua: material.factor_agua,
+    economic_impact: kgBrutos * appliedCost,
   };
 }
 
@@ -115,9 +120,11 @@ export function buildCaptureSnapshot(
   kgBrutos: number,
   userId: string,
   month: number,
-  year: number
+  year: number,
+  costPerKg?: number
 ) {
-  const kpis = calculateIndicators(material, kgBrutos);
+  const appliedCost = costPerKg ?? material.default_cost_per_kg ?? 0;
+  const kpis = calculateIndicators(material, kgBrutos, appliedCost);
 
   return {
     user_id: userId,
@@ -139,6 +146,8 @@ export function buildCaptureSnapshot(
     result_co2: kpis.co2,
     result_energia: kpis.energia,
     result_agua: kpis.agua,
+    cost_per_kg_applied: appliedCost,
+    result_economic_impact: kpis.economic_impact,
     is_confirmed: true,
     month,
     year,
@@ -158,6 +167,8 @@ export const DISPLAY_FORMATS = {
   co2: { decimals: 2 },
   energia: { decimals: 1 },
   agua: { decimals: 0 },
+  economic_impact: { decimals: 2 },
+  cost_per_kg: { decimals: 2 },
 } as const;
 
 export function formatKPI(

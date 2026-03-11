@@ -180,7 +180,7 @@ const Dashboard = () => {
           />
           <FinancialLineChart
             emoji="💰" title="Impacto Económico en la Comunidad"
-            data={[{ label: "Actual", value: 0 }]}
+            data={[{ label: "Actual", value: totals.economicImpact }]}
             color="#9333EA" unit="MXN"
             trend={0}
           />

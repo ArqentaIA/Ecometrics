@@ -25,6 +25,7 @@ export interface KPITotals {
   agua: number;
   kgBrutos: number;
   kgNetos: number;
+  economicImpact: number;
 }
 
 interface EcoMetricsState {
@@ -40,6 +41,8 @@ interface EcoMetricsState {
   catalogLoading: boolean;
   materialEntries: MaterialEntry[];
   setMaterialKg: (code: string, kg: number) => void;
+  setCostPerKg: (code: string, cost: number) => void;
+  costPerKgMap: Record<string, number>;
   clearAll: () => void;
   kpiTotals: KPITotals;
   totalKg: number;
@@ -55,7 +58,7 @@ interface EcoMetricsState {
 
 const EcoMetricsContext = createContext<EcoMetricsState | null>(null);
 
-const EMPTY_TOTALS: KPITotals = { arboles: 0, co2: 0, energia: 0, agua: 0, kgBrutos: 0, kgNetos: 0 };
+const EMPTY_TOTALS: KPITotals = { arboles: 0, co2: 0, energia: 0, agua: 0, kgBrutos: 0, kgNetos: 0, economicImpact: 0 };
 
 export function EcoMetricsProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -63,6 +66,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [kgMap, setKgMap] = useState<Record<string, number>>({});
+  const [costPerKgMap, setCostPerKgMapState] = useState<Record<string, number>>({});
   const [confirmedMap, setConfirmedMap] = useState<Record<string, boolean>>({});
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [savingCapture, setSavingCapture] = useState(false);
@@ -80,6 +84,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     result_agua: number;
     kg_brutos: number;
     kg_netos: number;
+    result_economic_impact: number;
   }>>([]);
 
   // ─── Auth ───
@@ -107,6 +112,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
   const logout = useCallback(async () => {
     await supabase.auth.signOut();
     setKgMap({});
+    setCostPerKgMapState({});
     setConfirmedMap({});
     setConfirmedSnapshots([]);
   }, []);
@@ -140,7 +146,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     try {
       const { data, error } = await supabase
         .from("material_captures")
-        .select("material_code, kg_brutos, is_confirmed, result_arboles, result_co2, result_energia, result_agua, kg_netos")
+        .select("material_code, kg_brutos, is_confirmed, result_arboles, result_co2, result_energia, result_agua, kg_netos, cost_per_kg_applied, result_economic_impact")
         .eq("user_id", user.id)
         .eq("month", currentMonth + 1)
         .eq("year", currentYear);
@@ -151,13 +157,15 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
       }
 
       const kgs: Record<string, number> = {};
+      const costs: Record<string, number> = {};
       const confirmed: Record<string, boolean> = {};
       const snapshots: typeof confirmedSnapshots = [];
 
-      catalog.forEach(m => { kgs[m.code] = 0; });
+      catalog.forEach(m => { kgs[m.code] = 0; costs[m.code] = m.default_cost_per_kg ?? 0; });
 
       data?.forEach(row => {
         kgs[row.material_code] = Number(row.kg_brutos);
+        costs[row.material_code] = Number(row.cost_per_kg_applied ?? 0);
         confirmed[row.material_code] = row.is_confirmed ?? false;
         if (row.is_confirmed) {
           snapshots.push({
@@ -167,11 +175,13 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
             result_agua: Number(row.result_agua ?? 0),
             kg_brutos: Number(row.kg_brutos ?? 0),
             kg_netos: Number(row.kg_netos ?? 0),
+            result_economic_impact: Number(row.result_economic_impact ?? 0),
           });
         }
       });
 
       setKgMap(kgs);
+      setCostPerKgMapState(costs);
       setConfirmedMap(confirmed);
       setConfirmedSnapshots(snapshots);
       setLastUpdated(new Date());
@@ -197,7 +207,18 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
       Object.keys(prev).forEach(k => { map[k] = 0; });
       return map;
     });
+    // Reset costs to catalog defaults
+    setCostPerKgMapState(() => {
+      const map: Record<string, number> = {};
+      catalog.forEach(m => { map[m.code] = m.default_cost_per_kg ?? 0; });
+      return map;
+    });
     setConfirmedMap({});
+  }, [catalog]);
+
+  const setCostPerKg = useCallback((code: string, cost: number) => {
+    setCostPerKgMapState(prev => ({ ...prev, [code]: cost }));
+    setConfirmedMap(prev => ({ ...prev, [code]: false }));
   }, []);
 
   // ─── Save Capture (with full snapshot) ───
@@ -206,10 +227,16 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     const material = catalog.find(m => m.code === code);
     if (!material) return { error: "Material no encontrado en catálogo" };
 
+    const kg = kgMap[code] ?? 0;
+    const cost = costPerKgMap[code] ?? material.default_cost_per_kg ?? 0;
+
+    // Validations
+    if (kg <= 0) return { error: "El peso capturado debe ser mayor a cero" };
+    if (cost < 0) return { error: "El costo por kg no puede ser negativo" };
+
     setSavingCapture(true);
     try {
-      const kg = kgMap[code] ?? 0;
-      const snapshot = buildCaptureSnapshot(material, kg, user.id, currentMonth + 1, currentYear);
+      const snapshot = buildCaptureSnapshot(material, kg, user.id, currentMonth + 1, currentYear, cost);
 
       const { error } = await supabase
         .from("material_captures")
@@ -217,27 +244,24 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
 
       if (error) return { error: error.message };
 
-      // Update local confirmed state
       setConfirmedMap(prev => ({ ...prev, [code]: true }));
-
-      // Reload snapshots for dashboard
       await loadCaptures();
 
       return { error: null };
     } finally {
       setSavingCapture(false);
     }
-  }, [user, catalog, kgMap, currentMonth, currentYear, loadCaptures]);
+  }, [user, catalog, kgMap, costPerKgMap, currentMonth, currentYear, loadCaptures]);
 
   // ─── Derived: material entries with live KPIs from engine ───
   const materialEntries: MaterialEntry[] = useMemo(() =>
     catalog.map(m => ({
       material: m,
       kg: kgMap[m.code] ?? 0,
-      kpis: calculateIndicators(m, kgMap[m.code] ?? 0),
+      kpis: calculateIndicators(m, kgMap[m.code] ?? 0, costPerKgMap[m.code] ?? m.default_cost_per_kg ?? 0),
       isConfirmed: confirmedMap[m.code] ?? false,
     })),
-    [catalog, kgMap, confirmedMap]
+    [catalog, kgMap, costPerKgMap, confirmedMap]
   );
 
   // ─── Live KPI totals (for capture screen) ───
@@ -250,6 +274,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
         agua: acc.agua + e.kpis.agua,
         kgBrutos: acc.kgBrutos + e.kg,
         kgNetos: acc.kgNetos + e.kpis.kg_netos,
+        economicImpact: acc.economicImpact + e.kpis.economic_impact,
       }),
       { ...EMPTY_TOTALS }
     ),
@@ -268,6 +293,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
         agua: acc.agua + s.result_agua,
         kgBrutos: acc.kgBrutos + s.kg_brutos,
         kgNetos: acc.kgNetos + s.kg_netos,
+        economicImpact: acc.economicImpact + s.result_economic_impact,
       }),
       { ...EMPTY_TOTALS }
     ),
@@ -283,7 +309,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
       isLoggedIn, user, login, logout,
       currentMonth, currentYear, setCurrentMonth, setCurrentYear,
       catalog, catalogLoading,
-      materialEntries, setMaterialKg, clearAll,
+      materialEntries, setMaterialKg, setCostPerKg, costPerKgMap, clearAll,
       kpiTotals, totalKg,
       refreshData, lastUpdated,
       savingCapture, saveCapture, loadCaptures, loadingCaptures,

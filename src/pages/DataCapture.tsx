@@ -15,9 +15,9 @@ interface CaptureState {
 
 const DataCapture = () => {
   const {
-    materialEntries, setMaterialKg, clearAll,
+    materialEntries, setMaterialKg, setCostPerKg, costPerKgMap, clearAll,
     currentMonth, setCurrentMonth, currentYear, setCurrentYear,
-    saveCapture, catalogLoading,
+    saveCapture, catalogLoading, catalog,
   } = useEcoMetrics();
 
   const [activeTab, setActiveTab] = useState(0);
@@ -186,6 +186,31 @@ const DataCapture = () => {
                         placeholder="0.00"
                       />
                       <span className="text-xs text-muted-foreground font-medium">kg</span>
+
+                      {/* Cost per kg field */}
+                      <div className="flex items-center gap-1">
+                        <span className="text-[11px] text-muted-foreground whitespace-nowrap">$/kg</span>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={costPerKgMap[entry.material.code] ?? entry.material.default_cost_per_kg ?? ""}
+                          onChange={e => {
+                            const val = e.target.value;
+                            if (val === "" || /^\d*\.?\d*$/.test(val)) {
+                              setCostPerKg(entry.material.code, parseFloat(val) || 0);
+                            }
+                          }}
+                          className="win-input !w-24 text-right font-semibold text-sm tabular-nums"
+                          placeholder="0.00"
+                        />
+                      </div>
+
+                      {/* Economic impact calculated */}
+                      {entry.kg > 0 && (
+                        <div className="shrink-0 px-2 py-1 rounded-md bg-accent/50 text-xs font-semibold text-foreground whitespace-nowrap">
+                          💰 ${formatKPI("economic_impact", entry.kpis.economic_impact)} <span className="text-muted-foreground font-normal">MXN</span>
+                        </div>
+                      )}
 
                       <button
                         onClick={() => handleConfirm(entry.material.code)}
