@@ -69,7 +69,7 @@ export function useDashboardFilter() {
     } finally {
       setLoading(false);
     }
-  }, [user, dashYear]);
+  }, [user, dashYear, isGlobalRole]);
 
   useEffect(() => {
     if (user && catalog.length > 0) loadDashboardCaptures();
