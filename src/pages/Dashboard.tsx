@@ -205,11 +205,17 @@ const Dashboard = () => {
             unit="equiv." color="#22C55E"
             trend={0}
           />
-          <AreaChartSVG
-            emoji="♻️" title="CO₂e Evitado"
-            data={[{ label: "Actual", value: totals.co2 }]}
-            lineColor="#16A34A" areaColor="#22C55E" unit="kg CO₂"
-            trend={0}
+          <CO2ImpactCard
+            total={totals.co2}
+            monthlyData={monthlyCo2}
+            allMonthsData={allMonthsCo2}
+            periodLabel={periodLabel}
+            dashYear={dashYear}
+            topMaterials={confirmedEntries
+              .filter(e => e.kpis.co2 > 0)
+              .sort((a, b) => b.kpis.co2 - a.kpis.co2)
+              .slice(0, 3)
+              .map(e => ({ name: e.material.name, co2: e.kpis.co2 }))}
           />
           <ColumnChart
             emoji="⚡" title="Energía Ahorrada"
