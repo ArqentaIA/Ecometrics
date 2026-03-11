@@ -200,6 +200,7 @@ export function useDashboardFilter() {
     materialEntries,
     confirmedEntries,
     monthlyEconomic,
+    allMonthsEconomic,
     loading,
     lastUpdated,
     refreshData: loadDashboardCaptures,

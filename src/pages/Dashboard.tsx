@@ -24,7 +24,7 @@ const Dashboard = () => {
     dashYear, setDashYear,
     selectedMonths, toggleMonth, clearSelection, isAllMonths,
     confirmedTotals: totals,
-    materialEntries, confirmedEntries, monthlyEconomic,
+    materialEntries, confirmedEntries, monthlyEconomic, allMonthsEconomic,
     loading, lastUpdated, refreshData, catalogLoading,
   } = useDashboardFilter();
 
