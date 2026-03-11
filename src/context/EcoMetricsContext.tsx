@@ -41,6 +41,8 @@ interface EcoMetricsState {
   catalogLoading: boolean;
   materialEntries: MaterialEntry[];
   setMaterialKg: (code: string, kg: number) => void;
+  setCostPerKg: (code: string, cost: number) => void;
+  costPerKgMap: Record<string, number>;
   clearAll: () => void;
   kpiTotals: KPITotals;
   totalKg: number;
