@@ -1,12 +1,30 @@
 import React, { createContext, useContext, useState, useMemo, useCallback, useEffect } from "react";
-import { MATERIALS, Material, calculateKPIs, MaterialKPIs, KPI_TARGETS, generateMonthlyHistory } from "@/data/materials";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
+import {
+  CatalogMaterial,
+  CalculatedKPIs,
+  calculateIndicators,
+  buildCaptureSnapshot,
+} from "@/lib/calculationEngine";
 
-interface MaterialEntry {
-  material: Material;
+// ─────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────
+export interface MaterialEntry {
+  material: CatalogMaterial;
   kg: number;
-  kpis: MaterialKPIs;
+  kpis: CalculatedKPIs;
+  isConfirmed: boolean;
+}
+
+export interface KPITotals {
+  arboles: number;
+  co2: number;
+  energia: number;
+  agua: number;
+  kgBrutos: number;
+  kgNetos: number;
 }
 
 interface EcoMetricsState {
@@ -18,34 +36,53 @@ interface EcoMetricsState {
   currentYear: number;
   setCurrentMonth: (m: number) => void;
   setCurrentYear: (y: number) => void;
+  catalog: CatalogMaterial[];
+  catalogLoading: boolean;
   materialEntries: MaterialEntry[];
   setMaterialKg: (code: string, kg: number) => void;
   clearAll: () => void;
-  kpiTotals: MaterialKPIs;
+  kpiTotals: KPITotals;
   totalKg: number;
-  targets: typeof KPI_TARGETS;
-  monthlyHistory: ReturnType<typeof generateMonthlyHistory>;
   refreshData: () => void;
   lastUpdated: Date;
   savingCapture: boolean;
   saveCapture: (code: string) => Promise<{ error: string | null }>;
   loadCaptures: () => Promise<void>;
   loadingCaptures: boolean;
+  /** Dashboard totals from confirmed captures only */
+  confirmedTotals: KPITotals;
 }
 
 const EcoMetricsContext = createContext<EcoMetricsState | null>(null);
 
+const EMPTY_TOTALS: KPITotals = { arboles: 0, co2: 0, energia: 0, agua: 0, kgBrutos: 0, kgNetos: 0 };
+
 export function EcoMetricsProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [sessionReady, setSessionReady] = useState(false);
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth()); // 0-indexed
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [kgMap, setKgMap] = useState<Record<string, number>>({});
+  const [confirmedMap, setConfirmedMap] = useState<Record<string, boolean>>({});
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [savingCapture, setSavingCapture] = useState(false);
   const [loadingCaptures, setLoadingCaptures] = useState(false);
 
-  // Auth listener
+  // Catalog state
+  const [catalog, setCatalog] = useState<CatalogMaterial[]>([]);
+  const [catalogLoading, setCatalogLoading] = useState(true);
+
+  // Confirmed capture snapshots from DB (for dashboard)
+  const [confirmedSnapshots, setConfirmedSnapshots] = useState<Array<{
+    result_arboles: number;
+    result_co2: number;
+    result_energia: number;
+    result_agua: number;
+    kg_brutos: number;
+    kg_netos: number;
+  }>>([]);
+
+  // ─── Auth ───
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session: Session | null) => {
@@ -53,7 +90,6 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
         setSessionReady(true);
       }
     );
-    // Check existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setSessionReady(true);
@@ -65,36 +101,46 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
 
   const login = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { error: error.message };
-    return { error: null };
+    return { error: error ? error.message : null };
   }, []);
 
   const logout = useCallback(async () => {
     await supabase.auth.signOut();
     setKgMap({});
+    setConfirmedMap({});
+    setConfirmedSnapshots([]);
   }, []);
 
-  const setMaterialKg = useCallback((code: string, kg: number) => {
-    setKgMap(prev => ({ ...prev, [code]: kg }));
+  // ─── Load Catalog from Supabase ───
+  useEffect(() => {
+    async function loadCatalog() {
+      setCatalogLoading(true);
+      const { data, error } = await supabase
+        .from("material_catalog")
+        .select("*")
+        .eq("is_active", true)
+        .order("display_order");
+
+      if (error) {
+        console.error("Error loading catalog:", error);
+        setCatalogLoading(false);
+        return;
+      }
+
+      setCatalog((data ?? []) as unknown as CatalogMaterial[]);
+      setCatalogLoading(false);
+    }
+    loadCatalog();
   }, []);
 
-  const clearAll = useCallback(() => {
-    setKgMap(prev => {
-      const map: Record<string, number> = {};
-      Object.keys(prev).forEach(k => { map[k] = 0; });
-      return map;
-    });
-  }, []);
-
-  // Load captures from Supabase for current month/year
+  // ─── Load Captures ───
   const loadCaptures = useCallback(async () => {
     if (!user) return;
     setLoadingCaptures(true);
     try {
-      // month in DB is 1-indexed
       const { data, error } = await supabase
         .from("material_captures")
-        .select("material_code, kg_brutos")
+        .select("material_code, kg_brutos, is_confirmed, result_arboles, result_co2, result_energia, result_agua, kg_netos")
         .eq("user_id", user.id)
         .eq("month", currentMonth + 1)
         .eq("year", currentYear);
@@ -104,93 +150,144 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
         return;
       }
 
-      const map: Record<string, number> = {};
-      MATERIALS.forEach(m => { map[m.code] = 0; });
+      const kgs: Record<string, number> = {};
+      const confirmed: Record<string, boolean> = {};
+      const snapshots: typeof confirmedSnapshots = [];
+
+      catalog.forEach(m => { kgs[m.code] = 0; });
+
       data?.forEach(row => {
-        map[row.material_code] = Number(row.kg_brutos);
+        kgs[row.material_code] = Number(row.kg_brutos);
+        confirmed[row.material_code] = row.is_confirmed ?? false;
+        if (row.is_confirmed) {
+          snapshots.push({
+            result_arboles: Number(row.result_arboles ?? 0),
+            result_co2: Number(row.result_co2 ?? 0),
+            result_energia: Number(row.result_energia ?? 0),
+            result_agua: Number(row.result_agua ?? 0),
+            kg_brutos: Number(row.kg_brutos ?? 0),
+            kg_netos: Number(row.kg_netos ?? 0),
+          });
+        }
       });
-      setKgMap(map);
+
+      setKgMap(kgs);
+      setConfirmedMap(confirmed);
+      setConfirmedSnapshots(snapshots);
       setLastUpdated(new Date());
     } finally {
       setLoadingCaptures(false);
     }
-  }, [user, currentMonth, currentYear]);
+  }, [user, currentMonth, currentYear, catalog]);
 
-  // Auto-load when user/month/year changes
   useEffect(() => {
-    if (user) {
-      loadCaptures();
-    }
-  }, [user, currentMonth, currentYear, loadCaptures]);
+    if (user && catalog.length > 0) loadCaptures();
+  }, [user, currentMonth, currentYear, loadCaptures, catalog]);
 
-  // Save a single capture to Supabase (upsert)
+  // ─── Setters ───
+  const setMaterialKg = useCallback((code: string, kg: number) => {
+    setKgMap(prev => ({ ...prev, [code]: kg }));
+    // Mark as unconfirmed when kg changes
+    setConfirmedMap(prev => ({ ...prev, [code]: false }));
+  }, []);
+
+  const clearAll = useCallback(() => {
+    setKgMap(prev => {
+      const map: Record<string, number> = {};
+      Object.keys(prev).forEach(k => { map[k] = 0; });
+      return map;
+    });
+    setConfirmedMap({});
+  }, []);
+
+  // ─── Save Capture (with full snapshot) ───
   const saveCapture = useCallback(async (code: string) => {
     if (!user) return { error: "No autenticado" };
+    const material = catalog.find(m => m.code === code);
+    if (!material) return { error: "Material no encontrado en catálogo" };
+
     setSavingCapture(true);
     try {
       const kg = kgMap[code] ?? 0;
+      const snapshot = buildCaptureSnapshot(material, kg, user.id, currentMonth + 1, currentYear);
+
       const { error } = await supabase
         .from("material_captures")
-        .upsert({
-          user_id: user.id,
-          material_code: code,
-          kg_brutos: kg,
-          month: currentMonth + 1, // 1-indexed in DB
-          year: currentYear,
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: "user_id,material_code,month,year",
-        });
+        .upsert(snapshot, { onConflict: "user_id,material_code,month,year" });
+
       if (error) return { error: error.message };
+
+      // Update local confirmed state
+      setConfirmedMap(prev => ({ ...prev, [code]: true }));
+
+      // Reload snapshots for dashboard
+      await loadCaptures();
+
       return { error: null };
     } finally {
       setSavingCapture(false);
     }
-  }, [user, kgMap, currentMonth, currentYear]);
+  }, [user, catalog, kgMap, currentMonth, currentYear, loadCaptures]);
 
-  const materialEntries = useMemo(() =>
-    MATERIALS.map(m => ({
+  // ─── Derived: material entries with live KPIs from engine ───
+  const materialEntries: MaterialEntry[] = useMemo(() =>
+    catalog.map(m => ({
       material: m,
       kg: kgMap[m.code] ?? 0,
-      kpis: calculateKPIs(m, kgMap[m.code] ?? 0),
+      kpis: calculateIndicators(m, kgMap[m.code] ?? 0),
+      isConfirmed: confirmedMap[m.code] ?? false,
     })),
-    [kgMap]
+    [catalog, kgMap, confirmedMap]
   );
 
-  const kpiTotals = useMemo(() =>
+  // ─── Live KPI totals (for capture screen) ───
+  const kpiTotals: KPITotals = useMemo(() =>
     materialEntries.reduce(
       (acc, e) => ({
         arboles: acc.arboles + e.kpis.arboles,
         co2: acc.co2 + e.kpis.co2,
         energia: acc.energia + e.kpis.energia,
         agua: acc.agua + e.kpis.agua,
-        costo: acc.costo + e.kpis.costo,
-        materiasPrimas: 0,
+        kgBrutos: acc.kgBrutos + e.kg,
+        kgNetos: acc.kgNetos + e.kpis.kg_netos,
       }),
-      { arboles: 0, co2: 0, energia: 0, agua: 0, costo: 0, materiasPrimas: 0 }
+      { ...EMPTY_TOTALS }
     ),
     [materialEntries]
   );
 
-  const totalKg = useMemo(() => materialEntries.reduce((s, e) => s + e.kg, 0), [materialEntries]);
+  const totalKg = kpiTotals.kgBrutos;
 
-  const monthlyHistory = useMemo(() => generateMonthlyHistory(kgMap), [kgMap]);
+  // ─── Dashboard totals: only confirmed snapshots ───
+  const confirmedTotals: KPITotals = useMemo(() =>
+    confirmedSnapshots.reduce(
+      (acc, s) => ({
+        arboles: acc.arboles + s.result_arboles,
+        co2: acc.co2 + s.result_co2,
+        energia: acc.energia + s.result_energia,
+        agua: acc.agua + s.result_agua,
+        kgBrutos: acc.kgBrutos + s.kg_brutos,
+        kgNetos: acc.kgNetos + s.kg_netos,
+      }),
+      { ...EMPTY_TOTALS }
+    ),
+    [confirmedSnapshots]
+  );
 
-  const refreshData = useCallback(() => {
-    loadCaptures();
-  }, [loadCaptures]);
+  const refreshData = useCallback(() => { loadCaptures(); }, [loadCaptures]);
 
-  // Don't render children until session is checked
   if (!sessionReady) return null;
 
   return (
     <EcoMetricsContext.Provider value={{
-      isLoggedIn, user,
-      login, logout,
+      isLoggedIn, user, login, logout,
       currentMonth, currentYear, setCurrentMonth, setCurrentYear,
-      materialEntries, setMaterialKg, clearAll, kpiTotals, totalKg,
-      targets: KPI_TARGETS, monthlyHistory, refreshData, lastUpdated,
+      catalog, catalogLoading,
+      materialEntries, setMaterialKg, clearAll,
+      kpiTotals, totalKg,
+      refreshData, lastUpdated,
       savingCapture, saveCapture, loadCaptures, loadingCaptures,
+      confirmedTotals,
     }}>
       {children}
     </EcoMetricsContext.Provider>
