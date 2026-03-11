@@ -1,5 +1,10 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useLoopAnimation } from "@/hooks/useLoopAnimation";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Segment {
   label: string;
@@ -21,7 +26,6 @@ const HorizontalBar3D = ({ title, emoji, segments, unit }: HorizontalBar3DProps)
   const maxVal = Math.max(...segments.map(s => s.value), 1);
 
   const barH = 26;
-  const gap = 8;
   const depth = 6;
 
   return (
