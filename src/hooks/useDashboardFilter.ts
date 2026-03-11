@@ -224,12 +224,27 @@ export function useDashboardFilter() {
     const months = selectedMonths ?? Array.from({ length: 12 }, (_, i) => i + 1);
     return months.map(m => ({ month: m, value: byMonth[m] ?? 0 }));
   }, [filteredCaptures, selectedMonths]);
+  // Full-year water breakdown
+  const allMonthsAgua = useMemo(() => {
+    const byMonth: Record<number, number> = {};
+    captures.forEach(c => {
+      byMonth[c.month] = (byMonth[c.month] ?? 0) + c.result_agua;
+    });
+    return Array.from({ length: 12 }, (_, i) => ({ month: i + 1, value: byMonth[i + 1] ?? 0 }));
+  }, [captures]);
+
+  const monthlyAgua = useMemo(() => {
+    const byMonth: Record<number, number> = {};
+    filteredCaptures.forEach(c => {
+      byMonth[c.month] = (byMonth[c.month] ?? 0) + c.result_agua;
+    });
+    const months = selectedMonths ?? Array.from({ length: 12 }, (_, i) => i + 1);
+    return months.map(m => ({ month: m, value: byMonth[m] ?? 0 }));
+  }, [filteredCaptures, selectedMonths]);
 
   const toggleMonth = useCallback((month: number) => {
     setSelectedMonths(prev => {
-      if (!prev) {
-        return [month];
-      }
+      if (!prev) return [month];
       if (prev.includes(month)) {
         const next = prev.filter(m => m !== month);
         return next.length === 0 ? null : next;
@@ -262,6 +277,8 @@ export function useDashboardFilter() {
     allMonthsEnergia,
     monthlyArboles,
     allMonthsArboles,
+    monthlyAgua,
+    allMonthsAgua,
     loading,
     lastUpdated,
     refreshData: loadDashboardCaptures,
