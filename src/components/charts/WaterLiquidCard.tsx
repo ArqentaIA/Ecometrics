@@ -6,10 +6,10 @@ interface MonthlyData {
   value: number;
 }
 
-interface ConfirmedEntry {
-  material: { name: string; factor_agua: number | null; uses_agua: boolean };
-  kpis: { agua: number };
-  capture: { kg_brutos: number; updated_at: string };
+interface EntryData {
+  materialName: string;
+  agua: number;
+  kgBrutos: number;
 }
 
 interface WaterLiquidCardProps {
@@ -17,7 +17,8 @@ interface WaterLiquidCardProps {
   monthlyData: MonthlyData[];
   periodLabel: string;
   dashYear: number;
-  confirmedEntries: ConfirmedEntry[];
+  confirmedEntries: EntryData[];
+  lastUpdated: string | null;
 }
 
 const WaterLiquidCard = ({
@@ -26,10 +27,10 @@ const WaterLiquidCard = ({
   periodLabel,
   dashYear,
   confirmedEntries,
+  lastUpdated,
 }: WaterLiquidCardProps) => {
   const { displayValue, isPulsing } = useLoopAnimation({ targetValue: value });
 
-  // --- Variation vs previous month ---
   const variation = useMemo(() => {
     const active = monthlyData.filter(d => d.value > 0);
     if (active.length < 2) return null;
@@ -40,21 +41,16 @@ const WaterLiquidCard = ({
     return ((last - prev) / prev) * 100;
   }, [monthlyData]);
 
-  // --- Equivalences ---
   const showers = Math.round(value / 250);
   const peoplePerDay = Math.round(value / 1500);
 
-  // --- Micro indicators ---
-  const totalCaptures = confirmedEntries.filter(e => e.kpis.agua > 0).length;
+  const totalCaptures = confirmedEntries.filter(e => e.agua > 0).length;
   const avgPerCapture = totalCaptures > 0 ? Math.round(value / totalCaptures) : 0;
 
   const topMaterial = useMemo(() => {
-    if (confirmedEntries.length === 0) return null;
     const byMat: Record<string, number> = {};
     confirmedEntries.forEach(e => {
-      if (e.kpis.agua > 0) {
-        byMat[e.material.name] = (byMat[e.material.name] || 0) + e.kpis.agua;
-      }
+      if (e.agua > 0) byMat[e.materialName] = (byMat[e.materialName] || 0) + e.agua;
     });
     const entries = Object.entries(byMat);
     if (entries.length === 0) return null;
@@ -62,40 +58,26 @@ const WaterLiquidCard = ({
     return entries[0][0];
   }, [confirmedEntries]);
 
-  const lastSync = useMemo(() => {
-    if (confirmedEntries.length === 0) return null;
-    const sorted = [...confirmedEntries].sort(
-      (a, b) => new Date(b.capture.updated_at).getTime() - new Date(a.capture.updated_at).getTime()
-    );
-    return new Date(sorted[0].capture.updated_at);
-  }, [confirmedEntries]);
-
-  // --- Liquid gauge ---
   const size = 150;
   const r = size / 2;
-  // Use a visual fill based on a sensible max (dynamic: 120% of value or at least something)
   const visualMax = Math.max(value * 1.2, 1);
   const fillPct = Math.min((displayValue / visualMax) * 100, 95);
   const fillY = size - (fillPct / 100) * size;
   const clipId = `water-clip-${dashYear}`;
   const gradId = `water-grad-${dashYear}`;
 
-  // --- Sparkline ---
   const sparkPoints = useMemo(() => {
     const active = monthlyData.filter(d => d.value > 0);
     if (active.length === 0) return "";
     const sorted = [...active].sort((a, b) => a.month - b.month);
     const max = Math.max(...sorted.map(d => d.value), 1);
-    const w = 200;
-    const h = 32;
+    const w = 200, h = 32;
     const step = sorted.length > 1 ? w / (sorted.length - 1) : w / 2;
-    return sorted
-      .map((d, i) => {
-        const x = sorted.length === 1 ? w / 2 : i * step;
-        const y = h - (d.value / max) * (h - 4) - 2;
-        return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
-      })
-      .join(" ");
+    return sorted.map((d, i) => {
+      const x = sorted.length === 1 ? w / 2 : i * step;
+      const y = h - (d.value / max) * (h - 4) - 2;
+      return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(" ");
   }, [monthlyData]);
 
   const sparkArea = useMemo(() => {
@@ -103,8 +85,7 @@ const WaterLiquidCard = ({
     const active = monthlyData.filter(d => d.value > 0).sort((a, b) => a.month - b.month);
     if (active.length === 0) return "";
     const max = Math.max(...active.map(d => d.value), 1);
-    const w = 200;
-    const h = 32;
+    const w = 200, h = 32;
     const step = active.length > 1 ? w / (active.length - 1) : w / 2;
     const lastX = active.length === 1 ? w / 2 : (active.length - 1) * step;
     const firstX = active.length === 1 ? w / 2 : 0;
@@ -123,7 +104,7 @@ const WaterLiquidCard = ({
           <span
             className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
             style={{
-              background: variation >= 0 ? "hsl(var(--accent) / 0.15)" : "hsl(0 84% 60% / 0.15)",
+              background: variation >= 0 ? "hsl(199 89% 48% / 0.15)" : "hsl(0 84% 60% / 0.15)",
               color: variation >= 0 ? "hsl(199 89% 48%)" : "hsl(0 84% 60%)",
             }}
           >
@@ -151,44 +132,28 @@ const WaterLiquidCard = ({
               <stop offset="100%" stopColor="hsl(201 96% 32%)" stopOpacity={0.85} />
             </linearGradient>
           </defs>
-
           <circle cx={r} cy={r} r={r - 4} fill="none" stroke="hsl(199 89% 48%)" strokeWidth="2" opacity={0.18} />
           <circle cx={r} cy={r} r={r - 2} fill="hsl(var(--card))" />
-
           <g clipPath={`url(#${clipId})`}>
             <rect x={0} y={fillY} width={size} height={size} fill={`url(#${gradId})`} />
-
-            {/* Wave 1 */}
             <path
               d={`M0 ${fillY} Q${size * 0.25} ${fillY - 8} ${size * 0.5} ${fillY} T${size} ${fillY} V${size} H0 Z`}
               fill="hsl(199 89% 48%)" opacity={0.3}
             >
-              <animateTransform
-                attributeName="transform" type="translate"
-                values={`0,0; ${size * 0.1},0; 0,0`}
-                dur="3s" repeatCount="indefinite"
-              />
+              <animateTransform attributeName="transform" type="translate"
+                values={`0,0; ${size * 0.1},0; 0,0`} dur="3s" repeatCount="indefinite" />
             </path>
-
-            {/* Wave 2 */}
             <path
               d={`M0 ${fillY + 3} Q${size * 0.3} ${fillY - 5} ${size * 0.6} ${fillY + 3} T${size} ${fillY + 3} V${size} H0 Z`}
               fill="hsl(201 96% 32%)" opacity={0.15}
             >
-              <animateTransform
-                attributeName="transform" type="translate"
-                values={`0,0; -${size * 0.08},0; 0,0`}
-                dur="2.5s" repeatCount="indefinite"
-              />
+              <animateTransform attributeName="transform" type="translate"
+                values={`0,0; -${size * 0.08},0; 0,0`} dur="2.5s" repeatCount="indefinite" />
             </path>
-
-            {/* Light reflection */}
             <rect x={size * 0.28} y={fillY + 5} width={size * 0.12} height={size * 0.35}
               rx={8} fill="white" opacity={0.08} />
           </g>
         </svg>
-
-        {/* Center value */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span
             className="font-heading text-[20px] font-bold tracking-tight leading-none"
@@ -208,7 +173,6 @@ const WaterLiquidCard = ({
         </div>
       </div>
 
-      {/* Period label */}
       <p className="text-[10px] text-muted-foreground mb-2">{periodLabel}</p>
 
       {/* Sparkline trend */}
@@ -256,11 +220,11 @@ const WaterLiquidCard = ({
             <span className="font-semibold text-foreground truncate ml-2 max-w-[120px]">{topMaterial}</span>
           </div>
         )}
-        {lastSync && (
+        {lastUpdated && (
           <div className="flex items-center justify-between text-[10px]">
             <span className="text-muted-foreground">Última sync</span>
             <span className="font-semibold text-foreground">
-              {lastSync.toLocaleDateString("es-MX", { day: "2-digit", month: "short" })}
+              {new Date(lastUpdated).toLocaleDateString("es-MX", { day: "2-digit", month: "short" })}
             </span>
           </div>
         )}

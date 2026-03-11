@@ -241,10 +241,11 @@ const Dashboard = () => {
             periodLabel={periodLabel}
             dashYear={dashYear}
             confirmedEntries={confirmedEntries.map(e => ({
-              material: { name: e.material.name, factor_agua: e.material.factor_agua, uses_agua: e.material.uses_agua },
-              kpis: { agua: e.kpis.agua },
-              capture: { kg_brutos: e.capture.kg_brutos, updated_at: e.capture.updated_at },
+              materialName: e.material.name,
+              agua: e.kpis.agua,
+              kgBrutos: e.kg,
             }))}
+            lastUpdated={lastUpdated}
           />
           <EconomicImpactCard
             total={totals.economicImpact}
