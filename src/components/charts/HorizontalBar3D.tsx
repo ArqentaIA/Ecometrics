@@ -48,7 +48,7 @@ const HorizontalBar3D = ({ title, emoji, segments, unit }: HorizontalBar3DProps)
         {segments.map((seg, i) => {
           const pct = total > 0 ? (seg.value / maxVal) * 100 * progress : 0;
           const isHovered = hoverIdx === i;
-          const percentage = total > 0 ? ((seg.value / total) * 100).toFixed(0) : "0";
+          const percentage = total > 0 ? ((seg.value / total) * 100).toFixed(1) : "0.0";
 
           return (
             <div
