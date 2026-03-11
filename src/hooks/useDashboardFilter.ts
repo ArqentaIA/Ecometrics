@@ -149,6 +149,16 @@ export function useDashboardFilter() {
     [materialEntries]
   );
 
+  // Monthly economic breakdown for sparkline
+  const monthlyEconomic = useMemo(() => {
+    const byMonth: Record<number, number> = {};
+    filteredCaptures.forEach(c => {
+      byMonth[c.month] = (byMonth[c.month] ?? 0) + c.result_economic_impact;
+    });
+    const months = selectedMonths ?? Array.from({ length: 12 }, (_, i) => i + 1);
+    return months.map(m => ({ month: m, value: byMonth[m] ?? 0 }));
+  }, [filteredCaptures, selectedMonths]);
+
   const toggleMonth = useCallback((month: number) => {
     setSelectedMonths(prev => {
       if (!prev) {
