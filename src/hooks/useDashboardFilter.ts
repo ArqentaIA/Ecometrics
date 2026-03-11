@@ -6,7 +6,7 @@ import { calculateIndicators, type CatalogMaterial } from "@/lib/calculationEngi
 const EMPTY_TOTALS: KPITotals = { arboles: 0, co2: 0, energia: 0, agua: 0, kgBrutos: 0, kgNetos: 0, economicImpact: 0 };
 
 export function useDashboardFilter() {
-  const { user, catalog, catalogLoading } = useEcoMetrics();
+  const { user, catalog, catalogLoading, userRole } = useEcoMetrics();
 
   const [dashYear, setDashYear] = useState(new Date().getFullYear());
   // null = "all months" (default / cumulative mode)
@@ -29,16 +29,24 @@ export function useDashboardFilter() {
     cost_per_kg_applied: number;
   }>>([]);
 
+  const isGlobalRole = userRole === 'admin' || userRole === 'administrador' || userRole === 'direccion';
+
   const loadDashboardCaptures = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("material_captures")
         .select("material_code, month, kg_brutos, kg_netos, is_confirmed, result_arboles, result_co2, result_energia, result_agua, result_economic_impact, cost_per_kg_applied")
-        .eq("user_id", user.id)
         .eq("year", dashYear)
         .eq("is_confirmed", true);
+
+      // Only filter by user_id for non-global roles
+      if (!isGlobalRole) {
+        query = query.eq("user_id", user.id);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error("Error loading dashboard captures:", error);
@@ -61,7 +69,7 @@ export function useDashboardFilter() {
     } finally {
       setLoading(false);
     }
-  }, [user, dashYear]);
+  }, [user, dashYear, isGlobalRole]);
 
   useEffect(() => {
     if (user && catalog.length > 0) loadDashboardCaptures();
