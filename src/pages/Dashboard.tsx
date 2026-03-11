@@ -237,10 +237,15 @@ const Dashboard = () => {
           />
           <WaterLiquidCard
             value={totals.agua}
-            target={230000}
             monthlyData={monthlyAgua}
             periodLabel={periodLabel}
             dashYear={dashYear}
+            confirmedEntries={confirmedEntries.map(e => ({
+              materialName: e.material.name,
+              agua: e.kpis.agua,
+              kgBrutos: e.kg,
+            }))}
+            lastUpdated={lastUpdated}
           />
           <EconomicImpactCard
             total={totals.economicImpact}
