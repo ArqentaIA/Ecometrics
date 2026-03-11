@@ -14,8 +14,110 @@ export type Database = {
   }
   public: {
     Tables: {
+      additional_material_requests: {
+        Row: {
+          catalog_material_code: string | null
+          converted_to_catalog: boolean
+          created_at: string
+          description: string | null
+          id: string
+          proposed_category: string | null
+          proposed_name: string
+          proposed_price_per_kg: number | null
+          proposed_unit: string | null
+          reason: string | null
+          requested_by: string
+          review_comment: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          catalog_material_code?: string | null
+          converted_to_catalog?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          proposed_category?: string | null
+          proposed_name: string
+          proposed_price_per_kg?: number | null
+          proposed_unit?: string | null
+          reason?: string | null
+          requested_by: string
+          review_comment?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          catalog_material_code?: string | null
+          converted_to_catalog?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          proposed_category?: string | null
+          proposed_name?: string
+          proposed_price_per_kg?: number | null
+          proposed_unit?: string | null
+          reason?: string | null
+          requested_by?: string
+          review_comment?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      audit_log: {
+        Row: {
+          comment: string | null
+          created_at: string
+          event_type: string
+          field_changed: string | null
+          id: string
+          new_value: string | null
+          old_value: string | null
+          record_id: string
+          table_name: string
+          user_id: string
+          user_role: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          event_type: string
+          field_changed?: string | null
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          record_id: string
+          table_name: string
+          user_id: string
+          user_role?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          event_type?: string
+          field_changed?: string | null
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          record_id?: string
+          table_name?: string
+          user_id?: string
+          user_role?: string | null
+        }
+        Relationships: []
+      }
       material_captures: {
         Row: {
+          capture_origin: string | null
+          confirmed_at: string | null
+          confirmed_by: string | null
           cost_per_kg_applied: number | null
           created_at: string
           factor_agua_applied: number | null
@@ -24,6 +126,7 @@ export type Database = {
           factor_energia_applied: number | null
           family: string | null
           id: string
+          is_additional_material: boolean | null
           is_confirmed: boolean | null
           kg_brutos: number
           kg_netos: number | null
@@ -36,6 +139,7 @@ export type Database = {
           result_co2: number | null
           result_economic_impact: number | null
           result_energia: number | null
+          temporary_material_id: string | null
           updated_at: string
           user_id: string
           uses_agua: boolean | null
@@ -46,6 +150,9 @@ export type Database = {
           yield_applied: number | null
         }
         Insert: {
+          capture_origin?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
           cost_per_kg_applied?: number | null
           created_at?: string
           factor_agua_applied?: number | null
@@ -54,6 +161,7 @@ export type Database = {
           factor_energia_applied?: number | null
           family?: string | null
           id?: string
+          is_additional_material?: boolean | null
           is_confirmed?: boolean | null
           kg_brutos?: number
           kg_netos?: number | null
@@ -66,6 +174,7 @@ export type Database = {
           result_co2?: number | null
           result_economic_impact?: number | null
           result_energia?: number | null
+          temporary_material_id?: string | null
           updated_at?: string
           user_id: string
           uses_agua?: boolean | null
@@ -76,6 +185,9 @@ export type Database = {
           yield_applied?: number | null
         }
         Update: {
+          capture_origin?: string | null
+          confirmed_at?: string | null
+          confirmed_by?: string | null
           cost_per_kg_applied?: number | null
           created_at?: string
           factor_agua_applied?: number | null
@@ -84,6 +196,7 @@ export type Database = {
           factor_energia_applied?: number | null
           family?: string | null
           id?: string
+          is_additional_material?: boolean | null
           is_confirmed?: boolean | null
           kg_brutos?: number
           kg_netos?: number | null
@@ -96,6 +209,7 @@ export type Database = {
           result_co2?: number | null
           result_economic_impact?: number | null
           result_energia?: number | null
+          temporary_material_id?: string | null
           updated_at?: string
           user_id?: string
           uses_agua?: boolean | null
@@ -105,12 +219,22 @@ export type Database = {
           year?: number
           yield_applied?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "material_captures_temporary_material_id_fkey"
+            columns: ["temporary_material_id"]
+            isOneToOne: false
+            referencedRelation: "temporary_materials"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       material_catalog: {
         Row: {
+          category_id: string | null
           code: string
           created_at: string
+          created_by: string | null
           default_cost_per_kg: number | null
           default_yield: number
           display_order: number
@@ -124,6 +248,7 @@ export type Database = {
           is_active: boolean
           name: string
           updated_at: string
+          updated_by: string | null
           uses_agua: boolean
           uses_arboles: boolean
           uses_co2: boolean
@@ -134,8 +259,10 @@ export type Database = {
           yield_source: string
         }
         Insert: {
+          category_id?: string | null
           code: string
           created_at?: string
+          created_by?: string | null
           default_cost_per_kg?: number | null
           default_yield?: number
           display_order?: number
@@ -149,6 +276,7 @@ export type Database = {
           is_active?: boolean
           name: string
           updated_at?: string
+          updated_by?: string | null
           uses_agua?: boolean
           uses_arboles?: boolean
           uses_co2?: boolean
@@ -159,8 +287,10 @@ export type Database = {
           yield_source?: string
         }
         Update: {
+          category_id?: string | null
           code?: string
           created_at?: string
+          created_by?: string | null
           default_cost_per_kg?: number | null
           default_yield?: number
           display_order?: number
@@ -174,6 +304,7 @@ export type Database = {
           is_active?: boolean
           name?: string
           updated_at?: string
+          updated_by?: string | null
           uses_agua?: boolean
           uses_arboles?: boolean
           uses_co2?: boolean
@@ -182,6 +313,44 @@ export type Database = {
           yield_max?: number
           yield_min?: number
           yield_source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_catalog_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "material_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      material_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -208,6 +377,116 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      system_parameters: {
+        Row: {
+          description: string | null
+          id: string
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: string
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: string
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
+      temporary_materials: {
+        Row: {
+          approved_for_temp_use: boolean
+          category: string | null
+          created_at: string
+          created_by: string
+          default_yield: number
+          description: string | null
+          factor_agua: number | null
+          factor_arboles: number | null
+          factor_co2: number | null
+          factor_energia: number | null
+          id: string
+          is_active: boolean
+          name: string
+          price_per_kg: number
+          request_id: string | null
+          requires_review: boolean
+          updated_at: string
+          uses_agua: boolean
+          uses_arboles: boolean
+          uses_co2: boolean
+          uses_energia: boolean
+          valid_until: string | null
+        }
+        Insert: {
+          approved_for_temp_use?: boolean
+          category?: string | null
+          created_at?: string
+          created_by: string
+          default_yield?: number
+          description?: string | null
+          factor_agua?: number | null
+          factor_arboles?: number | null
+          factor_co2?: number | null
+          factor_energia?: number | null
+          id?: string
+          is_active?: boolean
+          name: string
+          price_per_kg?: number
+          request_id?: string | null
+          requires_review?: boolean
+          updated_at?: string
+          uses_agua?: boolean
+          uses_arboles?: boolean
+          uses_co2?: boolean
+          uses_energia?: boolean
+          valid_until?: string | null
+        }
+        Update: {
+          approved_for_temp_use?: boolean
+          category?: string | null
+          created_at?: string
+          created_by?: string
+          default_yield?: number
+          description?: string | null
+          factor_agua?: number | null
+          factor_arboles?: number | null
+          factor_co2?: number | null
+          factor_energia?: number | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          price_per_kg?: number
+          request_id?: string | null
+          requires_review?: boolean
+          updated_at?: string
+          uses_agua?: boolean
+          uses_arboles?: boolean
+          uses_co2?: boolean
+          uses_energia?: boolean
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "temporary_materials_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "additional_material_requests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
