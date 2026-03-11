@@ -57,10 +57,12 @@ export interface CalculatedKPIs {
  */
 export function calculateIndicators(
   material: CatalogMaterial,
-  kgBrutos: number
+  kgBrutos: number,
+  costPerKg?: number
 ): CalculatedKPIs {
   const yieldApplied = material.default_yield;
   const kgNetos = kgBrutos * (yieldApplied / 100);
+  const appliedCost = costPerKg ?? material.default_cost_per_kg ?? 0;
 
   return {
     kg_netos: kgNetos,
@@ -81,6 +83,7 @@ export function calculateIndicators(
     factor_co2: material.factor_co2,
     factor_energia: material.factor_energia,
     factor_agua: material.factor_agua,
+    economic_impact: kgBrutos * appliedCost,
   };
 }
 
