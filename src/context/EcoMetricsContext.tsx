@@ -207,7 +207,18 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
       Object.keys(prev).forEach(k => { map[k] = 0; });
       return map;
     });
+    // Reset costs to catalog defaults
+    setCostPerKgMapState(() => {
+      const map: Record<string, number> = {};
+      catalog.forEach(m => { map[m.code] = m.default_cost_per_kg ?? 0; });
+      return map;
+    });
     setConfirmedMap({});
+  }, [catalog]);
+
+  const setCostPerKg = useCallback((code: string, cost: number) => {
+    setCostPerKgMapState(prev => ({ ...prev, [code]: cost }));
+    setConfirmedMap(prev => ({ ...prev, [code]: false }));
   }, []);
 
   // ─── Save Capture (with full snapshot) ───
