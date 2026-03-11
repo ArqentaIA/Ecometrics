@@ -157,6 +157,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
       }
 
       const kgs: Record<string, number> = {};
+      const costs: Record<string, number> = {};
       const confirmed: Record<string, boolean> = {};
       const snapshots: typeof confirmedSnapshots = [];
 
