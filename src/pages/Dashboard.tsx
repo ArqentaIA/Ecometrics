@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import { useDashboardFilter } from "@/hooks/useDashboardFilter";
 import Navigation from "@/components/Navigation";
-import ControlOperativoPeriodoCard from "@/components/ControlOperativoPeriodoCard";
+import HeroReincorporacionIndustriaCard from "@/components/HeroReincorporacionIndustriaCard";
 import ShareModal from "@/components/ShareModal";
 import TreesRingCard from "@/components/charts/TreesRingCard";
 import CO2ImpactCard from "@/components/charts/CO2ImpactCard";
