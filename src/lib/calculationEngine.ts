@@ -120,9 +120,11 @@ export function buildCaptureSnapshot(
   kgBrutos: number,
   userId: string,
   month: number,
-  year: number
+  year: number,
+  costPerKg?: number
 ) {
-  const kpis = calculateIndicators(material, kgBrutos);
+  const appliedCost = costPerKg ?? material.default_cost_per_kg ?? 0;
+  const kpis = calculateIndicators(material, kgBrutos, appliedCost);
 
   return {
     user_id: userId,
@@ -144,6 +146,8 @@ export function buildCaptureSnapshot(
     result_co2: kpis.co2,
     result_energia: kpis.energia,
     result_agua: kpis.agua,
+    cost_per_kg_applied: appliedCost,
+    result_economic_impact: kpis.economic_impact,
     is_confirmed: true,
     month,
     year,
