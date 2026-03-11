@@ -8,7 +8,7 @@ import RadialGauge from "@/components/charts/RadialGauge";
 import AreaChartSVG from "@/components/charts/AreaChartSVG";
 import ColumnChart from "@/components/charts/ColumnChart";
 import LiquidGauge from "@/components/charts/LiquidGauge";
-import FinancialLineChart from "@/components/charts/FinancialLineChart";
+import EconomicImpactCard from "@/components/charts/EconomicImpactCard";
 import HorizontalBar3D from "@/components/charts/HorizontalBar3D";
 import ReincorporatedRidgeline from "@/components/charts/ReincorporatedRidgeline";
 import recyclingHero from "@/assets/recycling-hero.png";
@@ -24,7 +24,7 @@ const Dashboard = () => {
     dashYear, setDashYear,
     selectedMonths, toggleMonth, clearSelection, isAllMonths,
     confirmedTotals: totals,
-    materialEntries, confirmedEntries,
+    materialEntries, confirmedEntries, monthlyEconomic,
     loading, lastUpdated, refreshData, catalogLoading,
   } = useDashboardFilter();
 
@@ -222,11 +222,11 @@ const Dashboard = () => {
             unit="Litros" color="#38BDF8"
             trend={0}
           />
-          <FinancialLineChart
-            emoji="💰" title="Impacto Económico en la Comunidad"
-            data={[{ label: "Actual", value: totals.economicImpact }]}
-            color="#9333EA" unit="MXN"
-            trend={0}
+          <EconomicImpactCard
+            total={totals.economicImpact}
+            monthlyData={monthlyEconomic}
+            periodLabel={periodLabel}
+            color="#9333EA"
           />
           <HorizontalBar3D
             emoji="📦" title="Materiales Reciclados Recuperados"
