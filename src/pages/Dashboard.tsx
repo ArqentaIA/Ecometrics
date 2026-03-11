@@ -6,7 +6,7 @@ import ControlOperativoPeriodoCard from "@/components/ControlOperativoPeriodoCar
 import ShareModal from "@/components/ShareModal";
 import RadialGauge from "@/components/charts/RadialGauge";
 import CO2ImpactCard from "@/components/charts/CO2ImpactCard";
-import ColumnChart from "@/components/charts/ColumnChart";
+import EnergyWaveCard from "@/components/charts/EnergyWaveCard";
 import LiquidGauge from "@/components/charts/LiquidGauge";
 import EconomicImpactCard from "@/components/charts/EconomicImpactCard";
 import HorizontalBar3D from "@/components/charts/HorizontalBar3D";
@@ -26,6 +26,7 @@ const Dashboard = () => {
     confirmedTotals: totals,
     materialEntries, confirmedEntries, monthlyEconomic, allMonthsEconomic,
     monthlyCo2, allMonthsCo2,
+    monthlyEnergia, allMonthsEnergia,
     loading, lastUpdated, refreshData, catalogLoading,
   } = useDashboardFilter();
 
@@ -217,11 +218,17 @@ const Dashboard = () => {
               .slice(0, 3)
               .map(e => ({ name: e.material.name, co2: e.kpis.co2 }))}
           />
-          <ColumnChart
-            emoji="⚡" title="Energía Ahorrada"
-            data={[{ label: "Actual", value: totals.energia }]}
-            color="#FACC15" unit="kWh"
-            trend={0}
+          <EnergyWaveCard
+            total={totals.energia}
+            monthlyData={monthlyEnergia}
+            allMonthsData={allMonthsEnergia}
+            periodLabel={periodLabel}
+            dashYear={dashYear}
+            topMaterials={confirmedEntries
+              .filter(e => e.kpis.energia > 0)
+              .sort((a, b) => b.kpis.energia - a.kpis.energia)
+              .slice(0, 3)
+              .map(e => ({ name: e.material.name, energia: e.kpis.energia }))}
           />
           <LiquidGauge
             emoji="💧" label="Agua Conservada"
