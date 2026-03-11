@@ -142,7 +142,7 @@ const Dashboard = () => {
       <section className="max-w-7xl mx-auto px-5 mb-7">
         <h2 className="font-heading text-lg font-bold tracking-tight mb-1">📊 Indicadores Clave de Impacto</h2>
         <p className="text-[10px] text-muted-foreground italic mb-3">
-          Calculado sobre KG netos (KG capturados × yield del material). Fuente de yield: datos técnicos de planta IRM + literatura especializada de reciclaje.
+          Indicadores calculados sobre kg netos recuperados (kg capturados × yield del material). Fuente de yield: datos técnicos de planta IRM + literatura especializada de reciclaje.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Row 1 */}
@@ -207,6 +207,9 @@ const Dashboard = () => {
             />
           </div>
         </div>
+        <p className="text-[11px] text-muted-foreground mt-4 px-1 border-l-2 border-primary/40 pl-3">
+          📐 Indicadores calculados sobre kg netos recuperados (kg capturados × yield del material).
+        </p>
       </section>
 
       {/* Material Detail Table */}
@@ -263,9 +266,9 @@ const Dashboard = () => {
                       <td className="px-3 py-2 font-medium text-muted-foreground/80">
                         {kgNetos > 0 ? kgNetos.toLocaleString("es-MX", { maximumFractionDigits: 1 }) : "—"}
                       </td>
-                      <td className="px-3 py-2">{e.kpis.arboles > 0 ? e.kpis.arboles.toFixed(2) : <span className="text-muted-foreground">—</span>}</td>
+                      <td className="px-3 py-2">{e.kpis.arboles > 0 ? e.kpis.arboles.toFixed(1) : <span className="text-muted-foreground">—</span>}</td>
                       <td className="px-3 py-2">{e.kpis.co2 > 0 ? e.kpis.co2.toFixed(2) : <span className="text-muted-foreground">—</span>}</td>
-                      <td className="px-3 py-2">{e.kpis.energia > 0 ? e.kpis.energia.toFixed(2) : <span className="text-muted-foreground">—</span>}</td>
+                      <td className="px-3 py-2">{e.kpis.energia > 0 ? e.kpis.energia.toFixed(1) : <span className="text-muted-foreground">—</span>}</td>
                       <td className="px-3 py-2">{e.kpis.agua > 0 ? e.kpis.agua.toFixed(0) : <span className="text-muted-foreground">—</span>}</td>
                       <td className="px-3 py-2">${e.kpis.costo.toFixed(2)}</td>
                       <td className="px-3 py-2 text-muted-foreground group relative">
@@ -280,9 +283,9 @@ const Dashboard = () => {
                   <td className="px-3 py-2.5">{totalKg.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
                   <td className="px-3 py-2.5">—</td>
                   <td className="px-3 py-2.5">{totalKgNetos.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
-                  <td className="px-3 py-2.5">{kpiTotals.arboles.toFixed(2)}</td>
+                  <td className="px-3 py-2.5">{kpiTotals.arboles.toFixed(1)}</td>
                   <td className="px-3 py-2.5">{kpiTotals.co2.toFixed(2)}</td>
-                  <td className="px-3 py-2.5">{kpiTotals.energia.toFixed(2)}</td>
+                  <td className="px-3 py-2.5">{kpiTotals.energia.toFixed(1)}</td>
                   <td className="px-3 py-2.5">{kpiTotals.agua.toFixed(0)}</td>
                   <td className="px-3 py-2.5">${kpiTotals.costo.toFixed(2)}</td>
                   <td className="px-3 py-2.5">—</td>
