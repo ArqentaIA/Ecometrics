@@ -10,7 +10,7 @@ import EnergyWaveCard from "@/components/charts/EnergyWaveCard";
 import WaterLiquidCard from "@/components/charts/WaterLiquidCard";
 import EconomicImpactCard from "@/components/charts/EconomicImpactCard";
 import HorizontalBar3D from "@/components/charts/HorizontalBar3D";
-import ReincorporatedRidgeline from "@/components/charts/ReincorporatedRidgeline";
+
 import recyclingHero from "@/assets/recycling-hero.png";
 import logoImrGris from "@/assets/logo-imr-gris.png";
 import { formatKPI } from "@/lib/calculationEngine";
