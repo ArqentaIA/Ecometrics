@@ -167,6 +167,8 @@ export const DISPLAY_FORMATS = {
   co2: { decimals: 2 },
   energia: { decimals: 1 },
   agua: { decimals: 0 },
+  economic_impact: { decimals: 2 },
+  cost_per_kg: { decimals: 2 },
 } as const;
 
 export function formatKPI(
