@@ -274,7 +274,7 @@ const Dashboard = () => {
               .map(e => ({ label: e.material.code, value: e.kg, color: "#94A3B8" }))}
             unit="kg totales"
           />
-          <ReincorporatedRidgeline />
+          
           <div className="lg:col-span-2">
             <ControlOperativoPeriodoCard
               totalKg={totals.kgBrutos}
