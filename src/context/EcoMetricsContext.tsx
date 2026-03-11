@@ -84,6 +84,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     result_agua: number;
     kg_brutos: number;
     kg_netos: number;
+    result_economic_impact: number;
   }>>([]);
 
   // ─── Auth ───
