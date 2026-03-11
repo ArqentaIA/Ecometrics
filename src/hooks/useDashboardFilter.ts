@@ -190,6 +190,7 @@ export function useDashboardFilter() {
     confirmedTotals,
     materialEntries,
     confirmedEntries,
+    monthlyEconomic,
     loading,
     lastUpdated,
     refreshData: loadDashboardCaptures,
