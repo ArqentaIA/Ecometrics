@@ -5,7 +5,7 @@ import Navigation from "@/components/Navigation";
 import ControlOperativoPeriodoCard from "@/components/ControlOperativoPeriodoCard";
 import ShareModal from "@/components/ShareModal";
 import RadialGauge from "@/components/charts/RadialGauge";
-import AreaChartSVG from "@/components/charts/AreaChartSVG";
+import CO2ImpactCard from "@/components/charts/CO2ImpactCard";
 import ColumnChart from "@/components/charts/ColumnChart";
 import LiquidGauge from "@/components/charts/LiquidGauge";
 import EconomicImpactCard from "@/components/charts/EconomicImpactCard";
@@ -25,6 +25,7 @@ const Dashboard = () => {
     selectedMonths, toggleMonth, clearSelection, isAllMonths,
     confirmedTotals: totals,
     materialEntries, confirmedEntries, monthlyEconomic, allMonthsEconomic,
+    monthlyCo2, allMonthsCo2,
     loading, lastUpdated, refreshData, catalogLoading,
   } = useDashboardFilter();
 
@@ -204,11 +205,17 @@ const Dashboard = () => {
             unit="equiv." color="#22C55E"
             trend={0}
           />
-          <AreaChartSVG
-            emoji="♻️" title="CO₂e Evitado"
-            data={[{ label: "Actual", value: totals.co2 }]}
-            lineColor="#16A34A" areaColor="#22C55E" unit="kg CO₂"
-            trend={0}
+          <CO2ImpactCard
+            total={totals.co2}
+            monthlyData={monthlyCo2}
+            allMonthsData={allMonthsCo2}
+            periodLabel={periodLabel}
+            dashYear={dashYear}
+            topMaterials={confirmedEntries
+              .filter(e => e.kpis.co2 > 0)
+              .sort((a, b) => b.kpis.co2 - a.kpis.co2)
+              .slice(0, 3)
+              .map(e => ({ name: e.material.name, co2: e.kpis.co2 }))}
           />
           <ColumnChart
             emoji="⚡" title="Energía Ahorrada"

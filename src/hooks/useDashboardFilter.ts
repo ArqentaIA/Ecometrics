@@ -168,6 +168,25 @@ export function useDashboardFilter() {
     return months.map(m => ({ month: m, value: byMonth[m] ?? 0 }));
   }, [filteredCaptures, selectedMonths]);
 
+  // Full-year CO2 breakdown (always 12 months — shadow layer)
+  const allMonthsCo2 = useMemo(() => {
+    const byMonth: Record<number, number> = {};
+    captures.forEach(c => {
+      byMonth[c.month] = (byMonth[c.month] ?? 0) + c.result_co2;
+    });
+    return Array.from({ length: 12 }, (_, i) => ({ month: i + 1, value: byMonth[i + 1] ?? 0 }));
+  }, [captures]);
+
+  // Monthly CO2 breakdown for filtered view
+  const monthlyCo2 = useMemo(() => {
+    const byMonth: Record<number, number> = {};
+    filteredCaptures.forEach(c => {
+      byMonth[c.month] = (byMonth[c.month] ?? 0) + c.result_co2;
+    });
+    const months = selectedMonths ?? Array.from({ length: 12 }, (_, i) => i + 1);
+    return months.map(m => ({ month: m, value: byMonth[m] ?? 0 }));
+  }, [filteredCaptures, selectedMonths]);
+
   const toggleMonth = useCallback((month: number) => {
     setSelectedMonths(prev => {
       if (!prev) {
@@ -201,6 +220,8 @@ export function useDashboardFilter() {
     confirmedEntries,
     monthlyEconomic,
     allMonthsEconomic,
+    monthlyCo2,
+    allMonthsCo2,
     loading,
     lastUpdated,
     refreshData: loadDashboardCaptures,
