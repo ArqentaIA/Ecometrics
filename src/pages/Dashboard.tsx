@@ -12,9 +12,14 @@ import HorizontalBar3D from "@/components/charts/HorizontalBar3D";
 import ReincorporatedRidgeline from "@/components/charts/ReincorporatedRidgeline";
 import recyclingHero from "@/assets/recycling-hero.png";
 import logoImrGris from "@/assets/logo-imr-gris.png";
+import { formatKPI } from "@/lib/calculationEngine";
 
 const Dashboard = () => {
-  const { kpiTotals, targets, materialEntries, monthlyHistory, refreshData, lastUpdated, totalKg, currentMonth, currentYear } = useEcoMetrics();
+  const {
+    confirmedTotals, materialEntries, refreshData, lastUpdated,
+    currentMonth, currentYear, catalogLoading,
+  } = useEcoMetrics();
+
   const [refreshing, setRefreshing] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [sortCol, setSortCol] = useState<string | null>(null);
@@ -25,30 +30,27 @@ const Dashboard = () => {
     setTimeout(() => { refreshData(); setRefreshing(false); }, 800);
   };
 
-  const pct = (v: number, t: number) => t > 0 ? Math.min((v / t) * 100, 100) : 0;
-  const pctBadge = (p: number) => p >= 80 ? "win-badge-success" : p >= 60 ? "win-badge-warning" : "win-badge-critical";
+  // Use confirmed totals for dashboard (REGLA DEL DASHBOARD)
+  const totals = confirmedTotals;
 
-  // Yield calculations
-  const totalKgNetos = useMemo(() =>
-    materialEntries.reduce((s, e) => s + e.kg * (e.material.yieldInfo.yield / 100), 0),
+  const confirmedEntries = useMemo(() =>
+    materialEntries.filter(e => e.isConfirmed && e.kg > 0),
     [materialEntries]
   );
-  const totalPerdida = totalKg - totalKgNetos;
 
   const sortedEntries = useMemo(() => {
-    if (!sortCol) return materialEntries;
-    const sorted = [...materialEntries].sort((a, b) => {
+    const entries = [...materialEntries];
+    if (!sortCol) return entries;
+    return entries.sort((a, b) => {
       let va: number, vb: number;
       if (sortCol === "kg") { va = a.kg; vb = b.kg; }
       else if (sortCol === "arboles") { va = a.kpis.arboles; vb = b.kpis.arboles; }
       else if (sortCol === "co2") { va = a.kpis.co2; vb = b.kpis.co2; }
       else if (sortCol === "energia") { va = a.kpis.energia; vb = b.kpis.energia; }
       else if (sortCol === "agua") { va = a.kpis.agua; vb = b.kpis.agua; }
-      else if (sortCol === "costo") { va = a.kpis.costo; vb = b.kpis.costo; }
       else { va = 0; vb = 0; }
       return sortDir === "asc" ? va - vb : vb - va;
     });
-    return sorted;
   }, [materialEntries, sortCol, sortDir]);
 
   const toggleSort = (col: string) => {
@@ -57,13 +59,15 @@ const Dashboard = () => {
   };
 
   const exportCSV = () => {
-    const headers = ["#", "Descripción", "Código", "KG Brutos", "Yield %", "KG Netos", "Árboles", "CO₂e kg", "Energía kWh", "Agua L", "Costo $"];
+    const headers = ["#", "Material", "Código", "KG Brutos", "Yield %", "KG Netos", "Árboles", "CO₂e kg", "Energía kWh", "Agua L"];
     const rows = materialEntries.map((e, i) => [
-      i + 1, e.material.description, e.material.code, e.kg,
-      e.material.yieldInfo.yield,
-      (e.kg * (e.material.yieldInfo.yield / 100)).toFixed(1),
-      e.kpis.arboles.toFixed(2), e.kpis.co2.toFixed(2), e.kpis.energia.toFixed(2),
-      e.kpis.agua.toFixed(0), e.kpis.costo.toFixed(2),
+      i + 1, e.material.name, e.material.code, e.kg,
+      e.material.default_yield,
+      formatKPI("kg_netos", e.kpis.kg_netos),
+      formatKPI("arboles", e.kpis.arboles),
+      formatKPI("co2", e.kpis.co2),
+      formatKPI("energia", e.kpis.energia),
+      formatKPI("agua", e.kpis.agua),
     ]);
     const csv = [headers, ...rows].map(r => r.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
@@ -72,8 +76,13 @@ const Dashboard = () => {
     a.href = url; a.download = "ecometrics-export.csv"; a.click();
   };
 
-  const prevMonth = monthlyHistory[monthlyHistory.length - 2];
-  const currMonth = monthlyHistory[monthlyHistory.length - 1];
+  if (catalogLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <span className="text-muted-foreground">Cargando catálogo…</span>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -138,49 +147,46 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* KPI Dashboard */}
+      {/* KPI Dashboard — uses confirmedTotals */}
       <section className="max-w-7xl mx-auto px-5 mb-7">
         <h2 className="font-heading text-lg font-bold tracking-tight mb-1">📊 Indicadores Clave de Impacto</h2>
         <p className="text-[10px] text-muted-foreground italic mb-3">
-          Indicadores calculados sobre kg netos recuperados (kg capturados × yield del material). Fuente de yield: datos técnicos de planta IRM + literatura especializada de reciclaje.
+          Indicadores consolidados de capturas confirmadas. Base de cálculo: kg netos (kg capturados × yield del material).
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Row 1 */}
           <RadialGauge
             emoji="🌳" label="Árboles Preservados"
-            value={kpiTotals.arboles} target={targets.arboles}
+            value={totals.arboles} target={800}
             unit="equiv." color="#22C55E"
-            trend={prevMonth && currMonth ? ((currMonth.arboles / prevMonth.arboles - 1) * 100) : 0}
+            trend={0}
           />
           <AreaChartSVG
             emoji="♻️" title="CO₂e Evitado"
-            data={monthlyHistory.map(h => ({ label: h.month, value: h.co2 }))}
+            data={[{ label: "Actual", value: totals.co2 }]}
             lineColor="#16A34A" areaColor="#22C55E" unit="kg CO₂"
-            trend={prevMonth && currMonth ? ((currMonth.co2 / prevMonth.co2 - 1) * 100) : 0}
+            trend={0}
           />
           <ColumnChart
             emoji="⚡" title="Energía Ahorrada"
-            data={monthlyHistory.map(h => ({ label: h.month, value: h.energia }))}
+            data={[{ label: "Actual", value: totals.energia }]}
             color="#FACC15" unit="kWh"
-            trend={prevMonth && currMonth ? ((currMonth.energia / prevMonth.energia - 1) * 100) : 0}
+            trend={0}
           />
-          {/* Row 2 */}
           <LiquidGauge
             emoji="💧" label="Agua Conservada"
-            value={kpiTotals.agua} target={targets.agua}
+            value={totals.agua} target={230000}
             unit="Litros" color="#38BDF8"
-            trend={prevMonth && currMonth ? ((currMonth.agua / prevMonth.agua - 1) * 100) : 0}
+            trend={0}
           />
           <FinancialLineChart
             emoji="💰" title="Impacto Económico en la Comunidad"
-            data={monthlyHistory.map(h => ({ label: h.month, value: h.costo }))}
+            data={[{ label: "Actual", value: 0 }]}
             color="#9333EA" unit="MXN"
-            trend={prevMonth && currMonth ? ((currMonth.costo / prevMonth.costo - 1) * 100) : 0}
+            trend={0}
           />
           <HorizontalBar3D
             emoji="📦" title="Materiales Reciclados Recuperados"
-            segments={materialEntries
-              .filter(e => e.kg > 0)
+            segments={confirmedEntries
               .sort((a, b) => b.kg - a.kg)
               .slice(0, 8)
               .map((e, i) => ({
@@ -190,16 +196,15 @@ const Dashboard = () => {
               }))}
             unit="kg totales"
           />
-          {/* Row 3 */}
           <ReincorporatedRidgeline />
           <div className="lg:col-span-2">
             <ControlOperativoPeriodoCard
-              totalKg={totalKg}
-              totalKgNetos={totalKgNetos}
-              totalPerdida={totalPerdida}
-              materialesRegistrados={materialEntries.filter(e => e.kg > 0).length}
+              totalKg={totals.kgBrutos}
+              totalKgNetos={totals.kgNetos}
+              totalPerdida={totals.kgBrutos - totals.kgNetos}
+              materialesRegistrados={confirmedEntries.length}
               materialesTotales={materialEntries.length}
-              capturasConfirmadas={0}
+              capturasConfirmadas={confirmedEntries.length}
               lastUpdated={lastUpdated}
               currentMonth={currentMonth}
               currentYear={currentYear}
@@ -208,7 +213,7 @@ const Dashboard = () => {
           </div>
         </div>
         <p className="text-[11px] text-muted-foreground mt-4 px-1 border-l-2 border-primary/40 pl-3">
-          📐 Indicadores calculados sobre kg netos recuperados (kg capturados × yield del material).
+          📐 Indicadores calculados sobre kg netos recuperados (kg capturados × yield del material). Solo capturas confirmadas.
         </p>
       </section>
 
@@ -225,7 +230,7 @@ const Dashboard = () => {
                 <tr className="bg-nav text-nav-foreground">
                   {[
                     { key: "", label: "#" },
-                    { key: "", label: "Descripción" },
+                    { key: "", label: "Material" },
                     { key: "", label: "Código" },
                     { key: "kg", label: "KG Brutos" },
                     { key: "", label: "Yield %" },
@@ -234,8 +239,7 @@ const Dashboard = () => {
                     { key: "co2", label: "♻️ CO₂e kg" },
                     { key: "energia", label: "⚡ Energía kWh" },
                     { key: "agua", label: "💧 Agua L" },
-                    { key: "costo", label: "💰 Costo $" },
-                    { key: "", label: "📦 Mat. Primas" },
+                    { key: "", label: "Estado" },
                   ].map(col => (
                     <th
                       key={col.label}
@@ -249,45 +253,59 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {sortedEntries.map((e, i) => {
-                  const kgNetos = e.kg * (e.material.yieldInfo.yield / 100);
-                  return (
-                    <tr
-                      key={e.material.code}
-                      className={`transition-colors duration-100 hover:bg-accent/50 ${
-                        i % 2 === 0 ? "bg-card" : "bg-accent/20"
-                      } ${e.kg > 0 ? "border-l-[3px] border-l-primary" : ""}`}
-                    >
-                      <td className="px-3 py-2 text-muted-foreground">{e.material.id}</td>
-                      <td className="px-3 py-2 font-medium">{e.material.description}</td>
-                      <td className="px-3 py-2 text-muted-foreground text-xs">{e.material.code}</td>
-                      <td className="px-3 py-2 font-semibold">{e.kg.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
-                      <td className="px-3 py-2 text-muted-foreground font-medium">{e.material.yieldInfo.yield}%</td>
-                      <td className="px-3 py-2 font-medium text-muted-foreground/80">
-                        {kgNetos > 0 ? kgNetos.toLocaleString("es-MX", { maximumFractionDigits: 1 }) : "—"}
-                      </td>
-                      <td className="px-3 py-2">{e.kpis.arboles > 0 ? e.kpis.arboles.toFixed(1) : <span className="text-muted-foreground">—</span>}</td>
-                      <td className="px-3 py-2">{e.kpis.co2 > 0 ? e.kpis.co2.toFixed(2) : <span className="text-muted-foreground">—</span>}</td>
-                      <td className="px-3 py-2">{e.kpis.energia > 0 ? e.kpis.energia.toFixed(1) : <span className="text-muted-foreground">—</span>}</td>
-                      <td className="px-3 py-2">{e.kpis.agua > 0 ? e.kpis.agua.toFixed(0) : <span className="text-muted-foreground">—</span>}</td>
-                      <td className="px-3 py-2">${e.kpis.costo.toFixed(2)}</td>
-                      <td className="px-3 py-2 text-muted-foreground group relative">
-                        —
-                        <span className="hidden group-hover:block absolute -top-7 left-0 win-tooltip whitespace-nowrap z-10">Próximamente</span>
-                      </td>
-                    </tr>
-                  );
-                })}
+                {sortedEntries.map((e, i) => (
+                  <tr
+                    key={e.material.code}
+                    className={`transition-colors duration-100 hover:bg-accent/50 ${
+                      i % 2 === 0 ? "bg-card" : "bg-accent/20"
+                    } ${e.isConfirmed ? "border-l-[3px] border-l-primary" : ""}`}
+                  >
+                    <td className="px-3 py-2 text-muted-foreground">{e.material.display_order}</td>
+                    <td className="px-3 py-2 font-medium">{e.material.name}</td>
+                    <td className="px-3 py-2 text-muted-foreground text-xs">{e.material.code}</td>
+                    <td className="px-3 py-2 font-semibold">{formatKPI("kg_brutos", e.kg)}</td>
+                    <td className="px-3 py-2 text-muted-foreground font-medium">{e.material.default_yield}%</td>
+                    <td className="px-3 py-2 font-medium text-muted-foreground/80">
+                      {e.kpis.kg_netos > 0 ? formatKPI("kg_netos", e.kpis.kg_netos) : "—"}
+                    </td>
+                    <td className="px-3 py-2">
+                      {e.kpis.uses_arboles && e.kpis.arboles > 0
+                        ? formatKPI("arboles", e.kpis.arboles)
+                        : <span className="text-muted-foreground">—</span>}
+                    </td>
+                    <td className="px-3 py-2">
+                      {e.kpis.uses_co2 && e.kpis.co2 > 0
+                        ? formatKPI("co2", e.kpis.co2)
+                        : <span className="text-muted-foreground">—</span>}
+                    </td>
+                    <td className="px-3 py-2">
+                      {e.kpis.uses_energia && e.kpis.energia > 0
+                        ? formatKPI("energia", e.kpis.energia)
+                        : <span className="text-muted-foreground">—</span>}
+                    </td>
+                    <td className="px-3 py-2">
+                      {e.kpis.uses_agua && e.kpis.agua > 0
+                        ? formatKPI("agua", e.kpis.agua)
+                        : <span className="text-muted-foreground">—</span>}
+                    </td>
+                    <td className="px-3 py-2">
+                      {e.isConfirmed
+                        ? <span className="text-xs text-primary font-medium">✓ Confirmado</span>
+                        : e.kg > 0
+                          ? <span className="text-xs text-amber-500 font-medium">⏳ Pendiente</span>
+                          : <span className="text-xs text-muted-foreground">—</span>}
+                    </td>
+                  </tr>
+                ))}
                 <tr className="bg-secondary font-bold" style={{ color: "hsl(var(--kpi-trees))" }}>
-                  <td className="px-3 py-2.5" colSpan={3}>TOTALES</td>
-                  <td className="px-3 py-2.5">{totalKg.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
+                  <td className="px-3 py-2.5" colSpan={3}>TOTALES (Confirmados)</td>
+                  <td className="px-3 py-2.5">{formatKPI("kg_brutos", totals.kgBrutos)}</td>
                   <td className="px-3 py-2.5">—</td>
-                  <td className="px-3 py-2.5">{totalKgNetos.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
-                  <td className="px-3 py-2.5">{kpiTotals.arboles.toFixed(1)}</td>
-                  <td className="px-3 py-2.5">{kpiTotals.co2.toFixed(2)}</td>
-                  <td className="px-3 py-2.5">{kpiTotals.energia.toFixed(1)}</td>
-                  <td className="px-3 py-2.5">{kpiTotals.agua.toFixed(0)}</td>
-                  <td className="px-3 py-2.5">${kpiTotals.costo.toFixed(2)}</td>
+                  <td className="px-3 py-2.5">{formatKPI("kg_netos", totals.kgNetos)}</td>
+                  <td className="px-3 py-2.5">{formatKPI("arboles", totals.arboles)}</td>
+                  <td className="px-3 py-2.5">{formatKPI("co2", totals.co2)}</td>
+                  <td className="px-3 py-2.5">{formatKPI("energia", totals.energia)}</td>
+                  <td className="px-3 py-2.5">{formatKPI("agua", totals.agua)}</td>
                   <td className="px-3 py-2.5">—</td>
                 </tr>
               </tbody>

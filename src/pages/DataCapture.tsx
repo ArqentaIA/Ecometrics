@@ -2,8 +2,9 @@ import { useState, useCallback } from "react";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import Navigation from "@/components/Navigation";
 import ImpactCards from "@/components/ImpactCards";
-import { MONTHS } from "@/data/materials";
-import { IMPACT_FORMULAS } from "@/data/impactFormulas";
+import { formatKPI } from "@/lib/calculationEngine";
+
+const MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
 interface CaptureState {
   confirmed: boolean;
@@ -16,8 +17,9 @@ const DataCapture = () => {
   const {
     materialEntries, setMaterialKg, clearAll,
     currentMonth, setCurrentMonth, currentYear, setCurrentYear,
+    saveCapture, catalogLoading,
   } = useEcoMetrics();
-  
+
   const [activeTab, setActiveTab] = useState(0);
   const [dragOver, setDragOver] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<{ name: string; size: number } | null>(null);
@@ -34,8 +36,6 @@ const DataCapture = () => {
       [code]: { ...prev[code], confirmed: false, pending: kg > 0, timestamp: prev[code]?.timestamp ?? null, feedbackVisible: false },
     }));
   }, [setMaterialKg]);
-
-  const { saveCapture } = useEcoMetrics();
 
   const handleConfirm = useCallback(async (code: string) => {
     const result = await saveCapture(code);
@@ -66,6 +66,14 @@ const DataCapture = () => {
     const h12 = hours % 12 || 12;
     return { date: `${day} ${monthName} ${year}`, time: `${h12}:${mins} ${ampm}` };
   };
+
+  if (catalogLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <span className="text-muted-foreground">Cargando catálogo de materiales…</span>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -145,29 +153,25 @@ const DataCapture = () => {
               {materialEntries.map((entry, idx) => {
                 const state = getState(entry.material.code);
                 const ts = state.timestamp ? formatTimestamp(state.timestamp) : null;
-                const kgNetos = entry.kg * (entry.material.yieldInfo.yield / 100);
 
                 return (
                   <div
                     key={entry.material.code}
                     className={`win-card p-4 transition-all duration-150 ${
-                      state.confirmed ? "border-l-[3px] border-l-primary" : ""
+                      entry.isConfirmed ? "border-l-[3px] border-l-primary" : ""
                     }`}
                     style={{ animation: `fadeSlideUp 300ms ${idx * 30}ms both` }}
                   >
                     <div className="flex items-center gap-4">
-                      {/* Index */}
                       <div className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">
                         {idx + 1}
                       </div>
 
-                      {/* Name */}
                       <div className="min-w-[160px]">
-                        <div className="text-sm font-semibold leading-tight text-foreground">{entry.material.description}</div>
+                        <div className="text-sm font-semibold leading-tight text-foreground">{entry.material.name}</div>
                         <div className="text-[11px] text-muted-foreground">{entry.material.code}</div>
                       </div>
 
-                      {/* Input */}
                       <input
                         type="text"
                         inputMode="decimal"
@@ -183,7 +187,6 @@ const DataCapture = () => {
                       />
                       <span className="text-xs text-muted-foreground font-medium">kg</span>
 
-                      {/* Confirm button */}
                       <button
                         onClick={() => handleConfirm(entry.material.code)}
                         disabled={!entry.kg || (state.confirmed && !state.pending)}
@@ -207,7 +210,6 @@ const DataCapture = () => {
                         }
                       </button>
 
-                      {/* Timestamp */}
                       <div className="shrink-0 min-w-[100px] text-right">
                         {ts ? (
                           <div className="text-[11px] leading-tight">
@@ -219,24 +221,22 @@ const DataCapture = () => {
                           <div className="text-[11px] text-muted-foreground italic">Sin registro</div>
                         )}
                       </div>
-                      {/* Ver impacto toggle */}
-                      {IMPACT_FORMULAS[entry.material.code] && (
-                        <button
-                          onClick={() => setOpenImpact(prev => ({ ...prev, [entry.material.code]: !prev[entry.material.code] }))}
-                          className="shrink-0 text-xs font-medium px-3 py-1.5 rounded-md border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 transition-colors whitespace-nowrap"
-                        >
-                          {openImpact[entry.material.code] ? "▲ Ocultar" : "🌿 Ver impacto"}
-                        </button>
-                      )}
+
+                      <button
+                        onClick={() => setOpenImpact(prev => ({ ...prev, [entry.material.code]: !prev[entry.material.code] }))}
+                        className="shrink-0 text-xs font-medium px-3 py-1.5 rounded-md border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 transition-colors whitespace-nowrap"
+                      >
+                        {openImpact[entry.material.code] ? "▲ Ocultar" : "🌿 Ver impacto"}
+                      </button>
                     </div>
 
-                    {/* Yield info line */}
+                    {/* Yield info — from catalog */}
                     <div className="mt-1.5 ml-12 text-[11px] text-muted-foreground">
-                      Yield: <span className="font-medium">{entry.material.yieldInfo.yield}%</span> → KG netos estimados: <span className="font-semibold text-foreground">{kgNetos.toLocaleString("es-MX", { maximumFractionDigits: 1 })} kg</span>
-                      <span className="ml-2 italic">(pérdida típica: {entry.material.yieldInfo.perdida})</span>
+                      Yield: <span className="font-medium">{entry.material.default_yield}%</span>
+                      {" → "}KG netos estimados: <span className="font-semibold text-foreground">{formatKPI("kg_netos", entry.kpis.kg_netos)} kg</span>
+                      <span className="ml-2 italic">(pérdida típica: {entry.material.yield_loss_reason})</span>
                     </div>
 
-                    {/* Pending warning */}
                     {state.pending && (
                       <div className="mt-2 ml-12 text-[11px] text-amber-600 font-medium flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block" />
@@ -244,26 +244,23 @@ const DataCapture = () => {
                       </div>
                     )}
 
-                    {/* Impact cards expandable */}
                     {openImpact[entry.material.code] && (
-                      <ImpactCards materialCode={entry.material.code} kg={entry.kg} yieldPct={entry.material.yieldInfo.yield} />
+                      <ImpactCards materialCode={entry.material.code} kg={entry.kg} yieldPct={entry.material.default_yield} />
                     )}
                   </div>
                 );
               })}
             </div>
 
-            {/* Leyenda de metodología */}
             <div className="mt-4 win-card p-4 border border-border">
               <p className="text-xs text-muted-foreground leading-relaxed">
                 <span className="font-semibold text-foreground">Metodología: </span>
-                Los factores de conversión utilizados se basan en metodologías y referencias técnicas reconocidas internacionalmente, como el GHG Protocol, la EPA Waste Reduction Model (WARM) v16 (diciembre 2023) y literatura especializada del sector de reciclaje, lo que permite estimar de forma consistente y verificable los impactos ambientales asociados a la recuperación de materiales.
+                Los factores de conversión utilizados se basan en metodologías y referencias técnicas reconocidas internacionalmente, como el GHG Protocol, la EPA Waste Reduction Model (WARM) v16 (diciembre 2023) y literatura especializada del sector de reciclaje. Indicadores calculados sobre kg netos recuperados (kg capturados × yield del material).
               </p>
             </div>
           </div>
         </div>
       ) : (
-        /* Tab 2: Upload */
         <div className="max-w-6xl mx-auto px-5 pb-8">
           <div className="max-w-xl mx-auto">
             <div
