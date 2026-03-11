@@ -161,10 +161,11 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
       const confirmed: Record<string, boolean> = {};
       const snapshots: typeof confirmedSnapshots = [];
 
-      catalog.forEach(m => { kgs[m.code] = 0; });
+      catalog.forEach(m => { kgs[m.code] = 0; costs[m.code] = m.default_cost_per_kg ?? 0; });
 
       data?.forEach(row => {
         kgs[row.material_code] = Number(row.kg_brutos);
+        costs[row.material_code] = Number(row.cost_per_kg_applied ?? 0);
         confirmed[row.material_code] = row.is_confirmed ?? false;
         if (row.is_confirmed) {
           snapshots.push({
@@ -174,6 +175,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
             result_agua: Number(row.result_agua ?? 0),
             kg_brutos: Number(row.kg_brutos ?? 0),
             kg_netos: Number(row.kg_netos ?? 0),
+            result_economic_impact: Number(row.result_economic_impact ?? 0),
           });
         }
       });
