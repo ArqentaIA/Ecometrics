@@ -187,15 +187,32 @@ export function useDashboardFilter() {
     return months.map(m => ({ month: m, value: byMonth[m] ?? 0 }));
   }, [filteredCaptures, selectedMonths]);
 
+  // Full-year energy breakdown (always 12 months — shadow layer)
+  const allMonthsEnergia = useMemo(() => {
+    const byMonth: Record<number, number> = {};
+    captures.forEach(c => {
+      byMonth[c.month] = (byMonth[c.month] ?? 0) + c.result_energia;
+    });
+    return Array.from({ length: 12 }, (_, i) => ({ month: i + 1, value: byMonth[i + 1] ?? 0 }));
+  }, [captures]);
+
+  // Monthly energy breakdown for filtered view
+  const monthlyEnergia = useMemo(() => {
+    const byMonth: Record<number, number> = {};
+    filteredCaptures.forEach(c => {
+      byMonth[c.month] = (byMonth[c.month] ?? 0) + c.result_energia;
+    });
+    const months = selectedMonths ?? Array.from({ length: 12 }, (_, i) => i + 1);
+    return months.map(m => ({ month: m, value: byMonth[m] ?? 0 }));
+  }, [filteredCaptures, selectedMonths]);
+
   const toggleMonth = useCallback((month: number) => {
     setSelectedMonths(prev => {
       if (!prev) {
-        // Switching from "all" mode to just this one month
         return [month];
       }
       if (prev.includes(month)) {
         const next = prev.filter(m => m !== month);
-        // If no months selected, go back to "all" mode
         return next.length === 0 ? null : next;
       }
       return [...prev, month].sort((a, b) => a - b);
@@ -222,9 +239,13 @@ export function useDashboardFilter() {
     allMonthsEconomic,
     monthlyCo2,
     allMonthsCo2,
+    monthlyEnergia,
+    allMonthsEnergia,
     loading,
     lastUpdated,
     refreshData: loadDashboardCaptures,
     catalogLoading,
+  };
+}
   };
 }

@@ -6,7 +6,7 @@ import ControlOperativoPeriodoCard from "@/components/ControlOperativoPeriodoCar
 import ShareModal from "@/components/ShareModal";
 import RadialGauge from "@/components/charts/RadialGauge";
 import CO2ImpactCard from "@/components/charts/CO2ImpactCard";
-import ColumnChart from "@/components/charts/ColumnChart";
+import EnergyWaveCard from "@/components/charts/EnergyWaveCard";
 import LiquidGauge from "@/components/charts/LiquidGauge";
 import EconomicImpactCard from "@/components/charts/EconomicImpactCard";
 import HorizontalBar3D from "@/components/charts/HorizontalBar3D";
