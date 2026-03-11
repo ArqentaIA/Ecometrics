@@ -293,6 +293,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
         agua: acc.agua + s.result_agua,
         kgBrutos: acc.kgBrutos + s.kg_brutos,
         kgNetos: acc.kgNetos + s.kg_netos,
+        economicImpact: acc.economicImpact + s.result_economic_impact,
       }),
       { ...EMPTY_TOTALS }
     ),
