@@ -193,11 +193,19 @@ const DataCapture = () => {
                         <input
                           type="text"
                           inputMode="decimal"
+                          step="0.01"
+                          min="0"
                           value={costPerKgMap[entry.material.code] ?? entry.material.default_cost_per_kg ?? ""}
                           onChange={e => {
                             const val = e.target.value;
-                            if (val === "" || /^\d*\.?\d*$/.test(val)) {
+                            if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
                               setCostPerKg(entry.material.code, parseFloat(val) || 0);
+                            }
+                          }}
+                          onBlur={e => {
+                            const num = parseFloat(e.target.value);
+                            if (!isNaN(num)) {
+                              setCostPerKg(entry.material.code, parseFloat(num.toFixed(2)));
                             }
                           }}
                           className="win-input !w-24 text-right font-semibold text-sm tabular-nums"
