@@ -4,7 +4,7 @@ import { useDashboardFilter } from "@/hooks/useDashboardFilter";
 import Navigation from "@/components/Navigation";
 import ControlOperativoPeriodoCard from "@/components/ControlOperativoPeriodoCard";
 import ShareModal from "@/components/ShareModal";
-import RadialGauge from "@/components/charts/RadialGauge";
+import TreesRingCard from "@/components/charts/TreesRingCard";
 import CO2ImpactCard from "@/components/charts/CO2ImpactCard";
 import EnergyWaveCard from "@/components/charts/EnergyWaveCard";
 import LiquidGauge from "@/components/charts/LiquidGauge";
