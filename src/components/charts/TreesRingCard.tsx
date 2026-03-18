@@ -147,40 +147,6 @@ const TreesRingCard = ({
       {/* Period */}
       <p className="text-[10px] text-muted-foreground mb-2">{periodLabel}</p>
 
-      {/* Meta progress bar */}
-      <div className="w-full space-y-1.5">
-        <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-          <span>Meta anual</span>
-          <span className="font-semibold text-foreground">{target.toLocaleString("es-MX")} equiv.</span>
-        </div>
-        <div className="h-2.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted) / 0.3)" }}>
-          <div
-            className="h-full rounded-full transition-all duration-700"
-            style={{
-              width: `${progressW}%`,
-              background: `linear-gradient(90deg, ${COLOR_LIGHT}, ${ringColor})`,
-            }}
-          />
-        </div>
-        <div className="flex items-center justify-between">
-          <span
-            className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-            style={{
-              background: pct >= 70 ? `${COLOR_STD}20` : pct >= 25 ? "#facc1520" : "#ef444420",
-              color: pct >= 70 ? COLOR_INTENSE : pct >= 25 ? "#CA8A04" : "#ef4444",
-            }}
-          >
-            {pct.toFixed(0)}% del objetivo
-          </span>
-          {variation !== null && (
-            <span className="text-[9px] text-muted-foreground">
-              <span style={{ color: variation >= 0 ? COLOR_STD : "#ef4444" }}>
-                {variation >= 0 ? "↑" : "↓"} {Math.abs(variation).toFixed(1)}%
-              </span> vs mes anterior
-            </span>
-          )}
-        </div>
-      </div>
 
       {/* Environmental equivalence */}
       {value > 0 && (
