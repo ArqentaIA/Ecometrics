@@ -7,6 +7,7 @@ import { EcoMetricsProvider, useEcoMetrics } from "@/context/EcoMetricsContext";
 import Login from "./pages/Login";
 import DataCapture from "./pages/DataCapture";
 import Dashboard from "./pages/Dashboard";
+import PublicDashboard from "./pages/PublicDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
