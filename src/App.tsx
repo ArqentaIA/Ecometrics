@@ -24,6 +24,7 @@ const AppRoutes = () => {
       <Route path="/" element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <Login />} />
       <Route path="/capture" element={<ProtectedRoute><DataCapture /></ProtectedRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/public-dashboard" element={<PublicDashboard />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
