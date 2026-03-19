@@ -177,18 +177,27 @@ export function usePublicDashboardFilter() {
 
   const confirmedEntries = useMemo(() => materialEntries.filter(e => e.isConfirmed && e.kg > 0), [materialEntries]);
 
-  const buildMonthly = (field: string) => {
+  const buildMonthlyHelper = (data: typeof filteredCaptures, field: string, months: number[]) => {
     const byMonth: Record<number, number> = {};
-    filteredCaptures.forEach(c => { byMonth[c.month] = (byMonth[c.month] ?? 0) + (c as any)[field]; });
-    const months = selectedMonths ?? Array.from({ length: 12 }, (_, i) => i + 1);
+    data.forEach(c => { byMonth[c.month] = (byMonth[c.month] ?? 0) + (c as any)[field]; });
     return months.map(m => ({ month: m, value: byMonth[m] ?? 0 }));
   };
 
-  const buildAllMonths = (field: string) => {
-    const byMonth: Record<number, number> = {};
-    captures.forEach(c => { byMonth[c.month] = (byMonth[c.month] ?? 0) + (c as any)[field]; });
-    return Array.from({ length: 12 }, (_, i) => ({ month: i + 1, value: byMonth[i + 1] ?? 0 }));
-  };
+  const allMonths12 = useMemo(() => Array.from({ length: 12 }, (_, i) => i + 1), []);
+  const activeMonths = selectedMonths ?? allMonths12;
+
+  const monthlyEconomic = useMemo(() => buildMonthlyHelper(filteredCaptures, "result_economic_impact", activeMonths), [filteredCaptures, activeMonths]);
+  const allMonthsEconomic = useMemo(() => buildMonthlyHelper(captures, "result_economic_impact", allMonths12), [captures, allMonths12]);
+  const monthlyCo2 = useMemo(() => buildMonthlyHelper(filteredCaptures, "result_co2", activeMonths), [filteredCaptures, activeMonths]);
+  const allMonthsCo2 = useMemo(() => buildMonthlyHelper(captures, "result_co2", allMonths12), [captures, allMonths12]);
+  const monthlyEnergia = useMemo(() => buildMonthlyHelper(filteredCaptures, "result_energia", activeMonths), [filteredCaptures, activeMonths]);
+  const allMonthsEnergia = useMemo(() => buildMonthlyHelper(captures, "result_energia", allMonths12), [captures, allMonths12]);
+  const monthlyArboles = useMemo(() => buildMonthlyHelper(filteredCaptures, "result_arboles", activeMonths), [filteredCaptures, activeMonths]);
+  const allMonthsArboles = useMemo(() => buildMonthlyHelper(captures, "result_arboles", allMonths12), [captures, allMonths12]);
+  const monthlyAgua = useMemo(() => buildMonthlyHelper(filteredCaptures, "result_agua", activeMonths), [filteredCaptures, activeMonths]);
+  const allMonthsAgua = useMemo(() => buildMonthlyHelper(captures, "result_agua", allMonths12), [captures, allMonths12]);
+  const monthlyKgNetos = useMemo(() => buildMonthlyHelper(filteredCaptures, "kg_netos", activeMonths), [filteredCaptures, activeMonths]);
+  const allMonthsKgNetos = useMemo(() => buildMonthlyHelper(captures, "kg_netos", allMonths12), [captures, allMonths12]);
 
   const toggleMonth = useCallback((month: number) => {
     setSelectedMonths(prev => {
@@ -204,18 +213,12 @@ export function usePublicDashboardFilter() {
     dashYear, setDashYear, selectedMonths, toggleMonth, clearSelection,
     isAllMonths: selectedMonths === null,
     confirmedTotals, materialEntries, confirmedEntries,
-    monthlyEconomic: buildMonthly("result_economic_impact"),
-    allMonthsEconomic: buildAllMonths("result_economic_impact"),
-    monthlyCo2: buildMonthly("result_co2"),
-    allMonthsCo2: buildAllMonths("result_co2"),
-    monthlyEnergia: buildMonthly("result_energia"),
-    allMonthsEnergia: buildAllMonths("result_energia"),
-    monthlyArboles: buildMonthly("result_arboles"),
-    allMonthsArboles: buildAllMonths("result_arboles"),
-    monthlyAgua: buildMonthly("result_agua"),
-    allMonthsAgua: buildAllMonths("result_agua"),
-    monthlyKgNetos: buildMonthly("kg_netos"),
-    allMonthsKgNetos: buildAllMonths("kg_netos"),
+    monthlyEconomic, allMonthsEconomic,
+    monthlyCo2, allMonthsCo2,
+    monthlyEnergia, allMonthsEnergia,
+    monthlyArboles, allMonthsArboles,
+    monthlyAgua, allMonthsAgua,
+    monthlyKgNetos, allMonthsKgNetos,
     loading, lastUpdated, catalogLoading,
   };
 }
