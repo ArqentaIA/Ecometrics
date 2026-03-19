@@ -7,6 +7,7 @@ import { EcoMetricsProvider, useEcoMetrics } from "@/context/EcoMetricsContext";
 import Login from "./pages/Login";
 import DataCapture from "./pages/DataCapture";
 import Dashboard from "./pages/Dashboard";
+import PublicDashboard from "./pages/PublicDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const AppRoutes = () => {
       <Route path="/" element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <Login />} />
       <Route path="/capture" element={<ProtectedRoute><DataCapture /></ProtectedRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/public-dashboard" element={<PublicDashboard />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
