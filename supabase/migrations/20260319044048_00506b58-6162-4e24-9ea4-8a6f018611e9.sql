@@ -1,0 +1,1 @@
+CREATE POLICY "Anon can read material catalog" ON public.material_catalog FOR SELECT TO anon USING (true);
