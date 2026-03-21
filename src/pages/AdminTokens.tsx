@@ -149,8 +149,7 @@ const AdminTokens = () => {
             </div>
             {newCliente.trim() && (
               <p className="text-xs text-muted-foreground">
-                Token generado: <code className="bg-secondary px-1.5 py-0.5 rounded text-primary font-mono text-[11px]">{generateToken(newCliente)}</code>
-                <span className="text-[10px] ml-2 opacity-60">(el valor final se genera al guardar)</span>
+                Se generará un token criptográficamente seguro al guardar.
               </p>
             )}
             <button
