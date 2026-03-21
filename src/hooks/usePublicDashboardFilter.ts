@@ -58,16 +58,12 @@ export function usePublicDashboardFilter() {
     result_economic_impact: number;
   }>>([]);
 
-  // Load catalog publicly
+  // Load catalog via secure RPC (no pricing data exposed)
   useEffect(() => {
     const loadCatalog = async () => {
-      const { data } = await supabase
-        .from("material_catalog")
-        .select("*")
-        .eq("is_active", true)
-        .order("display_order");
-      setCatalog((data ?? []).map(r => ({
-        id: r.id,
+      const { data } = await supabase.rpc("get_public_material_catalog");
+      setCatalog((data ?? []).map((r: any) => ({
+        id: 0,
         code: r.code,
         name: r.name,
         family: r.family,
@@ -87,7 +83,7 @@ export function usePublicDashboardFilter() {
         display_order: r.display_order,
         yield_source: r.yield_source,
         factors_source: r.factors_source,
-        default_cost_per_kg: r.default_cost_per_kg ?? 0,
+        default_cost_per_kg: 0,
       })));
       setCatalogLoading(false);
     };
