@@ -16,14 +16,9 @@ interface PublicToken {
 
 const BASE_URL = "https://www.ecometrics.sbs/public-dashboard";
 
-const generateToken = (clientName: string) => {
-  const slug = clientName
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-  const rand = Math.floor(1000 + Math.random() * 9000);
-  return `${slug}-${rand}`;
+const generateToken = () => {
+  const bytes = crypto.getRandomValues(new Uint8Array(24));
+  return Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
 };
 
 const AdminTokens = () => {
