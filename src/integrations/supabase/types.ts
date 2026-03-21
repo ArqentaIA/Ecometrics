@@ -535,24 +535,24 @@ export type Database = {
       }
     }
     Views: {
-      confirmed_captures_summary: {
-        Row: {
-          cost_per_kg_applied: number | null
-          kg_brutos: number | null
-          kg_netos: number | null
-          material_code: string | null
-          month: number | null
-          result_agua: number | null
-          result_arboles: number | null
-          result_co2: number | null
-          result_economic_impact: number | null
-          result_energia: number | null
-          year: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
+      get_confirmed_captures_summary: {
+        Args: { _year: number }
+        Returns: {
+          cost_per_kg_applied: number
+          kg_brutos: number
+          kg_netos: number
+          material_code: string
+          month: number
+          result_agua: number
+          result_arboles: number
+          result_co2: number
+          result_economic_impact: number
+          result_energia: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
