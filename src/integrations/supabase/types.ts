@@ -385,6 +385,7 @@ export type Database = {
           fecha_creacion: string
           id: string
           notas: string | null
+          pin: string
           token: string
         }
         Insert: {
@@ -393,6 +394,7 @@ export type Database = {
           fecha_creacion?: string
           id?: string
           notas?: string | null
+          pin?: string
           token: string
         }
         Update: {
@@ -401,6 +403,7 @@ export type Database = {
           fecha_creacion?: string
           id?: string
           notas?: string | null
+          pin?: string
           token?: string
         }
         Relationships: []
@@ -552,6 +555,30 @@ export type Database = {
           result_energia: number
         }[]
       }
+      get_public_material_catalog: {
+        Args: never
+        Returns: {
+          code: string
+          default_yield: number
+          display_order: number
+          factor_agua: number
+          factor_arboles: number
+          factor_co2: number
+          factor_energia: number
+          factors_source: string
+          family: string
+          is_active: boolean
+          name: string
+          uses_agua: boolean
+          uses_arboles: boolean
+          uses_co2: boolean
+          uses_energia: boolean
+          yield_loss_reason: string
+          yield_max: number
+          yield_min: number
+          yield_source: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -560,6 +587,10 @@ export type Database = {
         Returns: boolean
       }
       validate_public_token: { Args: { _token: string }; Returns: boolean }
+      validate_public_token_with_pin: {
+        Args: { _pin: string; _token: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role:
