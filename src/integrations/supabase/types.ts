@@ -535,7 +535,22 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      confirmed_captures_summary: {
+        Row: {
+          cost_per_kg_applied: number | null
+          kg_brutos: number | null
+          kg_netos: number | null
+          material_code: string | null
+          month: number | null
+          result_agua: number | null
+          result_arboles: number | null
+          result_co2: number | null
+          result_economic_impact: number | null
+          result_energia: number | null
+          year: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
