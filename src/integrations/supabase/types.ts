@@ -383,6 +383,7 @@ export type Database = {
           activo: boolean
           cliente: string
           fecha_creacion: string
+          fecha_vencimiento: string | null
           id: string
           notas: string | null
           pin: string
@@ -392,6 +393,7 @@ export type Database = {
           activo?: boolean
           cliente: string
           fecha_creacion?: string
+          fecha_vencimiento?: string | null
           id?: string
           notas?: string | null
           pin?: string
@@ -401,6 +403,7 @@ export type Database = {
           activo?: boolean
           cliente?: string
           fecha_creacion?: string
+          fecha_vencimiento?: string | null
           id?: string
           notas?: string | null
           pin?: string
@@ -541,6 +544,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_token_expiry: { Args: never; Returns: number }
       get_confirmed_captures_summary: {
         Args: { _year: number }
         Returns: {

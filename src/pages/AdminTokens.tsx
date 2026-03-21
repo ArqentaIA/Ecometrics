@@ -1,9 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
+import { format, differenceInDays, parseISO } from "date-fns";
+import { es } from "date-fns/locale";
+import { CalendarIcon } from "lucide-react";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface PublicToken {
   id: string;
@@ -13,6 +20,7 @@ interface PublicToken {
   activo: boolean;
   fecha_creacion: string;
   notas: string | null;
+  fecha_vencimiento: string | null;
 }
 
 const BASE_URL = "https://www.ecometrics.sbs/public-dashboard";
@@ -27,6 +35,67 @@ const generatePin = () => {
   return Array.from(bytes, b => b.toString(10).padStart(3, "0")).join("").slice(0, 6);
 };
 
+const ExpiryBadge = ({ fecha }: { fecha: string | null }) => {
+  if (!fecha) return <span className="text-muted-foreground text-xs">—</span>;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const expDate = parseISO(fecha);
+  const days = differenceInDays(expDate, today);
+  const label = format(expDate, "dd MMM yyyy", { locale: es });
+
+  if (days < 0) {
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-destructive/15 text-destructive">
+        ⚠ {label}
+      </span>
+    );
+  }
+  if (days <= 7) {
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-yellow-500/15 text-yellow-700 dark:text-yellow-400">
+        ⏳ {label}
+      </span>
+    );
+  }
+  return <span className="text-muted-foreground text-xs">{label}</span>;
+};
+
+const DatePickerField = ({
+  value,
+  onChange,
+  placeholder = "Seleccionar fecha",
+}: {
+  value: Date | undefined;
+  onChange: (d: Date | undefined) => void;
+  placeholder?: string;
+}) => (
+  <Popover>
+    <PopoverTrigger asChild>
+      <Button
+        variant="outline"
+        className={cn(
+          "w-full justify-start text-left font-normal text-sm h-9",
+          !value && "text-muted-foreground"
+        )}
+      >
+        <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+        {value ? format(value, "dd MMM yyyy", { locale: es }) : placeholder}
+      </Button>
+    </PopoverTrigger>
+    <PopoverContent className="w-auto p-0" align="start">
+      <Calendar
+        mode="single"
+        selected={value}
+        onSelect={onChange}
+        initialFocus
+        className="p-3 pointer-events-auto"
+        disabled={(date) => date < new Date()}
+      />
+    </PopoverContent>
+  </Popover>
+);
+
 const AdminTokens = () => {
   const { user } = useEcoMetrics();
   const { role, loading: roleLoading } = useUserRole(user);
@@ -38,6 +107,7 @@ const AdminTokens = () => {
   const [newCliente, setNewCliente] = useState("");
   const [newNotas, setNewNotas] = useState("");
   const [newPin, setNewPin] = useState(() => generatePin());
+  const [newFechaVenc, setNewFechaVenc] = useState<Date | undefined>();
   const [saving, setSaving] = useState(false);
   const [editingPin, setEditingPin] = useState<string | null>(null);
   const [editPinValue, setEditPinValue] = useState("");
@@ -73,7 +143,7 @@ const AdminTokens = () => {
   };
 
   const handleCreate = async () => {
-    if (!newCliente.trim() || !newPin.trim()) return;
+    if (!newCliente.trim() || !newPin.trim() || !newFechaVenc) return;
     setSaving(true);
     const token = generateToken();
     const { error } = await supabase.from("public_tokens" as any).insert({
@@ -81,6 +151,7 @@ const AdminTokens = () => {
       cliente: newCliente.trim(),
       pin: newPin.trim(),
       notas: newNotas.trim() || null,
+      fecha_vencimiento: format(newFechaVenc, "yyyy-MM-dd"),
     } as any);
     if (error) {
       toast({ title: "Error al crear token", description: error.message, variant: "destructive" });
@@ -89,6 +160,7 @@ const AdminTokens = () => {
       setNewCliente("");
       setNewNotas("");
       setNewPin(generatePin());
+      setNewFechaVenc(undefined);
       setShowForm(false);
       fetchTokens();
     }
@@ -104,6 +176,16 @@ const AdminTokens = () => {
     setTokens(prev => prev.map(x => x.id === t.id ? { ...x, pin: editPinValue.trim() } : x));
     setEditingPin(null);
     toast({ title: "PIN actualizado" });
+  };
+
+  const updateExpiry = async (t: PublicToken, date: Date | undefined) => {
+    const val = date ? format(date, "yyyy-MM-dd") : null;
+    await supabase
+      .from("public_tokens" as any)
+      .update({ fecha_vencimiento: val } as any)
+      .eq("id", t.id);
+    setTokens(prev => prev.map(x => x.id === t.id ? { ...x, fecha_vencimiento: val } : x));
+    toast({ title: "Fecha de vencimiento actualizada" });
   };
 
   if (roleLoading) {
@@ -147,7 +229,7 @@ const AdminTokens = () => {
         {showForm && (
           <div className="win-card p-5 mb-6 space-y-4">
             <h3 className="font-heading font-semibold text-sm">Crear nuevo token</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <label className="text-[11px] text-muted-foreground mb-1 block font-medium">Nombre del cliente *</label>
                 <input
@@ -178,11 +260,15 @@ const AdminTokens = () => {
                 </div>
               </div>
               <div>
+                <label className="text-[11px] text-muted-foreground mb-1 block font-medium">Vencimiento *</label>
+                <DatePickerField value={newFechaVenc} onChange={setNewFechaVenc} />
+              </div>
+              <div>
                 <label className="text-[11px] text-muted-foreground mb-1 block font-medium">Notas (opcional)</label>
                 <input
                   value={newNotas}
                   onChange={e => setNewNotas(e.target.value)}
-                  placeholder="Ej: Contrato hasta dic 2026"
+                  placeholder="Ej: Contrato anual"
                   className="win-input text-sm w-full"
                   maxLength={255}
                 />
@@ -190,7 +276,7 @@ const AdminTokens = () => {
             </div>
             <button
               onClick={handleCreate}
-              disabled={saving || !newCliente.trim() || !newPin.trim()}
+              disabled={saving || !newCliente.trim() || !newPin.trim() || !newFechaVenc}
               className="win-btn-accent text-sm px-5 py-2 disabled:opacity-50"
             >
               {saving ? "Guardando…" : "Crear Token"}
@@ -213,8 +299,8 @@ const AdminTokens = () => {
                     <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider">Cliente</th>
                     <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider">PIN</th>
                     <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider">Estado</th>
-                    <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider">Fecha</th>
-                    <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider">Notas</th>
+                    <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider">Vencimiento</th>
+                    <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider">Fecha creación</th>
                     <th className="px-4 py-2.5 text-center text-[11px] font-semibold uppercase tracking-wider">Acciones</th>
                   </tr>
                 </thead>
@@ -261,11 +347,26 @@ const AdminTokens = () => {
                           {t.activo ? "● Activo" : "● Inactivo"}
                         </span>
                       </td>
+                      <td className="px-4 py-2.5">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button className="hover:bg-accent/50 rounded px-1 py-0.5 transition-colors" title="Clic para cambiar">
+                              <ExpiryBadge fecha={t.fecha_vencimiento} />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={t.fecha_vencimiento ? parseISO(t.fecha_vencimiento) : undefined}
+                              onSelect={(d) => updateExpiry(t, d)}
+                              initialFocus
+                              className="p-3 pointer-events-auto"
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </td>
                       <td className="px-4 py-2.5 text-muted-foreground text-xs">
                         {new Date(t.fecha_creacion).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })}
-                      </td>
-                      <td className="px-4 py-2.5 text-muted-foreground text-xs max-w-[200px] truncate">
-                        {t.notas || "—"}
                       </td>
                       <td className="px-4 py-2.5">
                         <div className="flex items-center justify-center gap-1.5">
