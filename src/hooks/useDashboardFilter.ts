@@ -26,7 +26,6 @@ export function useDashboardFilter() {
     result_energia: number;
     result_agua: number;
     result_economic_impact: number;
-    cost_per_kg_applied: number;
   }>>([]);
 
   const isGlobalRole = userRole === 'admin' || userRole === 'administrador' || userRole === 'direccion';
@@ -37,7 +36,7 @@ export function useDashboardFilter() {
     try {
       let query = supabase
         .from("material_captures")
-        .select("material_code, month, kg_brutos, kg_netos, is_confirmed, result_arboles, result_co2, result_energia, result_agua, result_economic_impact, cost_per_kg_applied")
+        .select("material_code, month, kg_brutos, kg_netos, is_confirmed, result_arboles, result_co2, result_energia, result_agua, result_economic_impact")
         .eq("year", dashYear)
         .eq("is_confirmed", true);
 
@@ -63,7 +62,6 @@ export function useDashboardFilter() {
         result_energia: Number(r.result_energia ?? 0),
         result_agua: Number(r.result_agua ?? 0),
         result_economic_impact: Number(r.result_economic_impact ?? 0),
-        cost_per_kg_applied: Number(r.cost_per_kg_applied ?? 0),
       })));
       setLastUpdated(new Date());
     } finally {

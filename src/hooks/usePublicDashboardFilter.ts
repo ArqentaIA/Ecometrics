@@ -56,19 +56,14 @@ export function usePublicDashboardFilter() {
     result_energia: number;
     result_agua: number;
     result_economic_impact: number;
-    cost_per_kg_applied: number;
   }>>([]);
 
-  // Load catalog publicly
+  // Load catalog via secure RPC (no pricing data exposed)
   useEffect(() => {
     const loadCatalog = async () => {
-      const { data } = await supabase
-        .from("material_catalog")
-        .select("*")
-        .eq("is_active", true)
-        .order("display_order");
-      setCatalog((data ?? []).map(r => ({
-        id: r.id,
+      const { data } = await supabase.rpc("get_public_material_catalog" as any);
+      setCatalog(((data as any[]) ?? []).map((r: any) => ({
+        id: 0,
         code: r.code,
         name: r.name,
         family: r.family,
@@ -88,7 +83,7 @@ export function usePublicDashboardFilter() {
         display_order: r.display_order,
         yield_source: r.yield_source,
         factors_source: r.factors_source,
-        default_cost_per_kg: r.default_cost_per_kg ?? 0,
+        default_cost_per_kg: 0,
       })));
       setCatalogLoading(false);
     };
@@ -111,7 +106,6 @@ export function usePublicDashboardFilter() {
         result_energia: Number(r.result_energia ?? 0),
         result_agua: Number(r.result_agua ?? 0),
         result_economic_impact: Number(r.result_economic_impact ?? 0),
-        cost_per_kg_applied: Number(r.cost_per_kg_applied ?? 0),
       })));
       setLastUpdated(new Date());
     }

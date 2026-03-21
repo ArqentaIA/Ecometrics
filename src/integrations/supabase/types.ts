@@ -541,7 +541,6 @@ export type Database = {
       get_confirmed_captures_summary: {
         Args: { _year: number }
         Returns: {
-          cost_per_kg_applied: number
           kg_brutos: number
           kg_netos: number
           material_code: string
