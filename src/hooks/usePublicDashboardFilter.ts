@@ -61,8 +61,8 @@ export function usePublicDashboardFilter() {
   // Load catalog via secure RPC (no pricing data exposed)
   useEffect(() => {
     const loadCatalog = async () => {
-      const { data } = await supabase.rpc("get_public_material_catalog");
-      setCatalog((data ?? []).map((r: any) => ({
+      const { data } = await supabase.rpc("get_public_material_catalog" as any);
+      setCatalog(((data as any[]) ?? []).map((r: any) => ({
         id: 0,
         code: r.code,
         name: r.name,
