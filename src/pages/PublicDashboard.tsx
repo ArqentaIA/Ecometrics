@@ -25,25 +25,88 @@ const SuspendedScreen = () => (
   </div>
 );
 
+const PinScreen = ({ onSubmit, error, loading }: { onSubmit: (pin: string) => void; error: string | null; loading: boolean }) => {
+  const [pin, setPin] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pin.trim()) onSubmit(pin.trim());
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center" style={{ background: "#1a2d1a" }}>
+      <img src={logoImrGris} alt="EcoMetrics" className="h-20 w-auto mb-8 opacity-90" />
+      <form onSubmit={handleSubmit} className="w-full max-w-xs px-4">
+        <div className="rounded-xl p-6 space-y-4" style={{ background: "rgba(255,255,255,0.07)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.1)" }}>
+          <h2 className="text-white/90 text-center font-semibold text-sm tracking-wide">Código de acceso</h2>
+          <input
+            type="password"
+            value={pin}
+            onChange={e => setPin(e.target.value)}
+            placeholder="Ingresa tu código"
+            autoFocus
+            className="w-full px-4 py-2.5 rounded-lg text-sm text-center tracking-widest font-mono"
+            style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", color: "#fff", outline: "none" }}
+          />
+          {error && (
+            <p className="text-red-400 text-xs text-center">{error}</p>
+          )}
+          <button
+            type="submit"
+            disabled={loading || !pin.trim()}
+            className="w-full py-2.5 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
+            style={{ background: "#22C55E", color: "#fff" }}
+          >
+            {loading ? "Verificando…" : "Entrar"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
 const PublicDashboard = () => {
   const [searchParams] = useSearchParams();
   const tokenParam = searchParams.get("token");
 
-  const [tokenStatus, setTokenStatus] = useState<"loading" | "valid" | "invalid">("loading");
+  // States: checking-token → checking if token exists & is active
+  // pin-required → token is active, ask for PIN
+  // checking-pin → validating PIN
+  // valid → show dashboard
+  // invalid → suspended screen
+  const [stage, setStage] = useState<"checking-token" | "pin-required" | "checking-pin" | "valid" | "invalid">("checking-token");
+  const [pinError, setPinError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!tokenParam) {
-      setTokenStatus("invalid");
+      setStage("invalid");
       return;
     }
     const checkToken = async () => {
+      // First check if token exists and is active (without PIN)
       const { data, error } = await supabase.rpc("validate_public_token", { _token: tokenParam });
-      setTokenStatus(!error && data === true ? "valid" : "invalid");
+      if (!error && data === true) {
+        setStage("pin-required");
+      } else {
+        setStage("invalid");
+      }
     };
     checkToken();
   }, [tokenParam]);
 
-  if (tokenStatus === "loading") {
+  const handlePinSubmit = async (pin: string) => {
+    setPinError(null);
+    setStage("checking-pin");
+    const { data, error } = await supabase.rpc("validate_public_token_with_pin" as any, { _token: tokenParam!, _pin: pin });
+    if (!error && data === true) {
+      setStage("valid");
+    } else {
+      setPinError("Código incorrecto, intenta de nuevo");
+      setStage("pin-required");
+    }
+  };
+
+  if (stage === "checking-token") {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "#1a2d1a" }}>
         <span className="text-white/60">Verificando acceso…</span>
@@ -51,8 +114,12 @@ const PublicDashboard = () => {
     );
   }
 
-  if (tokenStatus === "invalid") {
+  if (stage === "invalid") {
     return <SuspendedScreen />;
+  }
+
+  if (stage === "pin-required" || stage === "checking-pin") {
+    return <PinScreen onSubmit={handlePinSubmit} error={pinError} loading={stage === "checking-pin"} />;
   }
 
   return <PublicDashboardContent />;
