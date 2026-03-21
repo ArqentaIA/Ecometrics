@@ -26,6 +26,7 @@ const AppRoutes = () => {
       <Route path="/capture" element={<ProtectedRoute><DataCapture /></ProtectedRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/public-dashboard" element={<PublicDashboard />} />
+      <Route path="/admin/tokens" element={<ProtectedRoute><AdminTokens /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
