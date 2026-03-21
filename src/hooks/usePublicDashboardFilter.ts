@@ -97,19 +97,15 @@ export function usePublicDashboardFilter() {
 
   const loadCaptures = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("material_captures")
-      .select("material_code, month, kg_brutos, kg_netos, is_confirmed, result_arboles, result_co2, result_energia, result_agua, result_economic_impact, cost_per_kg_applied")
-      .eq("year", dashYear)
-      .eq("is_confirmed", true);
+    const { data, error } = await supabase.rpc("get_confirmed_captures_summary", { _year: dashYear });
 
     if (!error && data) {
-      setCaptures(data.map(r => ({
+      setCaptures((data as any[]).map((r: any) => ({
         material_code: r.material_code,
         month: r.month,
         kg_brutos: Number(r.kg_brutos ?? 0),
         kg_netos: Number(r.kg_netos ?? 0),
-        is_confirmed: r.is_confirmed ?? false,
+        is_confirmed: true,
         result_arboles: Number(r.result_arboles ?? 0),
         result_co2: Number(r.result_co2 ?? 0),
         result_energia: Number(r.result_energia ?? 0),

@@ -37,12 +37,8 @@ const PublicDashboard = () => {
       return;
     }
     const checkToken = async () => {
-      const { data } = await supabase
-        .from("public_tokens" as any)
-        .select("activo")
-        .eq("token", tokenParam)
-        .maybeSingle();
-      setTokenStatus(data && (data as any).activo ? "valid" : "invalid");
+      const { data, error } = await supabase.rpc("validate_public_token", { _token: tokenParam });
+      setTokenStatus(!error && data === true ? "valid" : "invalid");
     };
     checkToken();
   }, [tokenParam]);
