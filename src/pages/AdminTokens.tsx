@@ -16,14 +16,9 @@ interface PublicToken {
 
 const BASE_URL = "https://www.ecometrics.sbs/public-dashboard";
 
-const generateToken = (clientName: string) => {
-  const slug = clientName
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-  const rand = Math.floor(1000 + Math.random() * 9000);
-  return `${slug}-${rand}`;
+const generateToken = () => {
+  const bytes = crypto.getRandomValues(new Uint8Array(24));
+  return Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
 };
 
 const AdminTokens = () => {
@@ -71,7 +66,7 @@ const AdminTokens = () => {
   const handleCreate = async () => {
     if (!newCliente.trim()) return;
     setSaving(true);
-    const token = generateToken(newCliente);
+    const token = generateToken();
     const { error } = await supabase.from("public_tokens" as any).insert({
       token,
       cliente: newCliente.trim(),
@@ -154,8 +149,7 @@ const AdminTokens = () => {
             </div>
             {newCliente.trim() && (
               <p className="text-xs text-muted-foreground">
-                Token generado: <code className="bg-secondary px-1.5 py-0.5 rounded text-primary font-mono text-[11px]">{generateToken(newCliente)}</code>
-                <span className="text-[10px] ml-2 opacity-60">(el valor final se genera al guardar)</span>
+                Se generará un token criptográficamente seguro al guardar.
               </p>
             )}
             <button
