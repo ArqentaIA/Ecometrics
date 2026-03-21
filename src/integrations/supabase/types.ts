@@ -378,6 +378,33 @@ export type Database = {
         }
         Relationships: []
       }
+      public_tokens: {
+        Row: {
+          activo: boolean
+          cliente: string
+          fecha_creacion: string
+          id: string
+          notas: string | null
+          token: string
+        }
+        Insert: {
+          activo?: boolean
+          cliente: string
+          fecha_creacion?: string
+          id?: string
+          notas?: string | null
+          token: string
+        }
+        Update: {
+          activo?: boolean
+          cliente?: string
+          fecha_creacion?: string
+          id?: string
+          notas?: string | null
+          token?: string
+        }
+        Relationships: []
+      }
       system_parameters: {
         Row: {
           description: string | null

@@ -13,7 +13,7 @@ const ShareModal = ({ onClose }: ShareModalProps) => {
     setTimeout(() => setCopied(null), 2000);
   };
 
-  const url = "https://www.ecometrics.sbs/public-dashboard";
+  const url = "https://www.ecometrics.sbs/public-dashboard?token=TU_TOKEN_AQUI";
   const iframe = `<iframe src="${url}" width="100%" height="600" frameborder="0"></iframe>`;
 
   return (

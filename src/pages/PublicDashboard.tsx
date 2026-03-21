@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { usePublicDashboardFilter } from "@/hooks/usePublicDashboardFilter";
 import HeroReincorporacionIndustriaCard from "@/components/HeroReincorporacionIndustriaCard";
 import TreesRingCard from "@/components/charts/TreesRingCard";
@@ -11,10 +12,57 @@ import HorizontalBar3D from "@/components/charts/HorizontalBar3D";
 import recyclingHero from "@/assets/recycling-hero.png";
 import logoImrGris from "@/assets/logo-imr-gris.png";
 import { formatKPI } from "@/lib/calculationEngine";
+import { supabase } from "@/integrations/supabase/client";
 
 const MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
+const SuspendedScreen = () => (
+  <div className="min-h-screen flex flex-col items-center justify-center" style={{ background: "#1a2d1a" }}>
+    <img src={logoImrGris} alt="EcoMetrics" className="h-24 w-auto mb-8 opacity-90" />
+    <p className="text-white/80 text-lg text-center max-w-md px-6 font-medium">
+      Servicio temporalmente suspendido. Contacta a tu proveedor.
+    </p>
+  </div>
+);
+
 const PublicDashboard = () => {
+  const [searchParams] = useSearchParams();
+  const tokenParam = searchParams.get("token");
+
+  const [tokenStatus, setTokenStatus] = useState<"loading" | "valid" | "invalid">("loading");
+
+  useEffect(() => {
+    if (!tokenParam) {
+      setTokenStatus("invalid");
+      return;
+    }
+    const checkToken = async () => {
+      const { data } = await supabase
+        .from("public_tokens" as any)
+        .select("activo")
+        .eq("token", tokenParam)
+        .maybeSingle();
+      setTokenStatus(data && (data as any).activo ? "valid" : "invalid");
+    };
+    checkToken();
+  }, [tokenParam]);
+
+  if (tokenStatus === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#1a2d1a" }}>
+        <span className="text-white/60">Verificando acceso…</span>
+      </div>
+    );
+  }
+
+  if (tokenStatus === "invalid") {
+    return <SuspendedScreen />;
+  }
+
+  return <PublicDashboardContent />;
+};
+
+const PublicDashboardContent = () => {
   const {
     dashYear, setDashYear,
     selectedMonths, toggleMonth, clearSelection, isAllMonths,
