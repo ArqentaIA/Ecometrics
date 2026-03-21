@@ -560,6 +560,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      validate_public_token: { Args: { _token: string }; Returns: boolean }
     }
     Enums: {
       app_role:
