@@ -66,7 +66,7 @@ const AdminTokens = () => {
   const handleCreate = async () => {
     if (!newCliente.trim()) return;
     setSaving(true);
-    const token = generateToken(newCliente);
+    const token = generateToken();
     const { error } = await supabase.from("public_tokens" as any).insert({
       token,
       cliente: newCliente.trim(),
