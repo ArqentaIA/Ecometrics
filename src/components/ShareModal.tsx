@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ShareModalProps {
   onClose: () => void;
@@ -6,6 +7,25 @@ interface ShareModalProps {
 
 const ShareModal = ({ onClose }: ShareModalProps) => {
   const [copied, setCopied] = useState<string | null>(null);
+  const [tokens, setTokens] = useState<{ token: string; cliente: string }[]>([]);
+  const [selectedToken, setSelectedToken] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTokens = async () => {
+      const { data } = await supabase
+        .from("public_tokens")
+        .select("token, cliente")
+        .eq("activo", true)
+        .order("fecha_creacion", { ascending: false });
+      if (data && data.length > 0) {
+        setTokens(data);
+        setSelectedToken(data[0].token);
+      }
+      setLoading(false);
+    };
+    fetchTokens();
+  }, []);
 
   const copyText = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
@@ -13,7 +33,9 @@ const ShareModal = ({ onClose }: ShareModalProps) => {
     setTimeout(() => setCopied(null), 2000);
   };
 
-  const url = "https://www.ecometrics.sbs/public-dashboard?token=TU_TOKEN_AQUI";
+  const url = selectedToken
+    ? `https://www.ecometrics.sbs/public-dashboard?token=${selectedToken}`
+    : "";
   const iframe = `<iframe src="${url}" width="100%" height="600" frameborder="0"></iframe>`;
 
   return (
@@ -22,7 +44,6 @@ const ShareModal = ({ onClose }: ShareModalProps) => {
         className="relative win-acrylic-strong rounded-xl p-6 w-full max-w-md mx-4 animate-scale-in"
         onClick={e => e.stopPropagation()}
       >
-        {/* Windows 11 Dialog Title Bar */}
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-heading font-bold text-base tracking-tight">Compartir Dashboard</h2>
           <button
@@ -34,28 +55,51 @@ const ShareModal = ({ onClose }: ShareModalProps) => {
         </div>
 
         <div className="space-y-4">
-          <div>
-            <label className="text-[11px] text-muted-foreground mb-1 block font-medium">URL Pública</label>
-            <div className="flex gap-2">
-              <input value={url} readOnly className="win-input text-xs" />
-              <button onClick={() => copyText(url, "url")} className="win-btn-accent text-xs px-3 whitespace-nowrap">
-                {copied === "url" ? "¡Copiado! ✓" : "Copiar"}
-              </button>
-            </div>
-          </div>
+          {loading ? (
+            <p className="text-xs text-muted-foreground">Cargando tokens…</p>
+          ) : tokens.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No hay tokens activos. Crea uno en el panel de administración.</p>
+          ) : (
+            <>
+              {tokens.length > 1 && (
+                <div>
+                  <label className="text-[11px] text-muted-foreground mb-1 block font-medium">Token / Cliente</label>
+                  <select
+                    value={selectedToken}
+                    onChange={e => setSelectedToken(e.target.value)}
+                    className="win-input text-xs w-full"
+                  >
+                    {tokens.map(t => (
+                      <option key={t.token} value={t.token}>{t.cliente}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
-          <div>
-            <label className="text-[11px] text-muted-foreground mb-1 block font-medium">Código iframe</label>
-            <div className="relative">
-              <pre className="bg-secondary rounded-lg p-3 text-[10px] font-mono overflow-x-auto border border-border">{iframe}</pre>
-              <button
-                onClick={() => copyText(iframe, "iframe")}
-                className="absolute top-2 right-2 win-btn-standard text-[10px] px-2 py-0.5"
-              >
-                {copied === "iframe" ? "✓" : "Copiar"}
-              </button>
-            </div>
-          </div>
+              <div>
+                <label className="text-[11px] text-muted-foreground mb-1 block font-medium">URL Pública</label>
+                <div className="flex gap-2">
+                  <input value={url} readOnly className="win-input text-xs" />
+                  <button onClick={() => copyText(url, "url")} className="win-btn-accent text-xs px-3 whitespace-nowrap">
+                    {copied === "url" ? "¡Copiado! ✓" : "Copiar"}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[11px] text-muted-foreground mb-1 block font-medium">Código iframe</label>
+                <div className="relative">
+                  <pre className="bg-secondary rounded-lg p-3 text-[10px] font-mono overflow-x-auto border border-border">{iframe}</pre>
+                  <button
+                    onClick={() => copyText(iframe, "iframe")}
+                    className="absolute top-2 right-2 win-btn-standard text-[10px] px-2 py-0.5"
+                  >
+                    {copied === "iframe" ? "✓" : "Copiar"}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
 
           <div className="grid grid-cols-2 gap-1.5">
             {[
