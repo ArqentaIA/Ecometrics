@@ -26,7 +26,6 @@ export function useDashboardFilter() {
     result_energia: number;
     result_agua: number;
     result_economic_impact: number;
-    cost_per_kg_applied: number;
   }>>([]);
 
   const isGlobalRole = userRole === 'admin' || userRole === 'administrador' || userRole === 'direccion';
