@@ -295,10 +295,17 @@ const DataCapture = () => {
                         onClick={() => handleConfirm(entry.material.code)}
                         disabled={
                           !entry.kg ||
+                          !(proveedorMap[entry.material.code]) ||
                           (state.confirmed && !state.pending) ||
                           (!permissions.canConfirmCapture && !permissions.canEditPrice)
                         }
-                        title={!permissions.canConfirmCapture && !permissions.canEditPrice ? "No tienes permiso para confirmar capturas" : ""}
+                        title={
+                          !proveedorMap[entry.material.code]
+                            ? "Seleccione un proveedor para confirmar"
+                            : !permissions.canConfirmCapture && !permissions.canEditPrice
+                              ? "No tienes permiso para confirmar capturas"
+                              : ""
+                        }
                         className={`shrink-0 text-xs font-semibold px-4 py-2 rounded-md transition-all duration-200 ${
                           state.feedbackVisible
                             ? "bg-primary text-primary-foreground"

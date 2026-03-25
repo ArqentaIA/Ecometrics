@@ -64,21 +64,23 @@ const Dashboard = () => {
   };
 
   const exportCSV = () => {
-    // Fixed column order: Identification | Bloque Económico | Bloque Ambiental | Estado
+    // Fresh read: export only from materialEntries (which come from confirmed captures)
     const headers = [
       "#", "Material", "Codigo", "Familia",
       // Bloque Económico
       "KG_Brutos", "Yield_pct", "KG_Netos", "Precio_Unitario", "Valor_Economico",
       // Bloque Ambiental
       "CO2_kg", "Energia_kWh", "Agua_L", "Arboles",
-      // Estado
-      "Impacto_Ambiental",
+      // Estado & Proveedor
+      "Impacto_Ambiental", "Proveedor",
     ];
     const csvEscape = (v: string | number) => {
       const s = String(v);
       return s.includes(",") || s.includes('"') ? `"${s.replace(/"/g, '""')}"` : s;
     };
-    const rows = materialEntries.map((e, i) => {
+    // Only export confirmed entries with data
+    const confirmedForExport = materialEntries.filter(e => e.isConfirmed && e.kg > 0);
+    const rows = confirmedForExport.map((e, i) => {
       const impactoValido = e.kpis.impacto_valido;
       const envLabel = (usesFlag: boolean, value: number, fmtKey: "co2" | "energia" | "agua" | "arboles") => {
         if (!impactoValido) return "IMPACTO_PENDIENTE";
@@ -90,19 +92,17 @@ const Dashboard = () => {
         csvEscape(e.material.name),
         e.material.code,
         e.material.family,
-        // Económico (siempre presente)
         formatKPI("kg_brutos", e.kg),
         e.material.default_yield,
         formatKPI("kg_netos", e.kpis.kg_netos),
         formatKPI("cost_per_kg", e.material.default_cost_per_kg ?? 0),
         formatKPI("economic_impact", e.kpis.economic_impact),
-        // Ambiental (flag-driven)
         envLabel(e.kpis.uses_co2, e.kpis.co2, "co2"),
         envLabel(e.kpis.uses_energia, e.kpis.energia, "energia"),
         envLabel(e.kpis.uses_agua, e.kpis.agua, "agua"),
         envLabel(e.kpis.uses_arboles, e.kpis.arboles, "arboles"),
-        // Estado
         impactoValido ? "VALIDADO" : "PENDIENTE",
+        (e as any).proveedor ?? "—",
       ];
     });
     const csv = [headers, ...rows].map(r => r.join(",")).join("\n");
