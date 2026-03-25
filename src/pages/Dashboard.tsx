@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
+import { supabase } from "@/integrations/supabase/client";
 import { useDashboardFilter } from "@/hooks/useDashboardFilter";
 import Navigation from "@/components/Navigation";
 import HeroReincorporacionIndustriaCard from "@/components/HeroReincorporacionIndustriaCard";
@@ -14,6 +15,11 @@ import HorizontalBar3D from "@/components/charts/HorizontalBar3D";
 import recyclingHero from "@/assets/recycling-hero.png";
 import logoImrGris from "@/assets/logo-imr-gris.png";
 import { formatKPI } from "@/lib/calculationEngine";
+import {
+  generateFolio, generateDatasetId, computeSHA256,
+  deriveSignature, buildCanonicalDataset,
+} from "@/lib/reportCertification";
+import CertificationBlock from "@/components/CertificationBlock";
 
 const MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
@@ -37,6 +43,13 @@ const Dashboard = () => {
   const [shareOpen, setShareOpen] = useState(false);
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [exporting, setExporting] = useState(false);
+  const [lastCert, setLastCert] = useState<{
+    folio: string; firma: string; hash: string; datasetId: string;
+    fechaEmision: string; totalRegistros: number;
+  } | null>(null);
+
+  const { user } = useEcoMetrics();
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -63,30 +76,54 @@ const Dashboard = () => {
     else { setSortCol(col); setSortDir("desc"); }
   };
 
-  const [exporting, setExporting] = useState(false);
-
-  const exportCSV = () => {
+  const exportCSV = useCallback(async () => {
     setExporting(true);
     try {
-      // ── REGLA CLAVE: exportar desde el mismo dataset final del dashboard ──
       const datasetToExport = confirmedEntries;
-
-      console.log("EXPORT_DEBUG", {
-        confirmedEntriesCount: datasetToExport.length,
-        dashboardTotalsKgBrutos: totals.kgBrutos,
-      });
 
       if (datasetToExport.length === 0) {
         alert("No hay datos confirmados para exportar en el periodo seleccionado.");
         return;
       }
 
+      // ── Certificación digital ──
+      const now = new Date();
+      const timestamp = now.toISOString();
+      const folio = generateFolio(now);
+      const datasetId = generateDatasetId(now);
+      const canonicalDataset = buildCanonicalDataset(datasetToExport);
+      const parametros = {
+        year: dashYear,
+        months: selectedMonths ?? "all",
+      };
+
+      const hash = await computeSHA256({
+        folio, tipoReporte: "dashboard_export",
+        parametros, datasetRows: canonicalDataset, timestamp,
+      });
+      const firma = deriveSignature(hash, folio);
+
+      // Registrar en BD
+      if (user) {
+        const { error: insertErr } = await supabase.from("report_audit_log").insert({
+          folio, hash_sha256: hash, firma_digital: firma,
+          dataset_id: datasetId, tipo_reporte: "dashboard_export",
+          usuario_id: user.id, fecha_generacion: timestamp,
+          parametros_json: parametros, total_registros: datasetToExport.length,
+        });
+        if (insertErr) console.error("CERT_ERROR", insertErr);
+      }
+
+      setLastCert({ folio, firma, hash, datasetId, fechaEmision: timestamp, totalRegistros: datasetToExport.length });
+
+      // ── CSV ──
       const headers = [
         "Material", "Codigo", "Familia", "Unidad",
         "KG_Brutos", "Yield", "KG_Netos",
         "Precio_Unitario", "Valor_Economico",
         "CO2", "Energia", "Agua", "Arboles",
         "Proveedor", "Fecha_Confirmacion", "Estado",
+        "Folio_Certificacion",
       ];
 
       const csvEscape = (v: string | number | null | undefined) => {
@@ -98,48 +135,40 @@ const Dashboard = () => {
       const rows = datasetToExport.map(e => {
         const isBattery = e.material.code === 'BATERIAS';
         const impactoValido = e.kpis.impacto_valido;
-
         const envCell = (usesFlag: boolean, value: number): string => {
           if (isBattery || !impactoValido || !usesFlag) return "";
           return value.toFixed(4);
         };
-
         const costPerKg = (e as any).cost_per_kg_applied ?? 0;
-
         return [
-          csvEscape(e.material.name),
-          e.material.code,
-          csvEscape(e.material.family),
+          csvEscape(e.material.name), e.material.code, csvEscape(e.material.family),
           isBattery ? "pza" : "kg",
           e.kg.toFixed(2),
           isBattery ? "" : (e.material.default_yield * 100).toFixed(0),
           isBattery ? "" : e.kpis.kg_netos.toFixed(2),
-          Number(costPerKg).toFixed(2),
-          e.kpis.economic_impact.toFixed(2),
+          Number(costPerKg).toFixed(2), e.kpis.economic_impact.toFixed(2),
           envCell(e.kpis.uses_co2, e.kpis.co2),
           envCell(e.kpis.uses_energia, e.kpis.energia),
           envCell(e.kpis.uses_agua, e.kpis.agua),
           envCell(e.kpis.uses_arboles, e.kpis.arboles),
           csvEscape((e as any).proveedor ?? ""),
           (e as any).confirmed_at ? new Date((e as any).confirmed_at).toISOString().split("T")[0] : "",
-          "CONFIRMADO",
+          "CONFIRMADO", folio,
         ];
       });
-
-      console.log("EXPORT_DEBUG", { rowsExported: rows.length });
 
       const csv = [headers, ...rows].map(r => r.join(",")).join("\n");
       const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `ecometrics-${dashYear}-export.csv`;
+      a.download = `ecometrics-${dashYear}-${folio}.csv`;
       a.click();
       URL.revokeObjectURL(url);
     } finally {
       setExporting(false);
     }
-  };
+  }, [confirmedEntries, dashYear, selectedMonths, user]);
 
   // Period label for display
   const periodLabel = isAllMonths
@@ -482,10 +511,20 @@ const Dashboard = () => {
         </div>
       </section>
 
+      {/* Certification Block */}
+      {lastCert && (
+        <section className="max-w-7xl mx-auto px-5 mb-6">
+          <CertificationBlock {...lastCert} />
+        </section>
+      )}
+
       {/* Methodology disclaimer */}
       <footer className="max-w-7xl mx-auto px-5 pb-10 pt-4">
         <p className="text-[10px] leading-relaxed text-muted-foreground/60 text-center max-w-4xl mx-auto">
           Los factores de conversión utilizados se basan en metodologías y referencias técnicas reconocidas internacionalmente, como el GHG Protocol, la EPA Waste Reduction Model (WARM) v16 (diciembre 2023) y literatura especializada del sector de reciclaje, lo que permite estimar de forma consistente y verificable los impactos ambientales asociados a la recuperación de materiales.
+        </p>
+        <p className="text-[9px] text-muted-foreground/40 text-center mt-2 max-w-3xl mx-auto leading-relaxed">
+          Este documento ha sido generado automáticamente por el sistema ECOMETRICS y cuenta con mecanismos de integridad y trazabilidad. Cualquier alteración posterior invalida su autenticidad.
         </p>
       </footer>
 
