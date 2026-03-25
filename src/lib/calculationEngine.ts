@@ -81,11 +81,16 @@ export function calculateIndicators(
   costPerKg?: number,
   versionedFactor?: VersionedFactor | null
 ): CalculatedKPIs {
-  const yieldApplied = material.default_yield;
-  const kgNetos = kgBrutos * yieldApplied;
   const appliedCost = costPerKg ?? material.default_cost_per_kg ?? 0;
 
-  // Use versioned factors if available, otherwise fall back to catalog
+  // BATERÍAS: special case — by piece, no yield, no env KPIs
+  const isBattery = material.code === 'BATERIAS';
+
+  const yieldApplied = isBattery ? 0 : material.default_yield;
+  const kgNetos = isBattery ? 0 : kgBrutos * yieldApplied;
+
+  // Use versioned factors (material_factors) as official source;
+  // fall back to catalog factors only if no versioned factor exists
   const fCo2 = versionedFactor?.factor_co2 ?? material.factor_co2;
   const fEnergia = versionedFactor?.factor_energia ?? material.factor_energia;
   const fAgua = versionedFactor?.factor_agua ?? material.factor_agua;
@@ -95,16 +100,19 @@ export function calculateIndicators(
   // If impacto_valido is false, all environmental KPIs are zero
   const validImpact = material.impacto_valido !== false;
 
+  // Batteries and materials without valid impact get no env KPIs
+  const canCalcEnv = !isBattery && validImpact;
+
   return {
     kg_netos: kgNetos,
     yield_applied: yieldApplied,
-    arboles: validImpact && material.uses_arboles && fArboles != null
+    arboles: canCalcEnv && material.uses_arboles && fArboles != null
       ? kgNetos * fArboles : 0,
-    co2: validImpact && material.uses_co2 && fCo2 != null
+    co2: canCalcEnv && material.uses_co2 && fCo2 != null
       ? kgNetos * fCo2 : 0,
-    energia: validImpact && material.uses_energia && fEnergia != null
+    energia: canCalcEnv && material.uses_energia && fEnergia != null
       ? kgNetos * fEnergia : 0,
-    agua: validImpact && material.uses_agua && fAgua != null
+    agua: canCalcEnv && material.uses_agua && fAgua != null
       ? kgNetos * fAgua : 0,
     uses_arboles: material.uses_arboles,
     uses_co2: material.uses_co2,
