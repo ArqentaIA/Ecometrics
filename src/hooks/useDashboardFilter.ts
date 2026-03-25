@@ -63,6 +63,7 @@ export function useDashboardFilter() {
         result_energia: Number(r.result_energia ?? 0),
         result_agua: Number(r.result_agua ?? 0),
         result_economic_impact: Number(r.result_economic_impact ?? 0),
+        proveedor: (r as any).proveedor ?? null,
       })));
       setLastUpdated(new Date());
     } finally {
