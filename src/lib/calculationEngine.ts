@@ -82,7 +82,7 @@ export function calculateIndicators(
   versionedFactor?: VersionedFactor | null
 ): CalculatedKPIs {
   const yieldApplied = material.default_yield;
-  const kgNetos = kgBrutos * (yieldApplied / 100);
+  const kgNetos = kgBrutos * yieldApplied;
   const appliedCost = costPerKg ?? material.default_cost_per_kg ?? 0;
 
   // Use versioned factors if available, otherwise fall back to catalog
