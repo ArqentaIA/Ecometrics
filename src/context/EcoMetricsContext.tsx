@@ -215,6 +215,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
       const kgs: Record<string, number> = {};
       const costs: Record<string, number> = {};
       const confirmed: Record<string, boolean> = {};
+      const proveedores: Record<string, string> = {};
       const snapshots: typeof confirmedSnapshots = [];
 
       catalog.forEach(m => { kgs[m.code] = 0; costs[m.code] = m.default_cost_per_kg ?? 0; });
