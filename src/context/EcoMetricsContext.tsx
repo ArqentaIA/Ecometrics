@@ -244,6 +244,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
       setCostPerKgMapState(costs);
       setConfirmedMap(confirmed);
       setConfirmedSnapshots(snapshots);
+      setProveedorMapState(proveedores);
       setLastUpdated(new Date());
     } finally {
       setLoadingCaptures(false);
