@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import PublicDashboard from "./pages/PublicDashboard";
 import AdminTokens from "./pages/AdminTokens";
 import NotFound from "./pages/NotFound";
+import Verificar from "./pages/Verificar";
 
 const queryClient = new QueryClient();
 
