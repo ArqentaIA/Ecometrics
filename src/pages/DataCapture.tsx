@@ -262,7 +262,7 @@ const DataCapture = () => {
                         className="win-input !w-32 text-right font-semibold text-base tabular-nums"
                         placeholder="0.00"
                       />
-                      <span className="text-xs text-muted-foreground font-medium">kg</span>
+                      <span className="text-xs text-muted-foreground font-medium">{isBattery ? "pzas" : "kg"}</span>
 
                       {/* Cost per kg field — editable only for Admin/Dirección */}
                       {permissions.canEditPrice ? (
