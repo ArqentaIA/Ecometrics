@@ -99,16 +99,17 @@ export function useDashboardFilter() {
   );
 
   // Build materialEntries from filtered captures (aggregated by material_code)
-  const materialEntries: MaterialEntry[] = useMemo(() => {
-    const byCode: Record<string, { kg: number; confirmed: boolean; kpis: { arboles: number; co2: number; energia: number; agua: number; kg_netos: number; economic_impact: number } }> = {};
+  const materialEntries: (MaterialEntry & { proveedor?: string })[] = useMemo(() => {
+    const byCode: Record<string, { kg: number; confirmed: boolean; proveedor: string | null; kpis: { arboles: number; co2: number; energia: number; agua: number; kg_netos: number; economic_impact: number } }> = {};
 
     filteredCaptures.forEach(c => {
       if (!byCode[c.material_code]) {
-        byCode[c.material_code] = { kg: 0, confirmed: false, kpis: { arboles: 0, co2: 0, energia: 0, agua: 0, kg_netos: 0, economic_impact: 0 } };
+        byCode[c.material_code] = { kg: 0, confirmed: false, proveedor: null, kpis: { arboles: 0, co2: 0, energia: 0, agua: 0, kg_netos: 0, economic_impact: 0 } };
       }
       const entry = byCode[c.material_code];
       entry.kg += c.kg_brutos;
       entry.confirmed = true;
+      if (c.proveedor) entry.proveedor = c.proveedor;
       entry.kpis.arboles += c.result_arboles;
       entry.kpis.co2 += c.result_co2;
       entry.kpis.energia += c.result_energia;
