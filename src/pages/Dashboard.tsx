@@ -511,10 +511,20 @@ const Dashboard = () => {
         </div>
       </section>
 
+      {/* Certification Block */}
+      {lastCert && (
+        <section className="max-w-7xl mx-auto px-5 mb-6">
+          <CertificationBlock {...lastCert} />
+        </section>
+      )}
+
       {/* Methodology disclaimer */}
       <footer className="max-w-7xl mx-auto px-5 pb-10 pt-4">
         <p className="text-[10px] leading-relaxed text-muted-foreground/60 text-center max-w-4xl mx-auto">
           Los factores de conversión utilizados se basan en metodologías y referencias técnicas reconocidas internacionalmente, como el GHG Protocol, la EPA Waste Reduction Model (WARM) v16 (diciembre 2023) y literatura especializada del sector de reciclaje, lo que permite estimar de forma consistente y verificable los impactos ambientales asociados a la recuperación de materiales.
+        </p>
+        <p className="text-[9px] text-muted-foreground/40 text-center mt-2 max-w-3xl mx-auto leading-relaxed">
+          Este documento ha sido generado automáticamente por el sistema ECOMETRICS y cuenta con mecanismos de integridad y trazabilidad. Cualquier alteración posterior invalida su autenticidad.
         </p>
       </footer>
 
