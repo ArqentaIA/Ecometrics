@@ -296,7 +296,7 @@ const Dashboard = () => {
           <button onClick={handleRefresh} disabled={refreshing} className="win-btn-standard text-xs">
             {refreshing ? <span className="inline-block w-3.5 h-3.5 border-2 border-foreground border-t-transparent rounded-full animate-spin-slow" /> : "🔄"} Actualizar Datos
           </button>
-          <button onClick={exportCSV} className="win-btn-standard text-xs">📤 Exportar CSV</button>
+          <button onClick={exportCSV} disabled={exporting} className="win-btn-standard text-xs">{exporting ? "⏳" : "📤"} Exportar CSV</button>
           <button onClick={() => setShareOpen(true)} className="win-btn-standard text-xs">🔗 Compartir</button>
         </div>
       </div>
