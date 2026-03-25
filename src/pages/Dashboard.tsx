@@ -138,7 +138,7 @@ const Dashboard = () => {
           // Special: batteries (family-based, no yield/KPIs)
           const isBattery = cat?.family?.toLowerCase().includes("bateria") || cat?.family?.toLowerCase().includes("batería");
 
-          const kgNetos = isBattery ? null : kgBrutos * (defaultYield / 100);
+          const kgNetos = isBattery ? null : kgBrutos * defaultYield;
           const valorEconomico = kgBrutos * costPerKg;
 
           // Environmental KPIs: recalculate from factors × kg_netos
