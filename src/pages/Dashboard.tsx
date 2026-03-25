@@ -160,7 +160,7 @@ const Dashboard = () => {
             code,
             csvEscape(c.family ?? cat?.family ?? ""),
             kgBrutos.toFixed(2),
-            isBattery ? "N/A" : defaultYield.toString(),
+            isBattery ? "N/A" : (defaultYield * 100).toFixed(0),
             kgNetos !== null ? kgNetos.toFixed(2) : "N/A",
             costPerKg.toFixed(2),
             valorEconomico.toFixed(2),
