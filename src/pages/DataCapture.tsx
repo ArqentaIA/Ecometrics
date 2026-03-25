@@ -5,6 +5,7 @@ import ImpactCards from "@/components/ImpactCards";
 import { formatKPI } from "@/lib/calculationEngine";
 
 const MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+const PROVEEDORES = ["Rec. Primario", "Rec. Privado", "Rec. Comercial", "Rec. Industrial", "Otros"];
 
 interface CaptureState {
   confirmed: boolean;
@@ -74,6 +75,7 @@ const DataCapture = () => {
     materialEntries, setMaterialKg, setCostPerKg, costPerKgMap, clearAll,
     currentMonth, setCurrentMonth, currentYear, setCurrentYear,
     saveCapture, catalogLoading, catalog, permissions, roleLabel,
+    proveedorMap, setProveedor,
   } = useEcoMetrics();
 
   const [activeTab, setActiveTab] = useState(0);
@@ -269,6 +271,19 @@ const DataCapture = () => {
                         </div>
                       )}
 
+                      {/* Proveedor selector */}
+                      <select
+                        value={proveedorMap[entry.material.code] ?? ""}
+                        onChange={e => setProveedor(entry.material.code, e.target.value)}
+                        disabled={entry.isConfirmed && !permissions.canReopenCapture}
+                        className="win-input !w-36 text-xs"
+                      >
+                        <option value="">Proveedor…</option>
+                        {PROVEEDORES.map(p => (
+                          <option key={p} value={p}>{p}</option>
+                        ))}
+                      </select>
+
                       {/* Economic impact calculated */}
                       {entry.kg > 0 && (
                         <div className="shrink-0 px-2 py-1 rounded-md bg-accent/50 text-xs font-semibold text-foreground whitespace-nowrap">
@@ -280,10 +295,17 @@ const DataCapture = () => {
                         onClick={() => handleConfirm(entry.material.code)}
                         disabled={
                           !entry.kg ||
+                          !(proveedorMap[entry.material.code]) ||
                           (state.confirmed && !state.pending) ||
                           (!permissions.canConfirmCapture && !permissions.canEditPrice)
                         }
-                        title={!permissions.canConfirmCapture && !permissions.canEditPrice ? "No tienes permiso para confirmar capturas" : ""}
+                        title={
+                          !proveedorMap[entry.material.code]
+                            ? "Seleccione un proveedor para confirmar"
+                            : !permissions.canConfirmCapture && !permissions.canEditPrice
+                              ? "No tienes permiso para confirmar capturas"
+                              : ""
+                        }
                         className={`shrink-0 text-xs font-semibold px-4 py-2 rounded-md transition-all duration-200 ${
                           state.feedbackVisible
                             ? "bg-primary text-primary-foreground"

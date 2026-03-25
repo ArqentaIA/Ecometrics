@@ -50,6 +50,8 @@ interface EcoMetricsState {
   setMaterialKg: (code: string, kg: number) => void;
   setCostPerKg: (code: string, cost: number) => void;
   costPerKgMap: Record<string, number>;
+  proveedorMap: Record<string, string>;
+  setProveedor: (code: string, proveedor: string) => void;
   clearAll: () => void;
   kpiTotals: KPITotals;
   totalKg: number;
@@ -77,6 +79,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [savingCapture, setSavingCapture] = useState(false);
   const [loadingCaptures, setLoadingCaptures] = useState(false);
+  const [proveedorMap, setProveedorMapState] = useState<Record<string, string>>({});
 
   // Catalog state
   const [catalog, setCatalog] = useState<CatalogMaterial[]>([]);
@@ -125,6 +128,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     setCostPerKgMapState({});
     setConfirmedMap({});
     setConfirmedSnapshots([]);
+    setProveedorMapState({});
   }, []);
 
   // ─── Load Catalog + Versioned Factors (Rule 2, 5, 14) ───
@@ -198,7 +202,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     try {
       const { data, error } = await supabase
         .from("material_captures")
-        .select("material_code, kg_brutos, is_confirmed, result_arboles, result_co2, result_energia, result_agua, kg_netos, cost_per_kg_applied, result_economic_impact")
+        .select("material_code, kg_brutos, is_confirmed, result_arboles, result_co2, result_energia, result_agua, kg_netos, cost_per_kg_applied, result_economic_impact, proveedor")
         .eq("user_id", user.id)
         .eq("month", currentMonth + 1)
         .eq("year", currentYear);
@@ -211,6 +215,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
       const kgs: Record<string, number> = {};
       const costs: Record<string, number> = {};
       const confirmed: Record<string, boolean> = {};
+      const proveedores: Record<string, string> = {};
       const snapshots: typeof confirmedSnapshots = [];
 
       catalog.forEach(m => { kgs[m.code] = 0; costs[m.code] = m.default_cost_per_kg ?? 0; });
@@ -221,6 +226,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
         const catalogMat = catalog.find(c => c.code === row.material_code);
         costs[row.material_code] = savedCost > 0 ? savedCost : (catalogMat?.default_cost_per_kg ?? 0);
         confirmed[row.material_code] = row.is_confirmed ?? false;
+        if ((row as any).proveedor) proveedores[row.material_code] = (row as any).proveedor;
         if (row.is_confirmed) {
           snapshots.push({
             result_arboles: Number(row.result_arboles ?? 0),
@@ -238,6 +244,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
       setCostPerKgMapState(costs);
       setConfirmedMap(confirmed);
       setConfirmedSnapshots(snapshots);
+      setProveedorMapState(proveedores);
       setLastUpdated(new Date());
     } finally {
       setLoadingCaptures(false);
@@ -273,6 +280,10 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     setConfirmedMap(prev => ({ ...prev, [code]: false }));
   }, []);
 
+  const setProveedor = useCallback((code: string, proveedor: string) => {
+    setProveedorMapState(prev => ({ ...prev, [code]: proveedor }));
+  }, []);
+
   // ─── Save Capture (with full snapshot + versioned factors) ───
   const saveCapture = useCallback(async (code: string) => {
     if (!user) return { error: "No autenticado" };
@@ -282,34 +293,32 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     const kg = kgMap[code] ?? 0;
     const cost = costPerKgMap[code] ?? material.default_cost_per_kg ?? 0;
 
-    // Validations (Rule 20)
+    // Validations
     if (kg <= 0) return { error: "El peso capturado debe ser mayor a cero" };
     if (cost < 0) return { error: "El costo por kg no puede ser negativo" };
     if (material.default_yield <= 0 || material.default_yield > 100)
       return { error: "Yield no válido para este material" };
 
+    const prov = proveedorMap[code] ?? "";
+    if (!prov) return { error: "Debe seleccionar un proveedor" };
+
     // Get active versioned factor
     const factor = versionedFactors[code] ?? null;
 
-    // Validate factors exist when required (Rule 20)
-    if (material.impacto_valido !== false) {
-      if (material.uses_co2 && (factor?.factor_co2 ?? material.factor_co2) == null)
-        return { error: "Factor CO₂ requerido pero no definido" };
-      if (material.uses_energia && (factor?.factor_energia ?? material.factor_energia) == null)
-        return { error: "Factor de energía requerido pero no definido" };
-      if (material.uses_agua && (factor?.factor_agua ?? material.factor_agua) == null)
-        return { error: "Factor de agua requerido pero no definido" };
-      if (material.uses_arboles && (factor?.factor_arboles ?? material.factor_arboles) == null)
-        return { error: "Factor de árboles requerido pero no definido" };
-    }
+    // NOTE: Factor validation removed — missing factors result in KPI=0,
+    // not a blocked confirmation. This allows SUERO and similar materials
+    // to confirm even when environmental factors are pending.
 
     setSavingCapture(true);
     try {
-      const snapshot = buildCaptureSnapshot(material, kg, user.id, currentMonth + 1, currentYear, cost, factor);
+      const snapshot = {
+        ...buildCaptureSnapshot(material, kg, user.id, currentMonth + 1, currentYear, cost, factor),
+        proveedor: prov,
+      };
 
       const { error } = await supabase
         .from("material_captures")
-        .upsert(snapshot, { onConflict: "user_id,material_code,month,year" });
+        .upsert(snapshot as any, { onConflict: "user_id,material_code,month,year" });
 
       if (error) return { error: error.message };
 
@@ -320,7 +329,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     } finally {
       setSavingCapture(false);
     }
-  }, [user, catalog, kgMap, costPerKgMap, currentMonth, currentYear, loadCaptures, versionedFactors]);
+  }, [user, catalog, kgMap, costPerKgMap, proveedorMap, currentMonth, currentYear, loadCaptures, versionedFactors]);
 
   // ─── Derived: material entries with live KPIs from engine ───
   const materialEntries: MaterialEntry[] = useMemo(() =>
@@ -385,7 +394,8 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
       login, logout,
       currentMonth, currentYear, setCurrentMonth, setCurrentYear,
       catalog, catalogLoading, versionedFactors,
-      materialEntries, setMaterialKg, setCostPerKg, costPerKgMap, clearAll,
+      materialEntries, setMaterialKg, setCostPerKg, costPerKgMap,
+      proveedorMap, setProveedor, clearAll,
       kpiTotals, totalKg,
       refreshData, lastUpdated,
       savingCapture, saveCapture, loadCaptures, loadingCaptures,

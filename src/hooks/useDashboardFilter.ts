@@ -26,6 +26,7 @@ export function useDashboardFilter() {
     result_energia: number;
     result_agua: number;
     result_economic_impact: number;
+    proveedor: string | null;
   }>>([]);
 
   const isGlobalRole = userRole === 'admin' || userRole === 'administrador' || userRole === 'direccion';
@@ -36,7 +37,7 @@ export function useDashboardFilter() {
     try {
       let query = supabase
         .from("material_captures")
-        .select("material_code, month, kg_brutos, kg_netos, is_confirmed, result_arboles, result_co2, result_energia, result_agua, result_economic_impact")
+        .select("material_code, month, kg_brutos, kg_netos, is_confirmed, result_arboles, result_co2, result_energia, result_agua, result_economic_impact, proveedor")
         .eq("year", dashYear)
         .eq("is_confirmed", true);
 
@@ -62,6 +63,7 @@ export function useDashboardFilter() {
         result_energia: Number(r.result_energia ?? 0),
         result_agua: Number(r.result_agua ?? 0),
         result_economic_impact: Number(r.result_economic_impact ?? 0),
+        proveedor: (r as any).proveedor ?? null,
       })));
       setLastUpdated(new Date());
     } finally {
@@ -97,16 +99,17 @@ export function useDashboardFilter() {
   );
 
   // Build materialEntries from filtered captures (aggregated by material_code)
-  const materialEntries: MaterialEntry[] = useMemo(() => {
-    const byCode: Record<string, { kg: number; confirmed: boolean; kpis: { arboles: number; co2: number; energia: number; agua: number; kg_netos: number; economic_impact: number } }> = {};
+  const materialEntries: (MaterialEntry & { proveedor?: string })[] = useMemo(() => {
+    const byCode: Record<string, { kg: number; confirmed: boolean; proveedor: string | null; kpis: { arboles: number; co2: number; energia: number; agua: number; kg_netos: number; economic_impact: number } }> = {};
 
     filteredCaptures.forEach(c => {
       if (!byCode[c.material_code]) {
-        byCode[c.material_code] = { kg: 0, confirmed: false, kpis: { arboles: 0, co2: 0, energia: 0, agua: 0, kg_netos: 0, economic_impact: 0 } };
+        byCode[c.material_code] = { kg: 0, confirmed: false, proveedor: null, kpis: { arboles: 0, co2: 0, energia: 0, agua: 0, kg_netos: 0, economic_impact: 0 } };
       }
       const entry = byCode[c.material_code];
       entry.kg += c.kg_brutos;
       entry.confirmed = true;
+      if (c.proveedor) entry.proveedor = c.proveedor;
       entry.kpis.arboles += c.result_arboles;
       entry.kpis.co2 += c.result_co2;
       entry.kpis.energia += c.result_energia;
@@ -122,6 +125,7 @@ export function useDashboardFilter() {
           material: m,
           kg: agg.kg,
           isConfirmed: true,
+          proveedor: agg.proveedor ?? undefined,
           kpis: {
             arboles: agg.kpis.arboles,
             co2: agg.kpis.co2,
