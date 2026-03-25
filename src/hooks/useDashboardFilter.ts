@@ -125,6 +125,7 @@ export function useDashboardFilter() {
           material: m,
           kg: agg.kg,
           isConfirmed: true,
+          proveedor: agg.proveedor ?? undefined,
           kpis: {
             arboles: agg.kpis.arboles,
             co2: agg.kpis.co2,
