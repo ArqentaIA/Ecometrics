@@ -58,9 +58,14 @@ const CertificationBlock = ({
           <span className="text-[9px] text-muted-foreground text-center max-w-[90px]">Escanear para verificar</span>
         </div>
       </div>
-      <p className="text-[9px] text-muted-foreground/70 mt-3 border-t border-border/40 pt-2 leading-relaxed">
-        Este documento ha sido generado automáticamente por el sistema ECOMETRICS y cuenta con mecanismos de integridad y trazabilidad. Cualquier alteración posterior invalida su autenticidad.
-      </p>
+      <div className="mt-4 border-t border-border/40 pt-3 space-y-2">
+        <p className="text-[11px] leading-relaxed text-[hsl(220,9%,46%)]">
+          Los factores de conversión utilizados se basan en metodologías y referencias técnicas reconocidas internacionalmente, como el GHG Protocol, el EPA Waste Reduction Model (WARM) v16 (diciembre 2023) y literatura especializada del sector de reciclaje, lo que permite estimar de forma consistente y verificable los impactos ambientales asociados a la recuperación de materiales.
+        </p>
+        <p className="text-[11px] leading-relaxed text-[hsl(220,9%,46%)]">
+          Este documento ha sido generado automáticamente por el sistema ECOMETRICS y cuenta con mecanismos de integridad y trazabilidad. Cualquier alteración posterior invalida su autenticidad.
+        </p>
+      </div>
     </div>
   );
 };
