@@ -271,6 +271,19 @@ const DataCapture = () => {
                         </div>
                       )}
 
+                      {/* Proveedor selector */}
+                      <select
+                        value={proveedorMap[entry.material.code] ?? ""}
+                        onChange={e => setProveedor(entry.material.code, e.target.value)}
+                        disabled={entry.isConfirmed && !permissions.canReopenCapture}
+                        className="win-input !w-36 text-xs"
+                      >
+                        <option value="">Proveedor…</option>
+                        {PROVEEDORES.map(p => (
+                          <option key={p} value={p}>{p}</option>
+                        ))}
+                      </select>
+
                       {/* Economic impact calculated */}
                       {entry.kg > 0 && (
                         <div className="shrink-0 px-2 py-1 rounded-md bg-accent/50 text-xs font-semibold text-foreground whitespace-nowrap">
