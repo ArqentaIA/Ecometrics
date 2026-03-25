@@ -408,7 +408,7 @@ const Dashboard = () => {
       <section className="max-w-7xl mx-auto px-5 mb-12">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-heading text-lg font-bold tracking-tight">📋 Detalle Completo por Material</h2>
-          <button onClick={exportCSV} className="win-btn-standard text-xs">📤 Exportar CSV</button>
+          <button onClick={exportCSV} disabled={exporting} className="win-btn-standard text-xs">{exporting ? "⏳" : "📤"} Exportar CSV</button>
         </div>
         <div className="win-card overflow-hidden">
           <div className="overflow-x-auto">
