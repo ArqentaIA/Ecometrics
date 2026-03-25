@@ -175,6 +175,7 @@ export function useDashboardFilter() {
           material: m,
           kg: agg.kg,
           isConfirmed: true,
+          cost_per_kg_applied: agg.cost_per_kg_applied,
           proveedor: agg.proveedor ?? undefined,
           confirmed_at: agg.confirmed_at ?? undefined,
           kpis: {
