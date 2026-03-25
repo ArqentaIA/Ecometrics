@@ -229,7 +229,11 @@ const DataCapture = () => {
                   <div
                     key={entry.material.code}
                     className={`win-card p-4 transition-all duration-150 ${
-                      entry.isConfirmed ? "border-l-[3px] border-l-primary" : ""
+                      entry.isConfirmed
+                        ? "border-l-[3px] border-l-primary shadow-[0_2px_12px_-2px_hsl(var(--primary)/0.25)] bg-primary/[0.03]"
+                        : state.confirmed
+                          ? "border-l-[3px] border-l-primary shadow-[0_2px_12px_-2px_hsl(var(--primary)/0.25)] bg-primary/[0.03]"
+                          : ""
                     }`}
                     style={{ animation: `fadeSlideUp 300ms ${idx * 30}ms both` }}
                   >
