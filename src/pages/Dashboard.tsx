@@ -422,6 +422,7 @@ const Dashboard = () => {
                             ? <span className="text-xs text-amber-500 font-medium">⏳ Pendiente</span>
                             : <span className="text-xs text-muted-foreground">—</span>}
                       </td>
+                      <td className="px-3 py-2 text-xs text-muted-foreground">{(e as any).proveedor ?? "—"}</td>
                     </tr>
                   );
                 })}
