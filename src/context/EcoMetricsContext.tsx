@@ -50,6 +50,8 @@ interface EcoMetricsState {
   setMaterialKg: (code: string, kg: number) => void;
   setCostPerKg: (code: string, cost: number) => void;
   costPerKgMap: Record<string, number>;
+  proveedorMap: Record<string, string>;
+  setProveedor: (code: string, proveedor: string) => void;
   clearAll: () => void;
   kpiTotals: KPITotals;
   totalKg: number;
