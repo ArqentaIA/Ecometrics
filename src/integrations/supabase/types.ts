@@ -135,6 +135,7 @@ export type Database = {
           material_name: string | null
           month: number
           notes: string | null
+          proveedor: string | null
           result_agua: number | null
           result_arboles: number | null
           result_co2: number | null
@@ -171,6 +172,7 @@ export type Database = {
           material_name?: string | null
           month: number
           notes?: string | null
+          proveedor?: string | null
           result_agua?: number | null
           result_arboles?: number | null
           result_co2?: number | null
@@ -207,6 +209,7 @@ export type Database = {
           material_name?: string | null
           month?: number
           notes?: string | null
+          proveedor?: string | null
           result_agua?: number | null
           result_arboles?: number | null
           result_co2?: number | null
