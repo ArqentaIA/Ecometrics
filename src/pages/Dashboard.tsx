@@ -15,6 +15,11 @@ import HorizontalBar3D from "@/components/charts/HorizontalBar3D";
 import recyclingHero from "@/assets/recycling-hero.png";
 import logoImrGris from "@/assets/logo-imr-gris.png";
 import { formatKPI } from "@/lib/calculationEngine";
+import {
+  generateFolio, generateDatasetId, computeSHA256,
+  deriveSignature, buildCanonicalDataset,
+} from "@/lib/reportCertification";
+import CertificationBlock from "@/components/CertificationBlock";
 
 const MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
