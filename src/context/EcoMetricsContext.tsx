@@ -226,6 +226,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
         const catalogMat = catalog.find(c => c.code === row.material_code);
         costs[row.material_code] = savedCost > 0 ? savedCost : (catalogMat?.default_cost_per_kg ?? 0);
         confirmed[row.material_code] = row.is_confirmed ?? false;
+        if ((row as any).proveedor) proveedores[row.material_code] = (row as any).proveedor;
         if (row.is_confirmed) {
           snapshots.push({
             result_arboles: Number(row.result_arboles ?? 0),
