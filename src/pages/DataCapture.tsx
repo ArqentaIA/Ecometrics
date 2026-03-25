@@ -355,16 +355,24 @@ const DataCapture = () => {
                       </button>
                     </div>
 
-                    {/* Yield info — from catalog */}
-                    <div className="mt-1.5 ml-12 text-[11px] text-muted-foreground">
-                      Yield: <span className="font-medium">{(entry.material.default_yield * 100).toFixed(0)}%</span>
-                      {" → "}KG netos estimados: <span className="font-semibold text-foreground">{formatKPI("kg_netos", entry.kpis.kg_netos)} kg</span>
-                      <span className="ml-2 italic">(pérdida típica: {entry.material.yield_loss_reason})</span>
-                    </div>
-                    {/* Rule 21: Disclaimer about calculation bases */}
-                    <div className="mt-1 ml-12 text-[10px] text-muted-foreground/70 italic">
-                      Indicadores ambientales calculados sobre kg netos estimados. El valor económico se calcula sobre kg brutos capturados.
-                    </div>
+                    {/* Yield info — from catalog (hidden for BATERIAS) */}
+                    {!isBattery && (
+                      <>
+                        <div className="mt-1.5 ml-12 text-[11px] text-muted-foreground">
+                          Yield: <span className="font-medium">{(entry.material.default_yield * 100).toFixed(0)}%</span>
+                          {" → "}KG netos estimados: <span className="font-semibold text-foreground">{formatKPI("kg_netos", entry.kpis.kg_netos)} kg</span>
+                          <span className="ml-2 italic">(pérdida típica: {entry.material.yield_loss_reason})</span>
+                        </div>
+                        <div className="mt-1 ml-12 text-[10px] text-muted-foreground/70 italic">
+                          Indicadores ambientales calculados sobre kg netos estimados. El valor económico se calcula sobre kg brutos capturados.
+                        </div>
+                      </>
+                    )}
+                    {isBattery && (
+                      <div className="mt-1.5 ml-12 text-[11px] text-muted-foreground italic">
+                        🔋 Material por pieza — sin yield ni KPIs ambientales. Valor = cantidad × precio unitario.
+                      </div>
+                    )}
 
                     {state.pending && (
                       <div className="mt-2 ml-12 text-[11px] text-amber-600 font-medium flex items-center gap-1">
