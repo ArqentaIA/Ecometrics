@@ -352,7 +352,8 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
 
   const refreshData = useCallback(() => { loadCaptures(); }, [loadCaptures]);
 
-  if (!sessionReady) return null;
+  // Always render the Provider so children never lose context.
+  // Components can check isLoggedIn / catalogLoading for loading states.
 
   return (
     <EcoMetricsContext.Provider value={{
