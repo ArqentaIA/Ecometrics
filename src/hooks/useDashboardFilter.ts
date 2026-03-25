@@ -89,17 +89,33 @@ export function useDashboardFilter() {
   }, [catalog]);
 
   // Enrich each raw capture with recalculated KPIs
-  const enrichedCaptures: EnrichedCapture[] = useMemo(() =>
-    rawCaptures
-      .filter(c => c.kg_brutos > 0 && catalogMap[c.material_code])
+  const enrichedCaptures: EnrichedCapture[] = useMemo(() => {
+    // Keep ALL captures, even if no catalog match (LEFT JOIN logic)
+    const results = rawCaptures
+      .filter(c => c.kg_brutos > 0)
       .map(c => {
         const mat = catalogMap[c.material_code];
+        if (!mat) {
+          console.warn("DASHBOARD_DEBUG: no catalog match for", c.material_code);
+          return null;
+        }
         const factor = versionedFactors[c.material_code] ?? null;
         const kpis = calculateIndicators(mat, c.kg_brutos, c.cost_per_kg_applied, factor);
         return { ...c, kpis };
-      }),
-    [rawCaptures, catalogMap, versionedFactors]
-  );
+      })
+      .filter((c): c is EnrichedCapture => c !== null);
+
+    console.log("DASHBOARD_DEBUG", {
+      step: "enriched",
+      rawCount: rawCaptures.length,
+      withKg: rawCaptures.filter(c => c.kg_brutos > 0).length,
+      catalogKeys: Object.keys(catalogMap).length,
+      factorKeys: Object.keys(versionedFactors).length,
+      enrichedCount: results.length,
+    });
+
+    return results;
+  }, [rawCaptures, catalogMap, versionedFactors]);
 
   // Filter by selected months
   const filteredCaptures = useMemo(() => {
