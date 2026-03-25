@@ -280,6 +280,10 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     setConfirmedMap(prev => ({ ...prev, [code]: false }));
   }, []);
 
+  const setProveedor = useCallback((code: string, proveedor: string) => {
+    setProveedorMapState(prev => ({ ...prev, [code]: proveedor }));
+  }, []);
+
   // ─── Save Capture (with full snapshot + versioned factors) ───
   const saveCapture = useCallback(async (code: string) => {
     if (!user) return { error: "No autenticado" };
