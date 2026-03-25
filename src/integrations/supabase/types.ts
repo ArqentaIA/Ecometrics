@@ -124,6 +124,7 @@ export type Database = {
           factor_arboles_applied: number | null
           factor_co2_applied: number | null
           factor_energia_applied: number | null
+          factor_version: number | null
           family: string | null
           id: string
           is_additional_material: boolean | null
@@ -159,6 +160,7 @@ export type Database = {
           factor_arboles_applied?: number | null
           factor_co2_applied?: number | null
           factor_energia_applied?: number | null
+          factor_version?: number | null
           family?: string | null
           id?: string
           is_additional_material?: boolean | null
@@ -194,6 +196,7 @@ export type Database = {
           factor_arboles_applied?: number | null
           factor_co2_applied?: number | null
           factor_energia_applied?: number | null
+          factor_version?: number | null
           family?: string | null
           id?: string
           is_additional_material?: boolean | null
@@ -245,6 +248,7 @@ export type Database = {
           factors_source: string
           family: string
           id: number
+          impacto_valido: boolean
           is_active: boolean
           name: string
           updated_at: string
@@ -273,6 +277,7 @@ export type Database = {
           factors_source?: string
           family?: string
           id?: number
+          impacto_valido?: boolean
           is_active?: boolean
           name: string
           updated_at?: string
@@ -301,6 +306,7 @@ export type Database = {
           factors_source?: string
           family?: string
           id?: number
+          impacto_valido?: boolean
           is_active?: boolean
           name?: string
           updated_at?: string
@@ -351,6 +357,54 @@ export type Database = {
           is_active?: boolean
           name?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      material_factors: {
+        Row: {
+          activo: boolean
+          created_at: string
+          created_by: string | null
+          factor_agua: number | null
+          factor_arboles: number | null
+          factor_co2: number | null
+          factor_energia: number | null
+          fecha_inicio: string
+          fuente: string
+          id: string
+          material_code: string
+          notas: string | null
+          version: number
+        }
+        Insert: {
+          activo?: boolean
+          created_at?: string
+          created_by?: string | null
+          factor_agua?: number | null
+          factor_arboles?: number | null
+          factor_co2?: number | null
+          factor_energia?: number | null
+          fecha_inicio?: string
+          fuente?: string
+          id?: string
+          material_code: string
+          notas?: string | null
+          version?: number
+        }
+        Update: {
+          activo?: boolean
+          created_at?: string
+          created_by?: string | null
+          factor_agua?: number | null
+          factor_arboles?: number | null
+          factor_co2?: number | null
+          factor_energia?: number | null
+          fecha_inicio?: string
+          fuente?: string
+          id?: string
+          material_code?: string
+          notas?: string | null
+          version?: number
         }
         Relationships: []
       }
