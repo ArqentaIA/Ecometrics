@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
-import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import { useDashboardFilter } from "@/hooks/useDashboardFilter";
 import Navigation from "@/components/Navigation";
 import HeroReincorporacionIndustriaCard from "@/components/HeroReincorporacionIndustriaCard";
