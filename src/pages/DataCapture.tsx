@@ -84,6 +84,10 @@ const DataCapture = () => {
   const [openImpact, setOpenImpact] = useState<Record<string, boolean>>({});
   const [captureStates, setCaptureStates] = useState<Record<string, CaptureState>>({});
 
+  // Clear local capture states on mount so fields start blank each time
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useState(() => { setCaptureStates({}); });
+
   // ── AUDIT CAPA 3: Datos recibidos en UI (DataCapture) ──
   console.log("AUDIT_UI_INPUT_CAPTURE", {
     total: materialEntries?.length,
