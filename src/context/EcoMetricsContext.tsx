@@ -311,11 +311,14 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
 
     setSavingCapture(true);
     try {
-      const snapshot = buildCaptureSnapshot(material, kg, user.id, currentMonth + 1, currentYear, cost, factor);
+      const snapshot = {
+        ...buildCaptureSnapshot(material, kg, user.id, currentMonth + 1, currentYear, cost, factor),
+        proveedor: prov,
+      };
 
       const { error } = await supabase
         .from("material_captures")
-        .upsert(snapshot, { onConflict: "user_id,material_code,month,year" });
+        .upsert(snapshot as any, { onConflict: "user_id,material_code,month,year" });
 
       if (error) return { error: error.message };
 
