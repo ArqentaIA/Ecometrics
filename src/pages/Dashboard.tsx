@@ -138,7 +138,7 @@ const Dashboard = () => {
           // Special: batteries (family-based, no yield/KPIs)
           const isBattery = cat?.family?.toLowerCase().includes("bateria") || cat?.family?.toLowerCase().includes("batería");
 
-          const kgNetos = isBattery ? null : kgBrutos * (defaultYield / 100);
+          const kgNetos = isBattery ? null : kgBrutos * defaultYield;
           const valorEconomico = kgBrutos * costPerKg;
 
           // Environmental KPIs: recalculate from factors × kg_netos
@@ -160,7 +160,7 @@ const Dashboard = () => {
             code,
             csvEscape(c.family ?? cat?.family ?? ""),
             kgBrutos.toFixed(2),
-            isBattery ? "N/A" : defaultYield.toString(),
+            isBattery ? "N/A" : (defaultYield * 100).toFixed(0),
             kgNetos !== null ? kgNetos.toFixed(2) : "N/A",
             costPerKg.toFixed(2),
             valorEconomico.toFixed(2),
@@ -476,7 +476,7 @@ const Dashboard = () => {
                       <td className="px-3 py-2 text-muted-foreground text-xs">{e.material.code}</td>
                       {/* Bloque Económico */}
                       <td className="px-3 py-2 font-semibold">{formatKPI("kg_brutos", e.kg)}</td>
-                      <td className="px-3 py-2 text-muted-foreground font-medium">{e.material.default_yield}%</td>
+                      <td className="px-3 py-2 text-muted-foreground font-medium">{(e.material.default_yield * 100).toFixed(0)}%</td>
                       <td className="px-3 py-2 font-medium text-muted-foreground/80">
                         {e.kpis.kg_netos > 0 ? formatKPI("kg_netos", e.kpis.kg_netos) : "—"}
                       </td>

@@ -53,7 +53,7 @@ export interface MaterialKPIs {
 }
 
 export function calculateKPIs(material: Material, kg: number): MaterialKPIs {
-  const effectiveKg = kg * (material.yieldInfo.yield / 100);
+  const effectiveKg = kg * material.yieldInfo.yield;
   const arboles = material.factorArboles != null ? effectiveKg * material.factorArboles : 0;
   const co2 = material.factorCo2 != null ? effectiveKg * material.factorCo2 : 0;
   const energia = material.factorEnergia != null ? effectiveKg * material.factorEnergia : 0;

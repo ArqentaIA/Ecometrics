@@ -82,7 +82,7 @@ export function calculateIndicators(
   versionedFactor?: VersionedFactor | null
 ): CalculatedKPIs {
   const yieldApplied = material.default_yield;
-  const kgNetos = kgBrutos * (yieldApplied / 100);
+  const kgNetos = kgBrutos * yieldApplied;
   const appliedCost = costPerKg ?? material.default_cost_per_kg ?? 0;
 
   // Use versioned factors if available, otherwise fall back to catalog
@@ -135,7 +135,7 @@ export function validateMaterialForCapture(
   const errors: string[] = [];
 
   if (!material.is_active) errors.push("Material inactivo");
-  if (material.default_yield <= 0 || material.default_yield > 100)
+  if (material.default_yield <= 0 || material.default_yield > 1)
     errors.push("Yield no válido");
 
   // Only validate factors if the material has valid environmental impact
