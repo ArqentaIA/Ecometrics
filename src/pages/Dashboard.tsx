@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import { useDashboardFilter } from "@/hooks/useDashboardFilter";
 import Navigation from "@/components/Navigation";
@@ -63,53 +64,126 @@ const Dashboard = () => {
     else { setSortCol(col); setSortDir("desc"); }
   };
 
-  const exportCSV = () => {
-    // Fresh read: export only from materialEntries (which come from confirmed captures)
-    const headers = [
-      "#", "Material", "Codigo", "Familia",
-      // Bloque Económico
-      "KG_Brutos", "Yield_pct", "KG_Netos", "Precio_Unitario", "Valor_Economico",
-      // Bloque Ambiental
-      "CO2_kg", "Energia_kWh", "Agua_L", "Arboles",
-      // Estado & Proveedor
-      "Impacto_Ambiental", "Proveedor",
-    ];
-    const csvEscape = (v: string | number) => {
-      const s = String(v);
-      return s.includes(",") || s.includes('"') ? `"${s.replace(/"/g, '""')}"` : s;
-    };
-    // Only export confirmed entries with data
-    const confirmedForExport = materialEntries.filter(e => e.isConfirmed && e.kg > 0);
-    const rows = confirmedForExport.map((e, i) => {
-      const impactoValido = e.kpis.impacto_valido;
-      const envLabel = (usesFlag: boolean, value: number, fmtKey: "co2" | "energia" | "agua" | "arboles") => {
-        if (!impactoValido) return "IMPACTO_PENDIENTE";
-        if (!usesFlag) return "N/A";
-        return formatKPI(fmtKey, value);
-      };
-      return [
-        i + 1,
-        csvEscape(e.material.name),
-        e.material.code,
-        e.material.family,
-        formatKPI("kg_brutos", e.kg),
-        e.material.default_yield,
-        formatKPI("kg_netos", e.kpis.kg_netos),
-        formatKPI("cost_per_kg", e.material.default_cost_per_kg ?? 0),
-        formatKPI("economic_impact", e.kpis.economic_impact),
-        envLabel(e.kpis.uses_co2, e.kpis.co2, "co2"),
-        envLabel(e.kpis.uses_energia, e.kpis.energia, "energia"),
-        envLabel(e.kpis.uses_agua, e.kpis.agua, "agua"),
-        envLabel(e.kpis.uses_arboles, e.kpis.arboles, "arboles"),
-        impactoValido ? "VALIDADO" : "PENDIENTE",
-        (e as any).proveedor ?? "—",
+  const [exporting, setExporting] = useState(false);
+
+  const exportCSV = async () => {
+    setExporting(true);
+    try {
+      // 1. Fresh read from material_captures (confirmed only)
+      const monthFilter = isAllMonths ? null : selectedMonths;
+      let captureQuery = supabase
+        .from("material_captures")
+        .select("material_code, material_name, family, kg_brutos, cost_per_kg_applied, proveedor, confirmed_at")
+        .eq("year", dashYear)
+        .eq("is_confirmed", true)
+        .not("confirmed_at", "is", null);
+
+      if (monthFilter) {
+        captureQuery = captureQuery.in("month", monthFilter);
+      }
+
+      const { data: rawCaptures, error: capErr } = await captureQuery;
+      if (capErr || !rawCaptures) {
+        console.error("Export: error fetching captures", capErr);
+        return;
+      }
+
+      // 2. Fresh read from material_catalog
+      const { data: catalogData, error: catErr } = await supabase
+        .from("material_catalog")
+        .select("code, name, family, default_yield, uses_co2, uses_energia, uses_agua, uses_arboles, impacto_valido")
+        .eq("is_active", true);
+      if (catErr || !catalogData) {
+        console.error("Export: error fetching catalog", catErr);
+        return;
+      }
+      const catalogMap = Object.fromEntries(catalogData.map(c => [c.code, c]));
+
+      // 3. Fresh read from material_factors (active only)
+      const { data: factorsData, error: facErr } = await supabase
+        .from("material_factors")
+        .select("material_code, factor_co2, factor_energia, factor_agua, factor_arboles")
+        .eq("activo", true);
+      if (facErr || !factorsData) {
+        console.error("Export: error fetching factors", facErr);
+        return;
+      }
+      const factorsMap = Object.fromEntries(factorsData.map(f => [f.material_code, f]));
+
+      // 4. Build rows with recalculated values
+      const headers = [
+        "Material", "Codigo", "Familia",
+        "KG_Brutos", "Yield", "KG_Netos",
+        "Precio_Unitario", "Valor_Economico",
+        "CO2", "Energia", "Agua", "Arboles",
+        "Proveedor", "Fecha_Confirmacion",
       ];
-    });
-    const csv = [headers, ...rows].map(r => r.join(",")).join("\n");
-    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = `ecometrics-${dashYear}-export.csv`; a.click();
+
+      const csvEscape = (v: string | number | null) => {
+        if (v === null || v === undefined) return "";
+        const s = String(v);
+        return s.includes(",") || s.includes('"') ? `"${s.replace(/"/g, '""')}"` : s;
+      };
+
+      const rows = rawCaptures
+        .filter(c => Number(c.kg_brutos ?? 0) > 0)
+        .map(c => {
+          const code = c.material_code;
+          const cat = catalogMap[code];
+          const fac = factorsMap[code];
+          const kgBrutos = Number(c.kg_brutos ?? 0);
+          const costPerKg = Number(c.cost_per_kg_applied ?? 0);
+          const defaultYield = cat ? Number(cat.default_yield) : 0;
+
+          // Special: batteries (family-based, no yield/KPIs)
+          const isBattery = cat?.family?.toLowerCase().includes("bateria") || cat?.family?.toLowerCase().includes("batería");
+
+          const kgNetos = isBattery ? null : kgBrutos * (defaultYield / 100);
+          const valorEconomico = kgBrutos * costPerKg;
+
+          // Environmental KPIs: recalculate from factors × kg_netos
+          const calcEnv = (usesFlag: boolean | undefined, factor: number | null | undefined): string => {
+            if (!cat?.impacto_valido) return "IMPACTO_PENDIENTE";
+            if (isBattery) return "N/A";
+            if (!usesFlag) return "N/A";
+            if (kgNetos === null || !factor) return "N/A";
+            return (kgNetos * Number(factor)).toFixed(4);
+          };
+
+          const co2 = calcEnv(cat?.uses_co2, fac?.factor_co2);
+          const energia = calcEnv(cat?.uses_energia, fac?.factor_energia);
+          const agua = calcEnv(cat?.uses_agua, fac?.factor_agua);
+          const arboles = calcEnv(cat?.uses_arboles, fac?.factor_arboles);
+
+          return [
+            csvEscape(c.material_name ?? cat?.name ?? code),
+            code,
+            csvEscape(c.family ?? cat?.family ?? ""),
+            kgBrutos.toFixed(2),
+            isBattery ? "N/A" : defaultYield.toString(),
+            kgNetos !== null ? kgNetos.toFixed(2) : "N/A",
+            costPerKg.toFixed(2),
+            valorEconomico.toFixed(2),
+            co2,
+            energia,
+            agua,
+            arboles,
+            csvEscape(c.proveedor ?? "—"),
+            c.confirmed_at ? new Date(c.confirmed_at).toISOString().split("T")[0] : "—",
+          ];
+        });
+
+      const csv = [headers, ...rows].map(r => r.join(",")).join("\n");
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ecometrics-${dashYear}-export.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExporting(false);
+    }
   };
 
   // Period label for display
@@ -222,7 +296,7 @@ const Dashboard = () => {
           <button onClick={handleRefresh} disabled={refreshing} className="win-btn-standard text-xs">
             {refreshing ? <span className="inline-block w-3.5 h-3.5 border-2 border-foreground border-t-transparent rounded-full animate-spin-slow" /> : "🔄"} Actualizar Datos
           </button>
-          <button onClick={exportCSV} className="win-btn-standard text-xs">📤 Exportar CSV</button>
+          <button onClick={exportCSV} disabled={exporting} className="win-btn-standard text-xs">{exporting ? "⏳" : "📤"} Exportar CSV</button>
           <button onClick={() => setShareOpen(true)} className="win-btn-standard text-xs">🔗 Compartir</button>
         </div>
       </div>
@@ -334,7 +408,7 @@ const Dashboard = () => {
       <section className="max-w-7xl mx-auto px-5 mb-12">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-heading text-lg font-bold tracking-tight">📋 Detalle Completo por Material</h2>
-          <button onClick={exportCSV} className="win-btn-standard text-xs">📤 Exportar CSV</button>
+          <button onClick={exportCSV} disabled={exporting} className="win-btn-standard text-xs">{exporting ? "⏳" : "📤"} Exportar CSV</button>
         </div>
         <div className="win-card overflow-hidden">
           <div className="overflow-x-auto">
