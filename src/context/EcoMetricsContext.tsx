@@ -329,7 +329,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     } finally {
       setSavingCapture(false);
     }
-  }, [user, catalog, kgMap, costPerKgMap, currentMonth, currentYear, loadCaptures, versionedFactors]);
+  }, [user, catalog, kgMap, costPerKgMap, proveedorMap, currentMonth, currentYear, loadCaptures, versionedFactors]);
 
   // ─── Derived: material entries with live KPIs from engine ───
   const materialEntries: MaterialEntry[] = useMemo(() =>
