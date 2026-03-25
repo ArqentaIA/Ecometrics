@@ -64,21 +64,52 @@ const Dashboard = () => {
   };
 
   const exportCSV = () => {
-    const headers = ["#", "Material", "Código", "KG Brutos", "Yield %", "KG Netos", "Árboles", "CO₂e kg", "Energía kWh", "Agua L"];
-    const rows = materialEntries.map((e, i) => [
-      i + 1, e.material.name, e.material.code, e.kg,
-      e.material.default_yield,
-      formatKPI("kg_netos", e.kpis.kg_netos),
-      formatKPI("arboles", e.kpis.arboles),
-      formatKPI("co2", e.kpis.co2),
-      formatKPI("energia", e.kpis.energia),
-      formatKPI("agua", e.kpis.agua),
-    ]);
+    // Fixed column order: Identification | Bloque Económico | Bloque Ambiental | Estado
+    const headers = [
+      "#", "Material", "Codigo", "Familia",
+      // Bloque Económico
+      "KG_Brutos", "Yield_pct", "KG_Netos", "Precio_Unitario", "Valor_Economico",
+      // Bloque Ambiental
+      "CO2_kg", "Energia_kWh", "Agua_L", "Arboles",
+      // Estado
+      "Impacto_Ambiental",
+    ];
+    const csvEscape = (v: string | number) => {
+      const s = String(v);
+      return s.includes(",") || s.includes('"') ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const rows = materialEntries.map((e, i) => {
+      const impactoValido = e.kpis.impacto_valido;
+      const envLabel = (usesFlag: boolean, value: number, fmtKey: "co2" | "energia" | "agua" | "arboles") => {
+        if (!impactoValido) return "IMPACTO_PENDIENTE";
+        if (!usesFlag) return "N/A";
+        return formatKPI(fmtKey, value);
+      };
+      return [
+        i + 1,
+        csvEscape(e.material.name),
+        e.material.code,
+        e.material.family,
+        // Económico (siempre presente)
+        formatKPI("kg_brutos", e.kg),
+        e.material.default_yield,
+        formatKPI("kg_netos", e.kpis.kg_netos),
+        formatKPI("cost_per_kg", e.material.default_cost_per_kg ?? 0),
+        formatKPI("economic_impact", e.kpis.economic_impact),
+        // Ambiental (flag-driven)
+        envLabel(e.kpis.uses_co2, e.kpis.co2, "co2"),
+        envLabel(e.kpis.uses_energia, e.kpis.energia, "energia"),
+        envLabel(e.kpis.uses_agua, e.kpis.agua, "agua"),
+        envLabel(e.kpis.uses_arboles, e.kpis.arboles, "arboles"),
+        // Estado
+        impactoValido ? "VALIDADO" : "PENDIENTE",
+      ];
+    });
     const csv = [headers, ...rows].map(r => r.join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = "ecometrics-export.csv"; a.click();
+    a.href = url; a.download = `ecometrics-${dashYear}-export.csv`; a.click();
   };
 
   // Period label for display
@@ -309,23 +340,38 @@ const Dashboard = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-[13px]">
               <thead>
+                {/* Group header row */}
+                <tr className="bg-nav text-nav-foreground border-b border-nav-foreground/20">
+                  <th colSpan={3} className="px-3 py-1.5 text-center text-[10px] font-bold uppercase tracking-widest border-r border-nav-foreground/20">Identificación</th>
+                  <th colSpan={4} className="px-3 py-1.5 text-center text-[10px] font-bold uppercase tracking-widest border-r border-nav-foreground/20" style={{ color: "hsl(var(--kpi-co2))" }}>
+                    💰 Bloque Económico
+                  </th>
+                  <th colSpan={4} className="px-3 py-1.5 text-center text-[10px] font-bold uppercase tracking-widest border-r border-nav-foreground/20" style={{ color: "hsl(var(--kpi-trees))" }}>
+                    🌿 Bloque Ambiental
+                  </th>
+                  <th className="px-3 py-1.5 text-center text-[10px] font-bold uppercase tracking-widest">Estado</th>
+                </tr>
                 <tr className="bg-nav text-nav-foreground">
                   {[
                     { key: "", label: "#" },
                     { key: "", label: "Material" },
                     { key: "", label: "Código" },
+                    // Económico
                     { key: "kg", label: "KG Brutos" },
                     { key: "", label: "Yield %" },
                     { key: "", label: "KG Netos" },
-                    { key: "arboles", label: "🌳 Árboles" },
+                    { key: "", label: "💰 Valor $" },
+                    // Ambiental
                     { key: "co2", label: "♻️ CO₂e kg" },
                     { key: "energia", label: "⚡ Energía kWh" },
                     { key: "agua", label: "💧 Agua L" },
+                    { key: "arboles", label: "🌳 Árboles" },
+                    // Estado
                     { key: "", label: "Estado" },
                   ].map(col => (
                     <th
                       key={col.label}
-                      className={`px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider ${col.key ? "cursor-pointer hover:bg-nav-foreground/10 select-none" : ""}`}
+                      className={`px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wider ${col.key ? "cursor-pointer hover:bg-nav-foreground/10 select-none" : ""}`}
                       onClick={() => col.key && toggleSort(col.key)}
                     >
                       {col.label}
@@ -335,59 +381,61 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {sortedEntries.map((e, i) => (
-                  <tr
-                    key={e.material.code}
-                    className={`transition-colors duration-100 hover:bg-accent/50 ${
-                      i % 2 === 0 ? "bg-card" : "bg-accent/20"
-                    } ${e.isConfirmed ? "border-l-[3px] border-l-primary" : ""}`}
-                  >
-                    <td className="px-3 py-2 text-muted-foreground">{e.material.display_order}</td>
-                    <td className="px-3 py-2 font-medium">{e.material.name}</td>
-                    <td className="px-3 py-2 text-muted-foreground text-xs">{e.material.code}</td>
-                    <td className="px-3 py-2 font-semibold">{formatKPI("kg_brutos", e.kg)}</td>
-                    <td className="px-3 py-2 text-muted-foreground font-medium">{e.material.default_yield}%</td>
-                    <td className="px-3 py-2 font-medium text-muted-foreground/80">
-                      {e.kpis.kg_netos > 0 ? formatKPI("kg_netos", e.kpis.kg_netos) : "—"}
-                    </td>
-                    <td className="px-3 py-2">
-                      {e.kpis.uses_arboles && e.kpis.arboles > 0
-                        ? formatKPI("arboles", e.kpis.arboles)
-                        : <span className="text-muted-foreground">—</span>}
-                    </td>
-                    <td className="px-3 py-2">
-                      {e.kpis.uses_co2 && e.kpis.co2 > 0
-                        ? formatKPI("co2", e.kpis.co2)
-                        : <span className="text-muted-foreground">—</span>}
-                    </td>
-                    <td className="px-3 py-2">
-                      {e.kpis.uses_energia && e.kpis.energia > 0
-                        ? formatKPI("energia", e.kpis.energia)
-                        : <span className="text-muted-foreground">—</span>}
-                    </td>
-                    <td className="px-3 py-2">
-                      {e.kpis.uses_agua && e.kpis.agua > 0
-                        ? formatKPI("agua", e.kpis.agua)
-                        : <span className="text-muted-foreground">—</span>}
-                    </td>
-                    <td className="px-3 py-2">
-                      {e.isConfirmed
-                        ? <span className="text-xs text-primary font-medium">✓ Confirmado</span>
-                        : e.kg > 0
-                          ? <span className="text-xs text-amber-500 font-medium">⏳ Pendiente</span>
-                          : <span className="text-xs text-muted-foreground">—</span>}
-                    </td>
-                  </tr>
-                ))}
+                {sortedEntries.map((e, i) => {
+                  const impactoValido = e.kpis.impacto_valido;
+                  const renderEnv = (usesFlag: boolean, value: number, fmtKey: "co2" | "energia" | "agua" | "arboles") => {
+                    if (!impactoValido) return <span className="text-amber-500 text-[10px] font-medium" title="Validación metodológica pendiente">PENDIENTE</span>;
+                    if (!usesFlag) return <span className="text-muted-foreground text-[10px]">N/A</span>;
+                    if (value === 0 && e.kg === 0) return <span className="text-muted-foreground">—</span>;
+                    return formatKPI(fmtKey, value);
+                  };
+                  return (
+                    <tr
+                      key={e.material.code}
+                      className={`transition-colors duration-100 hover:bg-accent/50 ${
+                        i % 2 === 0 ? "bg-card" : "bg-accent/20"
+                      } ${e.isConfirmed ? "border-l-[3px] border-l-primary" : ""}`}
+                    >
+                      <td className="px-3 py-2 text-muted-foreground">{e.material.display_order}</td>
+                      <td className="px-3 py-2 font-medium">{e.material.name}</td>
+                      <td className="px-3 py-2 text-muted-foreground text-xs">{e.material.code}</td>
+                      {/* Bloque Económico */}
+                      <td className="px-3 py-2 font-semibold">{formatKPI("kg_brutos", e.kg)}</td>
+                      <td className="px-3 py-2 text-muted-foreground font-medium">{e.material.default_yield}%</td>
+                      <td className="px-3 py-2 font-medium text-muted-foreground/80">
+                        {e.kpis.kg_netos > 0 ? formatKPI("kg_netos", e.kpis.kg_netos) : "—"}
+                      </td>
+                      <td className="px-3 py-2 font-semibold" style={{ color: e.kpis.economic_impact > 0 ? "hsl(var(--primary))" : undefined }}>
+                        {e.kpis.economic_impact > 0 ? `$${formatKPI("economic_impact", e.kpis.economic_impact)}` : "—"}
+                      </td>
+                      {/* Bloque Ambiental */}
+                      <td className="px-3 py-2">{renderEnv(e.kpis.uses_co2, e.kpis.co2, "co2")}</td>
+                      <td className="px-3 py-2">{renderEnv(e.kpis.uses_energia, e.kpis.energia, "energia")}</td>
+                      <td className="px-3 py-2">{renderEnv(e.kpis.uses_agua, e.kpis.agua, "agua")}</td>
+                      <td className="px-3 py-2">{renderEnv(e.kpis.uses_arboles, e.kpis.arboles, "arboles")}</td>
+                      {/* Estado */}
+                      <td className="px-3 py-2">
+                        {e.isConfirmed
+                          ? <span className="text-xs text-primary font-medium">✓ Confirmado</span>
+                          : e.kg > 0
+                            ? <span className="text-xs text-amber-500 font-medium">⏳ Pendiente</span>
+                            : <span className="text-xs text-muted-foreground">—</span>}
+                      </td>
+                    </tr>
+                  );
+                })}
                 <tr className="bg-secondary font-bold" style={{ color: "hsl(var(--kpi-trees))" }}>
                   <td className="px-3 py-2.5" colSpan={3}>TOTALES (Confirmados)</td>
+                  {/* Económico */}
                   <td className="px-3 py-2.5">{formatKPI("kg_brutos", totals.kgBrutos)}</td>
                   <td className="px-3 py-2.5">—</td>
                   <td className="px-3 py-2.5">{formatKPI("kg_netos", totals.kgNetos)}</td>
-                  <td className="px-3 py-2.5">{formatKPI("arboles", totals.arboles)}</td>
+                  <td className="px-3 py-2.5">${formatKPI("economic_impact", totals.economicImpact)}</td>
+                  {/* Ambiental */}
                   <td className="px-3 py-2.5">{formatKPI("co2", totals.co2)}</td>
                   <td className="px-3 py-2.5">{formatKPI("energia", totals.energia)}</td>
                   <td className="px-3 py-2.5">{formatKPI("agua", totals.agua)}</td>
+                  <td className="px-3 py-2.5">{formatKPI("arboles", totals.arboles)}</td>
                   <td className="px-3 py-2.5">—</td>
                 </tr>
               </tbody>
