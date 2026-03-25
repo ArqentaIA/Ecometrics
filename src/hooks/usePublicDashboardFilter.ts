@@ -84,6 +84,7 @@ export function usePublicDashboardFilter() {
         yield_source: r.yield_source,
         factors_source: r.factors_source,
         default_cost_per_kg: 0,
+        impacto_valido: true,
       })));
       setCatalogLoading(false);
     };

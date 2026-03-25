@@ -330,7 +330,7 @@ const DataCapture = () => {
                     )}
 
                     {openImpact[entry.material.code] && (
-                      <ImpactCards materialCode={entry.material.code} kg={entry.kg} yieldPct={entry.material.default_yield} />
+                      <ImpactCards kpis={entry.kpis} kgNetos={entry.kpis.kg_netos} />
                     )}
                   </div>
                 );
