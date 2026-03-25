@@ -293,26 +293,21 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     const kg = kgMap[code] ?? 0;
     const cost = costPerKgMap[code] ?? material.default_cost_per_kg ?? 0;
 
-    // Validations (Rule 20)
+    // Validations
     if (kg <= 0) return { error: "El peso capturado debe ser mayor a cero" };
     if (cost < 0) return { error: "El costo por kg no puede ser negativo" };
     if (material.default_yield <= 0 || material.default_yield > 100)
       return { error: "Yield no válido para este material" };
 
+    const prov = proveedorMap[code] ?? "";
+    if (!prov) return { error: "Debe seleccionar un proveedor" };
+
     // Get active versioned factor
     const factor = versionedFactors[code] ?? null;
 
-    // Validate factors exist when required (Rule 20)
-    if (material.impacto_valido !== false) {
-      if (material.uses_co2 && (factor?.factor_co2 ?? material.factor_co2) == null)
-        return { error: "Factor CO₂ requerido pero no definido" };
-      if (material.uses_energia && (factor?.factor_energia ?? material.factor_energia) == null)
-        return { error: "Factor de energía requerido pero no definido" };
-      if (material.uses_agua && (factor?.factor_agua ?? material.factor_agua) == null)
-        return { error: "Factor de agua requerido pero no definido" };
-      if (material.uses_arboles && (factor?.factor_arboles ?? material.factor_arboles) == null)
-        return { error: "Factor de árboles requerido pero no definido" };
-    }
+    // NOTE: Factor validation removed — missing factors result in KPI=0,
+    // not a blocked confirmation. This allows SUERO and similar materials
+    // to confirm even when environmental factors are pending.
 
     setSavingCapture(true);
     try {
