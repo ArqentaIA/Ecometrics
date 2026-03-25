@@ -468,6 +468,48 @@ export type Database = {
         }
         Relationships: []
       }
+      report_audit_log: {
+        Row: {
+          created_at: string
+          dataset_id: string
+          fecha_generacion: string
+          firma_digital: string
+          folio: string
+          hash_sha256: string
+          id: string
+          parametros_json: Json
+          tipo_reporte: string
+          total_registros: number
+          usuario_id: string
+        }
+        Insert: {
+          created_at?: string
+          dataset_id: string
+          fecha_generacion?: string
+          firma_digital: string
+          folio: string
+          hash_sha256: string
+          id?: string
+          parametros_json?: Json
+          tipo_reporte?: string
+          total_registros?: number
+          usuario_id: string
+        }
+        Update: {
+          created_at?: string
+          dataset_id?: string
+          fecha_generacion?: string
+          firma_digital?: string
+          folio?: string
+          hash_sha256?: string
+          id?: string
+          parametros_json?: Json
+          tipo_reporte?: string
+          total_registros?: number
+          usuario_id?: string
+        }
+        Relationships: []
+      }
       system_parameters: {
         Row: {
           description: string | null
