@@ -138,6 +138,8 @@ export function useDashboardFilter() {
             factor_co2: m.factor_co2,
             factor_energia: m.factor_energia,
             factor_agua: m.factor_agua,
+            factor_version: null,
+            impacto_valido: (m as any).impacto_valido !== false,
           },
         };
       }
