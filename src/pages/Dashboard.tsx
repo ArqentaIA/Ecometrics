@@ -82,7 +82,7 @@ const Dashboard = () => {
       }
 
       const headers = [
-        "Material", "Codigo", "Familia",
+        "Material", "Codigo", "Familia", "Unidad",
         "KG_Brutos", "Yield", "KG_Netos",
         "Precio_Unitario", "Valor_Economico",
         "CO2", "Energia", "Agua", "Arboles",
@@ -100,27 +100,28 @@ const Dashboard = () => {
         const impactoValido = e.kpis.impacto_valido;
 
         const envCell = (usesFlag: boolean, value: number): string => {
-          if (isBattery) return "N/A";
-          if (!impactoValido) return "IMPACTO_PENDIENTE";
-          if (!usesFlag) return "N/A";
+          if (isBattery || !impactoValido || !usesFlag) return "";
           return value.toFixed(4);
         };
+
+        const costPerKg = (e as any).cost_per_kg_applied ?? 0;
 
         return [
           csvEscape(e.material.name),
           e.material.code,
           csvEscape(e.material.family),
+          isBattery ? "pza" : "kg",
           e.kg.toFixed(2),
-          isBattery ? "N/A" : (e.material.default_yield * 100).toFixed(0),
-          isBattery ? "N/A" : e.kpis.kg_netos.toFixed(2),
-          (e.kpis as any).cost_per_kg_applied?.toFixed(2) ?? "0.00",
+          isBattery ? "" : (e.material.default_yield * 100).toFixed(0),
+          isBattery ? "" : e.kpis.kg_netos.toFixed(2),
+          Number(costPerKg).toFixed(2),
           e.kpis.economic_impact.toFixed(2),
           envCell(e.kpis.uses_co2, e.kpis.co2),
           envCell(e.kpis.uses_energia, e.kpis.energia),
           envCell(e.kpis.uses_agua, e.kpis.agua),
           envCell(e.kpis.uses_arboles, e.kpis.arboles),
-          csvEscape((e as any).proveedor ?? "—"),
-          (e as any).confirmed_at ? new Date((e as any).confirmed_at).toISOString().split("T")[0] : "—",
+          csvEscape((e as any).proveedor ?? ""),
+          (e as any).confirmed_at ? new Date((e as any).confirmed_at).toISOString().split("T")[0] : "",
           "CONFIRMADO",
         ];
       });

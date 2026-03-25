@@ -144,6 +144,7 @@ export function useDashboardFilter() {
   const materialEntries: (MaterialEntry & { proveedor?: string; confirmed_at?: string })[] = useMemo(() => {
     const byCode: Record<string, {
       kg: number;
+      cost_per_kg_applied: number;
       proveedor: string | null;
       confirmed_at: string | null;
       kpis: { arboles: number; co2: number; energia: number; agua: number; kg_netos: number; economic_impact: number };
@@ -151,10 +152,11 @@ export function useDashboardFilter() {
 
     filteredCaptures.forEach(c => {
       if (!byCode[c.material_code]) {
-        byCode[c.material_code] = { kg: 0, proveedor: null, confirmed_at: null, kpis: { arboles: 0, co2: 0, energia: 0, agua: 0, kg_netos: 0, economic_impact: 0 } };
+        byCode[c.material_code] = { kg: 0, cost_per_kg_applied: 0, proveedor: null, confirmed_at: null, kpis: { arboles: 0, co2: 0, energia: 0, agua: 0, kg_netos: 0, economic_impact: 0 } };
       }
       const entry = byCode[c.material_code];
       entry.kg += c.kg_brutos;
+      entry.cost_per_kg_applied = c.cost_per_kg_applied;
       if (c.proveedor) entry.proveedor = c.proveedor;
       if (c.confirmed_at) entry.confirmed_at = c.confirmed_at;
       entry.kpis.arboles += c.kpis.arboles;
@@ -173,6 +175,7 @@ export function useDashboardFilter() {
           material: m,
           kg: agg.kg,
           isConfirmed: true,
+          cost_per_kg_applied: agg.cost_per_kg_applied,
           proveedor: agg.proveedor ?? undefined,
           confirmed_at: agg.confirmed_at ?? undefined,
           kpis: {
