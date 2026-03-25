@@ -224,6 +224,7 @@ const DataCapture = () => {
               {materialEntries.map((entry, idx) => {
                 const state = getState(entry.material.code);
                 const ts = state.timestamp ? formatTimestamp(state.timestamp) : null;
+                const isBattery = entry.material.code === 'BATERIAS';
 
                 return (
                   <div
