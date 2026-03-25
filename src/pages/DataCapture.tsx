@@ -242,7 +242,7 @@ const DataCapture = () => {
                       <input
                         type="text"
                         inputMode="decimal"
-                        value={entry.kg || ""}
+                        value={entry.isConfirmed ? "" : (entry.kg || "")}
                         onChange={e => {
                           const val = e.target.value;
                           if (val === "" || /^\d*\.?\d*$/.test(val)) {
