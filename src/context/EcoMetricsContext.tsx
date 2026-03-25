@@ -127,7 +127,9 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     setConfirmedSnapshots([]);
   }, []);
 
-  // ─── Load Catalog + Versioned Factors ───
+  // ─── Load Catalog + Versioned Factors (Rule 2, 5, 14) ───
+  // Fetch ALL active materials without filtering by impact flags.
+  // No cache — fresh fetch on every mount.
   useEffect(() => {
     async function loadCatalogAndFactors() {
       setCatalogLoading(true);
@@ -137,7 +139,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
           .from("material_catalog")
           .select("*")
           .eq("is_active", true)
-          .order("display_order"),
+          .order("code"),
         supabase
           .from("material_factors")
           .select("*")
@@ -151,7 +153,10 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
         return;
       }
 
-      setCatalog((catalogRes.data ?? []) as unknown as CatalogMaterial[]);
+      const loadedCatalog = (catalogRes.data ?? []) as unknown as CatalogMaterial[];
+      // Debug log (Rule 19) — remove once verified
+      console.log("materiales cargados:", loadedCatalog.length, loadedCatalog.map(m => m.code));
+      setCatalog(loadedCatalog);
 
       // Build map: material_code → latest active factor
       const factorMap: Record<string, VersionedFactor> = {};
