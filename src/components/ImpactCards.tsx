@@ -16,8 +16,8 @@ const ImpactCards = ({ kpis, kgNetos }: ImpactCardsProps) => {
   // Rule 14: If impacto_valido is false, show warning instead of KPI cards
   if (!kpis.impacto_valido) {
     return (
-      <div className="mt-3 p-3 rounded-lg border border-amber-300/40 bg-amber-50/50 dark:bg-amber-950/20">
-        <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">
+      <div className="mt-3 p-3 rounded-lg border border-amber-500/30 bg-accent/50">
+        <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
           ⚠️ Impacto ambiental no disponible por validación metodológica pendiente.
         </p>
         <p className="text-[10px] text-muted-foreground mt-1">
