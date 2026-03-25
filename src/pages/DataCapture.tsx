@@ -76,6 +76,12 @@ const DataCapture = () => {
     saveCapture, catalogLoading, catalog, permissions, roleLabel,
   } = useEcoMetrics();
 
+  const [activeTab, setActiveTab] = useState(0);
+  const [dragOver, setDragOver] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<{ name: string; size: number } | null>(null);
+  const [openImpact, setOpenImpact] = useState<Record<string, boolean>>({});
+  const [captureStates, setCaptureStates] = useState<Record<string, CaptureState>>({});
+
   // ── AUDIT CAPA 3: Datos recibidos en UI (DataCapture) ──
   console.log("AUDIT_UI_INPUT_CAPTURE", {
     total: materialEntries?.length,
@@ -84,12 +90,6 @@ const DataCapture = () => {
       nombre: m.material.name,
     })),
   });
-
-  const [activeTab, setActiveTab] = useState(0);
-  const [dragOver, setDragOver] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState<{ name: string; size: number } | null>(null);
-  const [openImpact, setOpenImpact] = useState<Record<string, boolean>>({});
-  const [captureStates, setCaptureStates] = useState<Record<string, CaptureState>>({});
 
   const getState = (code: string): CaptureState =>
     captureStates[code] ?? { confirmed: false, pending: false, timestamp: null, feedbackVisible: false };
