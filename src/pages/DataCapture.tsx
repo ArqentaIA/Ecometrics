@@ -76,6 +76,15 @@ const DataCapture = () => {
     saveCapture, catalogLoading, catalog, permissions, roleLabel,
   } = useEcoMetrics();
 
+  // ── AUDIT CAPA 3: Datos recibidos en UI (DataCapture) ──
+  console.log("AUDIT_UI_INPUT_CAPTURE", {
+    total: materialEntries?.length,
+    materiales: materialEntries?.map(m => ({
+      id: m.material.code,
+      nombre: m.material.name,
+    })),
+  });
+
   const [activeTab, setActiveTab] = useState(0);
   const [dragOver, setDragOver] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<{ name: string; size: number } | null>(null);

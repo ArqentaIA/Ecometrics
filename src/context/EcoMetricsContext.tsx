@@ -154,9 +154,28 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
       }
 
       const loadedCatalog = (catalogRes.data ?? []) as unknown as CatalogMaterial[];
-      // Debug log (Rule 19) — remove once verified
-      console.log("materiales cargados:", loadedCatalog.length, loadedCatalog.map(m => m.code));
+
+      // ── AUDIT CAPA 1: Respuesta cruda de BD ──
+      console.log("AUDIT_DB_READ", {
+        total: loadedCatalog.length,
+        materiales: loadedCatalog.map(m => ({
+          id: m.code,
+          nombre: m.name,
+          activo: (m as any).is_active,
+        })),
+      });
+
       setCatalog(loadedCatalog);
+
+      // ── AUDIT CAPA 2: Estado asignado al Provider ──
+      console.log("AUDIT_PROVIDER_STATE", {
+        total: loadedCatalog.length,
+        materiales: loadedCatalog.map(m => ({
+          id: m.code,
+          nombre: m.name,
+          activo: (m as any).is_active,
+        })),
+      });
 
       // Build map: material_code → latest active factor
       const factorMap: Record<string, VersionedFactor> = {};

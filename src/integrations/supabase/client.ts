@@ -3,6 +3,9 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
 const SUPABASE_URL = "https://mvtdqarhekbcksgdnfbt.supabase.co";
+
+// ── AUDIT CAPA 5: Entorno de conexión ──
+console.log("AUDIT_ENV", { supabaseUrl: SUPABASE_URL });
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12dGRxYXJoZWtiY2tzZ2RuZmJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNDEyMTAsImV4cCI6MjA4ODcxNzIxMH0.TazlkZzSnSns1HnyrYeXD8NISZTl8Fq4gckAdYDI670";
 
 // Import the supabase client like this:
