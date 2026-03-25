@@ -156,6 +156,7 @@ export function useDashboardFilter() {
       }
       const entry = byCode[c.material_code];
       entry.kg += c.kg_brutos;
+      entry.cost_per_kg_applied = c.cost_per_kg_applied;
       if (c.proveedor) entry.proveedor = c.proveedor;
       if (c.confirmed_at) entry.confirmed_at = c.confirmed_at;
       entry.kpis.arboles += c.kpis.arboles;
