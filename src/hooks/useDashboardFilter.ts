@@ -152,10 +152,28 @@ export function useDashboardFilter() {
     });
   }, [catalog, filteredCaptures]);
 
+  // ── AUDIT CAPA 3: Datos recibidos en UI (Dashboard) ──
+  console.log("AUDIT_UI_INPUT_DASHBOARD", {
+    total: materialEntries?.length,
+    materiales: materialEntries?.map(m => ({
+      id: m.material.code,
+      nombre: m.material.name,
+    })),
+  });
+
   const confirmedEntries = useMemo(() =>
     materialEntries.filter(e => e.isConfirmed && e.kg > 0),
     [materialEntries]
   );
+
+  // ── AUDIT CAPA 4: Resultado final después de filtros ──
+  console.log("AUDIT_UI_FINAL_DASHBOARD", {
+    total: confirmedEntries?.length,
+    materiales: confirmedEntries?.map(m => ({
+      id: m.material.code,
+      nombre: m.material.name,
+    })),
+  });
 
   // Full-year economic breakdown (always 12 months, all captures — for shadow layer)
   const allMonthsEconomic = useMemo(() => {
