@@ -202,7 +202,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     try {
       const { data, error } = await supabase
         .from("material_captures")
-        .select("material_code, kg_brutos, is_confirmed, result_arboles, result_co2, result_energia, result_agua, kg_netos, cost_per_kg_applied, result_economic_impact")
+        .select("material_code, kg_brutos, is_confirmed, result_arboles, result_co2, result_energia, result_agua, kg_netos, cost_per_kg_applied, result_economic_impact, proveedor")
         .eq("user_id", user.id)
         .eq("month", currentMonth + 1)
         .eq("year", currentYear);
