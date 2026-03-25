@@ -296,7 +296,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     // Validations
     if (kg <= 0) return { error: "El peso capturado debe ser mayor a cero" };
     if (cost < 0) return { error: "El costo por kg no puede ser negativo" };
-    if (material.default_yield <= 0 || material.default_yield > 100)
+    if (material.default_yield <= 0 || material.default_yield > 1)
       return { error: "Yield no válido para este material" };
 
     const prov = proveedorMap[code] ?? "";

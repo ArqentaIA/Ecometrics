@@ -135,7 +135,7 @@ export function validateMaterialForCapture(
   const errors: string[] = [];
 
   if (!material.is_active) errors.push("Material inactivo");
-  if (material.default_yield <= 0 || material.default_yield > 100)
+  if (material.default_yield <= 0 || material.default_yield > 1)
     errors.push("Yield no válido");
 
   // Only validate factors if the material has valid environmental impact

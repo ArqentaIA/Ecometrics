@@ -348,7 +348,7 @@ const DataCapture = () => {
 
                     {/* Yield info — from catalog */}
                     <div className="mt-1.5 ml-12 text-[11px] text-muted-foreground">
-                      Yield: <span className="font-medium">{entry.material.default_yield}%</span>
+                      Yield: <span className="font-medium">{(entry.material.default_yield * 100).toFixed(0)}%</span>
                       {" → "}KG netos estimados: <span className="font-semibold text-foreground">{formatKPI("kg_netos", entry.kpis.kg_netos)} kg</span>
                       <span className="ml-2 italic">(pérdida típica: {entry.material.yield_loss_reason})</span>
                     </div>

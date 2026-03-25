@@ -476,7 +476,7 @@ const Dashboard = () => {
                       <td className="px-3 py-2 text-muted-foreground text-xs">{e.material.code}</td>
                       {/* Bloque Económico */}
                       <td className="px-3 py-2 font-semibold">{formatKPI("kg_brutos", e.kg)}</td>
-                      <td className="px-3 py-2 text-muted-foreground font-medium">{e.material.default_yield}%</td>
+                      <td className="px-3 py-2 text-muted-foreground font-medium">{(e.material.default_yield * 100).toFixed(0)}%</td>
                       <td className="px-3 py-2 font-medium text-muted-foreground/80">
                         {e.kpis.kg_netos > 0 ? formatKPI("kg_netos", e.kpis.kg_netos) : "—"}
                       </td>
