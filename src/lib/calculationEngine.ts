@@ -27,6 +27,20 @@ export interface CatalogMaterial {
   yield_source: string;
   factors_source: string;
   default_cost_per_kg: number;
+  impacto_valido: boolean;
+}
+
+export interface VersionedFactor {
+  id: string;
+  material_code: string;
+  factor_co2: number | null;
+  factor_energia: number | null;
+  factor_agua: number | null;
+  factor_arboles: number | null;
+  version: number;
+  fecha_inicio: string;
+  activo: boolean;
+  fuente: string;
 }
 
 export interface CalculatedKPIs {
@@ -44,46 +58,66 @@ export interface CalculatedKPIs {
   factor_co2: number | null;
   factor_energia: number | null;
   factor_agua: number | null;
+  factor_version: number | null;
   economic_impact: number;
+  impacto_valido: boolean;
 }
 
 /**
  * Motor central de cálculo.
  * Recibe un material del catálogo y kg brutos capturados.
- * Devuelve todos los indicadores calculados sobre kg netos.
+ * Devuelve todos los indicadores calculados.
  *
- * REGLA UNIVERSAL: kg_netos = kg_brutos × (yield / 100)
- * Todos los indicadores se calculan sobre kg_netos.
+ * REGLA DE ORO:
+ *   Base económica:  kg_brutos × precio_kg
+ *   Base ambiental:  kg_netos × factor_versionado
+ *   kg_netos = kg_brutos × (yield / 100)
+ *
+ * Si impacto_valido = false, todos los KPIs ambientales = 0.
  */
 export function calculateIndicators(
   material: CatalogMaterial,
   kgBrutos: number,
-  costPerKg?: number
+  costPerKg?: number,
+  versionedFactor?: VersionedFactor | null
 ): CalculatedKPIs {
   const yieldApplied = material.default_yield;
   const kgNetos = kgBrutos * (yieldApplied / 100);
   const appliedCost = costPerKg ?? material.default_cost_per_kg ?? 0;
 
+  // Use versioned factors if available, otherwise fall back to catalog
+  const fCo2 = versionedFactor?.factor_co2 ?? material.factor_co2;
+  const fEnergia = versionedFactor?.factor_energia ?? material.factor_energia;
+  const fAgua = versionedFactor?.factor_agua ?? material.factor_agua;
+  const fArboles = versionedFactor?.factor_arboles ?? material.factor_arboles;
+  const factorVersion = versionedFactor?.version ?? null;
+
+  // If impacto_valido is false, all environmental KPIs are zero
+  const validImpact = material.impacto_valido !== false;
+
   return {
     kg_netos: kgNetos,
     yield_applied: yieldApplied,
-    arboles: material.uses_arboles && material.factor_arboles != null
-      ? kgNetos * material.factor_arboles : 0,
-    co2: material.uses_co2 && material.factor_co2 != null
-      ? kgNetos * material.factor_co2 : 0,
-    energia: material.uses_energia && material.factor_energia != null
-      ? kgNetos * material.factor_energia : 0,
-    agua: material.uses_agua && material.factor_agua != null
-      ? kgNetos * material.factor_agua : 0,
+    arboles: validImpact && material.uses_arboles && fArboles != null
+      ? kgNetos * fArboles : 0,
+    co2: validImpact && material.uses_co2 && fCo2 != null
+      ? kgNetos * fCo2 : 0,
+    energia: validImpact && material.uses_energia && fEnergia != null
+      ? kgNetos * fEnergia : 0,
+    agua: validImpact && material.uses_agua && fAgua != null
+      ? kgNetos * fAgua : 0,
     uses_arboles: material.uses_arboles,
     uses_co2: material.uses_co2,
     uses_energia: material.uses_energia,
     uses_agua: material.uses_agua,
-    factor_arboles: material.factor_arboles,
-    factor_co2: material.factor_co2,
-    factor_energia: material.factor_energia,
-    factor_agua: material.factor_agua,
+    factor_arboles: fArboles,
+    factor_co2: fCo2,
+    factor_energia: fEnergia,
+    factor_agua: fAgua,
+    factor_version: factorVersion,
+    // REGLA: impacto económico = kg_brutos × precio (base bruta)
     economic_impact: kgBrutos * appliedCost,
+    impacto_valido: validImpact,
   };
 }
 
@@ -91,7 +125,10 @@ export function calculateIndicators(
  * Valida que un material del catálogo tiene la configuración
  * necesaria para ser capturado.
  */
-export function validateMaterialForCapture(material: CatalogMaterial): {
+export function validateMaterialForCapture(
+  material: CatalogMaterial,
+  versionedFactor?: VersionedFactor | null
+): {
   valid: boolean;
   errors: string[];
 } {
@@ -100,20 +137,26 @@ export function validateMaterialForCapture(material: CatalogMaterial): {
   if (!material.is_active) errors.push("Material inactivo");
   if (material.default_yield <= 0 || material.default_yield > 100)
     errors.push("Yield no válido");
-  if (material.uses_arboles && material.factor_arboles == null)
-    errors.push("Factor de árboles requerido pero no definido");
-  if (material.uses_co2 && material.factor_co2 == null)
-    errors.push("Factor de CO₂ requerido pero no definido");
-  if (material.uses_energia && material.factor_energia == null)
-    errors.push("Factor de energía requerido pero no definido");
-  if (material.uses_agua && material.factor_agua == null)
-    errors.push("Factor de agua requerido pero no definido");
+
+  // Only validate factors if the material has valid environmental impact
+  if (material.impacto_valido !== false) {
+    const factor = versionedFactor;
+    if (material.uses_arboles && (factor?.factor_arboles ?? material.factor_arboles) == null)
+      errors.push("Factor de árboles requerido pero no definido");
+    if (material.uses_co2 && (factor?.factor_co2 ?? material.factor_co2) == null)
+      errors.push("Factor de CO₂ requerido pero no definido");
+    if (material.uses_energia && (factor?.factor_energia ?? material.factor_energia) == null)
+      errors.push("Factor de energía requerido pero no definido");
+    if (material.uses_agua && (factor?.factor_agua ?? material.factor_agua) == null)
+      errors.push("Factor de agua requerido pero no definido");
+  }
 
   return { valid: errors.length === 0, errors };
 }
 
 /**
  * Construye el objeto snapshot para guardar en material_captures.
+ * Incluye factor_version para trazabilidad.
  */
 export function buildCaptureSnapshot(
   material: CatalogMaterial,
@@ -121,10 +164,11 @@ export function buildCaptureSnapshot(
   userId: string,
   month: number,
   year: number,
-  costPerKg?: number
+  costPerKg?: number,
+  versionedFactor?: VersionedFactor | null
 ) {
   const appliedCost = costPerKg ?? material.default_cost_per_kg ?? 0;
-  const kpis = calculateIndicators(material, kgBrutos, appliedCost);
+  const kpis = calculateIndicators(material, kgBrutos, appliedCost, versionedFactor);
 
   return {
     user_id: userId,
@@ -134,10 +178,11 @@ export function buildCaptureSnapshot(
     kg_brutos: kgBrutos,
     yield_applied: kpis.yield_applied,
     kg_netos: kpis.kg_netos,
-    factor_arboles_applied: material.factor_arboles,
-    factor_co2_applied: material.factor_co2,
-    factor_energia_applied: material.factor_energia,
-    factor_agua_applied: material.factor_agua,
+    factor_arboles_applied: kpis.factor_arboles,
+    factor_co2_applied: kpis.factor_co2,
+    factor_energia_applied: kpis.factor_energia,
+    factor_agua_applied: kpis.factor_agua,
+    factor_version: kpis.factor_version,
     uses_arboles: material.uses_arboles,
     uses_co2: material.uses_co2,
     uses_energia: material.uses_energia,

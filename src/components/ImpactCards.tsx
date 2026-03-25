@@ -1,63 +1,78 @@
-import { IMPACT_FORMULAS, IMPACT_COLORS } from "@/data/impactFormulas";
+import { type CalculatedKPIs, formatKPI } from "@/lib/calculationEngine";
 
 interface ImpactCardsProps {
-  materialCode: string;
-  kg: number;
-  yieldPct: number; // 0-100
+  kpis: CalculatedKPIs;
+  kgNetos: number;
 }
 
-const formatByLabel = (label: string, value: number): string => {
-  if (label.includes("Árboles")) return value.toLocaleString("es-MX", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-  if (label.includes("CO₂")) return value.toLocaleString("es-MX", { minimumFractionDigits: 1, maximumFractionDigits: 2 });
-  if (label.includes("Energía")) return value.toLocaleString("es-MX", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-  if (label.includes("Agua")) return value.toLocaleString("es-MX", { maximumFractionDigits: 0 });
-  return value.toLocaleString("es-MX", { maximumFractionDigits: 2 });
-};
+const CARD_CONFIG = [
+  { key: "arboles" as const, usesKey: "uses_arboles" as const, factorKey: "factor_arboles" as const, label: "Árboles Preservados", icon: "🌳", unit: "árboles equiv.", fmtKey: "arboles" as const, cssVar: "--kpi-trees" },
+  { key: "co2" as const, usesKey: "uses_co2" as const, factorKey: "factor_co2" as const, label: "CO₂e Evitado", icon: "💨", unit: "kg CO₂e", fmtKey: "co2" as const, cssVar: "--kpi-co2" },
+  { key: "energia" as const, usesKey: "uses_energia" as const, factorKey: "factor_energia" as const, label: "Energía Ahorrada", icon: "⚡", unit: "kWh", fmtKey: "energia" as const, cssVar: "--kpi-energy" },
+  { key: "agua" as const, usesKey: "uses_agua" as const, factorKey: "factor_agua" as const, label: "Agua Conservada", icon: "💧", unit: "litros", fmtKey: "agua" as const, cssVar: "--kpi-water" },
+] as const;
 
-const ImpactCards = ({ materialCode, kg, yieldPct }: ImpactCardsProps) => {
-  const formulas = IMPACT_FORMULAS[materialCode];
-  if (!formulas || formulas.length === 0) return null;
+const ImpactCards = ({ kpis, kgNetos }: ImpactCardsProps) => {
+  // Rule 14: If impacto_valido is false, show warning instead of KPI cards
+  if (!kpis.impacto_valido) {
+    return (
+      <div className="mt-3 p-3 rounded-lg border border-amber-300/40 bg-amber-50/50 dark:bg-amber-950/20">
+        <p className="text-xs text-amber-700 dark:text-amber-400 font-medium">
+          ⚠️ Impacto ambiental no disponible por validación metodológica pendiente.
+        </p>
+        <p className="text-[10px] text-muted-foreground mt-1">
+          Este material participa en volumen e impacto económico, pero no cuenta con factores ambientales validados.
+        </p>
+      </div>
+    );
+  }
 
-  const kgNetos = kg * (yieldPct / 100);
+  // Rule 15/25: Only show cards where the KPI is enabled AND has a valid factor
+  const visibleCards = CARD_CONFIG.filter(c => 
+    kpis[c.usesKey] && kpis[c.factorKey] != null
+  );
+
+  if (visibleCards.length === 0) return null;
 
   return (
-    <div className="mt-3 grid gap-2" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(175px, 1fr))" }}>
-      {formulas.map((f) => {
-        const c = IMPACT_COLORS[f.label] ?? IMPACT_COLORS["CO₂e Evitado"];
-        const res = formatByLabel(f.label, kgNetos * f.factor);
+    <div className="mt-3">
+      <div className="grid gap-2" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(175px, 1fr))" }}>
+        {visibleCards.map(c => {
+          const value = kpis[c.key];
+          // Rule 15: Don't show zero values when kg is 0
+          if (value === 0 && kgNetos === 0) return null;
 
-        return (
-          <div
-            key={f.label}
-            className="rounded-lg border p-3 flex flex-col gap-1.5"
-            style={{ background: c.bg, borderColor: c.border }}
-          >
-            <div className="flex items-center gap-1.5">
-              <span className="text-sm">{f.icono}</span>
-              <span className="text-[11px] font-bold uppercase tracking-wide" style={{ color: c.text }}>
-                {f.label}
-              </span>
-            </div>
-            <code
-              className="text-[11px] rounded px-1.5 py-0.5 border bg-card"
-              style={{ borderColor: c.border, color: c.text }}
+          return (
+            <div
+              key={c.key}
+              className="rounded-lg border p-3 flex flex-col gap-1.5"
+              style={{
+                background: `hsl(var(${c.cssVar}) / 0.08)`,
+                borderColor: `hsl(var(${c.cssVar}) / 0.3)`,
+              }}
             >
-              {f.expr}
-            </code>
-            <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-lg font-extrabold leading-none" style={{ color: c.text }}>
-                {res}
-              </span>
-              <span className="text-[11px] font-medium" style={{ color: c.text }}>
-                {f.unidad}
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm">{c.icon}</span>
+                <span className="text-[11px] font-bold uppercase tracking-wide" style={{ color: `hsl(var(${c.cssVar}))` }}>
+                  {c.label}
+                </span>
+              </div>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-lg font-extrabold leading-none" style={{ color: `hsl(var(${c.cssVar}))` }}>
+                  {formatKPI(c.fmtKey, value)}
+                </span>
+                <span className="text-[11px] font-medium" style={{ color: `hsl(var(${c.cssVar}))` }}>
+                  {c.unit}
+                </span>
+              </div>
+              <span className="text-[10px] text-muted-foreground mt-1 leading-tight">
+                Base: kg netos estimados
+                {kpis.factor_version ? ` · Factor v${kpis.factor_version}` : ""}
               </span>
             </div>
-            <span className="text-[10px] text-muted-foreground mt-1 leading-tight">
-              {f.fuente}
-            </span>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 };

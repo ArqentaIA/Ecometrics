@@ -4,6 +4,7 @@ import type { User, Session } from "@supabase/supabase-js";
 import {
   CatalogMaterial,
   CalculatedKPIs,
+  VersionedFactor,
   calculateIndicators,
   buildCaptureSnapshot,
 } from "@/lib/calculationEngine";
@@ -44,6 +45,7 @@ interface EcoMetricsState {
   setCurrentYear: (y: number) => void;
   catalog: CatalogMaterial[];
   catalogLoading: boolean;
+  versionedFactors: Record<string, VersionedFactor>;
   materialEntries: MaterialEntry[];
   setMaterialKg: (code: string, kg: number) => void;
   setCostPerKg: (code: string, cost: number) => void;
@@ -57,7 +59,6 @@ interface EcoMetricsState {
   saveCapture: (code: string) => Promise<{ error: string | null }>;
   loadCaptures: () => Promise<void>;
   loadingCaptures: boolean;
-  /** Dashboard totals from confirmed captures only */
   confirmedTotals: KPITotals;
 }
 
@@ -80,6 +81,9 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
   // Catalog state
   const [catalog, setCatalog] = useState<CatalogMaterial[]>([]);
   const [catalogLoading, setCatalogLoading] = useState(true);
+
+  // Versioned factors (keyed by material_code → active factor)
+  const [versionedFactors, setVersionedFactors] = useState<Record<string, VersionedFactor>>({});
 
   // Confirmed capture snapshots from DB (for dashboard)
   const [confirmedSnapshots, setConfirmedSnapshots] = useState<Array<{
@@ -123,26 +127,44 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     setConfirmedSnapshots([]);
   }, []);
 
-  // ─── Load Catalog from Supabase ───
+  // ─── Load Catalog + Versioned Factors ───
   useEffect(() => {
-    async function loadCatalog() {
+    async function loadCatalogAndFactors() {
       setCatalogLoading(true);
-      const { data, error } = await supabase
-        .from("material_catalog")
-        .select("*")
-        .eq("is_active", true)
-        .order("display_order");
 
-      if (error) {
-        console.error("Error loading catalog:", error);
+      const [catalogRes, factorsRes] = await Promise.all([
+        supabase
+          .from("material_catalog")
+          .select("*")
+          .eq("is_active", true)
+          .order("display_order"),
+        supabase
+          .from("material_factors")
+          .select("*")
+          .eq("activo", true)
+          .order("version", { ascending: false }),
+      ]);
+
+      if (catalogRes.error) {
+        console.error("Error loading catalog:", catalogRes.error);
         setCatalogLoading(false);
         return;
       }
 
-      setCatalog((data ?? []) as unknown as CatalogMaterial[]);
+      setCatalog((catalogRes.data ?? []) as unknown as CatalogMaterial[]);
+
+      // Build map: material_code → latest active factor
+      const factorMap: Record<string, VersionedFactor> = {};
+      (factorsRes.data ?? []).forEach((f: any) => {
+        if (!factorMap[f.material_code]) {
+          factorMap[f.material_code] = f as VersionedFactor;
+        }
+      });
+      setVersionedFactors(factorMap);
+
       setCatalogLoading(false);
     }
-    loadCatalog();
+    loadCatalogAndFactors();
   }, []);
 
   // ─── Load Captures ───
@@ -173,7 +195,6 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
         kgs[row.material_code] = Number(row.kg_brutos);
         const savedCost = Number(row.cost_per_kg_applied ?? 0);
         const catalogMat = catalog.find(c => c.code === row.material_code);
-        // Use saved cost if > 0, otherwise fall back to catalog price
         costs[row.material_code] = savedCost > 0 ? savedCost : (catalogMat?.default_cost_per_kg ?? 0);
         confirmed[row.material_code] = row.is_confirmed ?? false;
         if (row.is_confirmed) {
@@ -206,7 +227,6 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
   // ─── Setters ───
   const setMaterialKg = useCallback((code: string, kg: number) => {
     setKgMap(prev => ({ ...prev, [code]: kg }));
-    // Mark as unconfirmed when kg changes
     setConfirmedMap(prev => ({ ...prev, [code]: false }));
   }, []);
 
@@ -216,7 +236,6 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
       Object.keys(prev).forEach(k => { map[k] = 0; });
       return map;
     });
-    // Reset costs to catalog defaults
     setCostPerKgMapState(() => {
       const map: Record<string, number> = {};
       catalog.forEach(m => { map[m.code] = m.default_cost_per_kg ?? 0; });
@@ -230,7 +249,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     setConfirmedMap(prev => ({ ...prev, [code]: false }));
   }, []);
 
-  // ─── Save Capture (with full snapshot) ───
+  // ─── Save Capture (with full snapshot + versioned factors) ───
   const saveCapture = useCallback(async (code: string) => {
     if (!user) return { error: "No autenticado" };
     const material = catalog.find(m => m.code === code);
@@ -239,13 +258,30 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     const kg = kgMap[code] ?? 0;
     const cost = costPerKgMap[code] ?? material.default_cost_per_kg ?? 0;
 
-    // Validations
+    // Validations (Rule 20)
     if (kg <= 0) return { error: "El peso capturado debe ser mayor a cero" };
     if (cost < 0) return { error: "El costo por kg no puede ser negativo" };
+    if (material.default_yield <= 0 || material.default_yield > 100)
+      return { error: "Yield no válido para este material" };
+
+    // Get active versioned factor
+    const factor = versionedFactors[code] ?? null;
+
+    // Validate factors exist when required (Rule 20)
+    if (material.impacto_valido !== false) {
+      if (material.uses_co2 && (factor?.factor_co2 ?? material.factor_co2) == null)
+        return { error: "Factor CO₂ requerido pero no definido" };
+      if (material.uses_energia && (factor?.factor_energia ?? material.factor_energia) == null)
+        return { error: "Factor de energía requerido pero no definido" };
+      if (material.uses_agua && (factor?.factor_agua ?? material.factor_agua) == null)
+        return { error: "Factor de agua requerido pero no definido" };
+      if (material.uses_arboles && (factor?.factor_arboles ?? material.factor_arboles) == null)
+        return { error: "Factor de árboles requerido pero no definido" };
+    }
 
     setSavingCapture(true);
     try {
-      const snapshot = buildCaptureSnapshot(material, kg, user.id, currentMonth + 1, currentYear, cost);
+      const snapshot = buildCaptureSnapshot(material, kg, user.id, currentMonth + 1, currentYear, cost, factor);
 
       const { error } = await supabase
         .from("material_captures")
@@ -260,17 +296,22 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     } finally {
       setSavingCapture(false);
     }
-  }, [user, catalog, kgMap, costPerKgMap, currentMonth, currentYear, loadCaptures]);
+  }, [user, catalog, kgMap, costPerKgMap, currentMonth, currentYear, loadCaptures, versionedFactors]);
 
   // ─── Derived: material entries with live KPIs from engine ───
   const materialEntries: MaterialEntry[] = useMemo(() =>
     catalog.map(m => ({
       material: m,
       kg: kgMap[m.code] ?? 0,
-      kpis: calculateIndicators(m, kgMap[m.code] ?? 0, costPerKgMap[m.code] ?? m.default_cost_per_kg ?? 0),
+      kpis: calculateIndicators(
+        m,
+        kgMap[m.code] ?? 0,
+        costPerKgMap[m.code] ?? m.default_cost_per_kg ?? 0,
+        versionedFactors[m.code] ?? null
+      ),
       isConfirmed: confirmedMap[m.code] ?? false,
     })),
-    [catalog, kgMap, costPerKgMap, confirmedMap]
+    [catalog, kgMap, costPerKgMap, confirmedMap, versionedFactors]
   );
 
   // ─── Live KPI totals (for capture screen) ───
@@ -318,7 +359,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
       isLoggedIn, user, userRole, roleLabel, permissions, roleLoading,
       login, logout,
       currentMonth, currentYear, setCurrentMonth, setCurrentYear,
-      catalog, catalogLoading,
+      catalog, catalogLoading, versionedFactors,
       materialEntries, setMaterialKg, setCostPerKg, costPerKgMap, clearAll,
       kpiTotals, totalKg,
       refreshData, lastUpdated,
