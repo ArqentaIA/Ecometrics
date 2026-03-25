@@ -347,12 +347,14 @@ const DataCapture = () => {
                         )}
                       </div>
 
-                      <button
-                        onClick={() => setOpenImpact(prev => ({ ...prev, [entry.material.code]: !prev[entry.material.code] }))}
-                        className="shrink-0 text-xs font-medium px-3 py-1.5 rounded-md border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 transition-colors whitespace-nowrap"
-                      >
-                        {openImpact[entry.material.code] ? "▲ Ocultar" : "🌿 Ver impacto"}
-                      </button>
+                      {!isBattery && (
+                        <button
+                          onClick={() => setOpenImpact(prev => ({ ...prev, [entry.material.code]: !prev[entry.material.code] }))}
+                          className="shrink-0 text-xs font-medium px-3 py-1.5 rounded-md border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 transition-colors whitespace-nowrap"
+                        >
+                          {openImpact[entry.material.code] ? "▲ Ocultar" : "🌿 Ver impacto"}
+                        </button>
+                      )}
                     </div>
 
                     {/* Yield info — from catalog (hidden for BATERIAS) */}
