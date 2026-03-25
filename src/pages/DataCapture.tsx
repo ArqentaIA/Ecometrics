@@ -84,6 +84,10 @@ const DataCapture = () => {
   const [openImpact, setOpenImpact] = useState<Record<string, boolean>>({});
   const [captureStates, setCaptureStates] = useState<Record<string, CaptureState>>({});
 
+  // Clear local capture states on mount so fields start blank each time
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useState(() => { setCaptureStates({}); });
+
   // ── AUDIT CAPA 3: Datos recibidos en UI (DataCapture) ──
   console.log("AUDIT_UI_INPUT_CAPTURE", {
     total: materialEntries?.length,
@@ -225,7 +229,11 @@ const DataCapture = () => {
                   <div
                     key={entry.material.code}
                     className={`win-card p-4 transition-all duration-150 ${
-                      entry.isConfirmed ? "border-l-[3px] border-l-primary" : ""
+                      entry.isConfirmed
+                        ? "border-l-[3px] border-l-primary shadow-[0_2px_12px_-2px_hsl(var(--primary)/0.25)] bg-primary/[0.03]"
+                        : state.confirmed
+                          ? "border-l-[3px] border-l-primary shadow-[0_2px_12px_-2px_hsl(var(--primary)/0.25)] bg-primary/[0.03]"
+                          : ""
                     }`}
                     style={{ animation: `fadeSlideUp 300ms ${idx * 30}ms both` }}
                   >
