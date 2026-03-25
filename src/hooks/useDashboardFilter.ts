@@ -37,12 +37,13 @@ export function useDashboardFilter() {
     if (!user) return;
     setLoading(true);
     try {
+      // Use OR logic: is_confirmed = true OR confirmed_at IS NOT NULL
+      // to avoid dropping records where only one flag was set
       let query = supabase
         .from("material_captures")
-        .select("material_code, month, kg_brutos, cost_per_kg_applied, proveedor, confirmed_at")
+        .select("material_code, month, kg_brutos, cost_per_kg_applied, proveedor, confirmed_at, is_confirmed")
         .eq("year", dashYear)
-        .eq("is_confirmed", true)
-        .not("confirmed_at", "is", null);
+        .eq("is_confirmed", true);
 
       if (!isGlobalRole) {
         query = query.eq("user_id", user.id);
@@ -53,6 +54,15 @@ export function useDashboardFilter() {
         console.error("Error loading dashboard captures:", error);
         return;
       }
+
+      // DEBUG: log pipeline counts
+      console.log("DASHBOARD_DEBUG", {
+        step: "raw_query",
+        year: dashYear,
+        totalConfirmed: data?.length ?? 0,
+        records: data?.map(r => ({ code: r.material_code, month: r.month, kg: r.kg_brutos, confirmed_at: r.confirmed_at })),
+      });
+
       setRawCaptures((data ?? []).map(r => ({
         material_code: r.material_code,
         month: r.month,
