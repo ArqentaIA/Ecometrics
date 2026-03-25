@@ -224,6 +224,7 @@ const DataCapture = () => {
               {materialEntries.map((entry, idx) => {
                 const state = getState(entry.material.code);
                 const ts = state.timestamp ? formatTimestamp(state.timestamp) : null;
+                const isBattery = entry.material.code === 'BATERIAS';
 
                 return (
                   <div
@@ -261,7 +262,7 @@ const DataCapture = () => {
                         className="win-input !w-32 text-right font-semibold text-base tabular-nums"
                         placeholder="0.00"
                       />
-                      <span className="text-xs text-muted-foreground font-medium">kg</span>
+                      <span className="text-xs text-muted-foreground font-medium">{isBattery ? "pzas" : "kg"}</span>
 
                       {/* Cost per kg field — editable only for Admin/Dirección */}
                       {permissions.canEditPrice ? (
@@ -272,7 +273,7 @@ const DataCapture = () => {
                         />
                       ) : (
                         <div className="flex items-center gap-1">
-                          <span className="text-[11px] text-muted-foreground whitespace-nowrap">$/kg</span>
+                          <span className="text-[11px] text-muted-foreground whitespace-nowrap">{isBattery ? "$/pza" : "$/kg"}</span>
                           <span className="win-input !w-24 text-right font-semibold text-sm tabular-nums bg-muted/50 cursor-not-allowed opacity-75">
                             {(costPerKgMap[entry.material.code] ?? entry.material.default_cost_per_kg ?? 0).toFixed(2)}
                           </span>
@@ -346,24 +347,34 @@ const DataCapture = () => {
                         )}
                       </div>
 
-                      <button
-                        onClick={() => setOpenImpact(prev => ({ ...prev, [entry.material.code]: !prev[entry.material.code] }))}
-                        className="shrink-0 text-xs font-medium px-3 py-1.5 rounded-md border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 transition-colors whitespace-nowrap"
-                      >
-                        {openImpact[entry.material.code] ? "▲ Ocultar" : "🌿 Ver impacto"}
-                      </button>
+                      {!isBattery && (
+                        <button
+                          onClick={() => setOpenImpact(prev => ({ ...prev, [entry.material.code]: !prev[entry.material.code] }))}
+                          className="shrink-0 text-xs font-medium px-3 py-1.5 rounded-md border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 transition-colors whitespace-nowrap"
+                        >
+                          {openImpact[entry.material.code] ? "▲ Ocultar" : "🌿 Ver impacto"}
+                        </button>
+                      )}
                     </div>
 
-                    {/* Yield info — from catalog */}
-                    <div className="mt-1.5 ml-12 text-[11px] text-muted-foreground">
-                      Yield: <span className="font-medium">{(entry.material.default_yield * 100).toFixed(0)}%</span>
-                      {" → "}KG netos estimados: <span className="font-semibold text-foreground">{formatKPI("kg_netos", entry.kpis.kg_netos)} kg</span>
-                      <span className="ml-2 italic">(pérdida típica: {entry.material.yield_loss_reason})</span>
-                    </div>
-                    {/* Rule 21: Disclaimer about calculation bases */}
-                    <div className="mt-1 ml-12 text-[10px] text-muted-foreground/70 italic">
-                      Indicadores ambientales calculados sobre kg netos estimados. El valor económico se calcula sobre kg brutos capturados.
-                    </div>
+                    {/* Yield info — from catalog (hidden for BATERIAS) */}
+                    {!isBattery && (
+                      <>
+                        <div className="mt-1.5 ml-12 text-[11px] text-muted-foreground">
+                          Yield: <span className="font-medium">{(entry.material.default_yield * 100).toFixed(0)}%</span>
+                          {" → "}KG netos estimados: <span className="font-semibold text-foreground">{formatKPI("kg_netos", entry.kpis.kg_netos)} kg</span>
+                          <span className="ml-2 italic">(pérdida típica: {entry.material.yield_loss_reason})</span>
+                        </div>
+                        <div className="mt-1 ml-12 text-[10px] text-muted-foreground/70 italic">
+                          Indicadores ambientales calculados sobre kg netos estimados. El valor económico se calcula sobre kg brutos capturados.
+                        </div>
+                      </>
+                    )}
+                    {isBattery && (
+                      <div className="mt-1.5 ml-12 text-[11px] text-muted-foreground italic">
+                        🔋 Material por pieza — sin yield ni KPIs ambientales. Valor = cantidad × precio unitario.
+                      </div>
+                    )}
 
                     {state.pending && (
                       <div className="mt-2 ml-12 text-[11px] text-amber-600 font-medium flex items-center gap-1">
@@ -372,7 +383,7 @@ const DataCapture = () => {
                       </div>
                     )}
 
-                    {openImpact[entry.material.code] && (
+                    {!isBattery && openImpact[entry.material.code] && (
                       <ImpactCards kpis={entry.kpis} kgNetos={entry.kpis.kg_netos} />
                     )}
                   </div>

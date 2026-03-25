@@ -467,7 +467,9 @@ const Dashboard = () => {
               <tbody>
                 {sortedEntries.map((e, i) => {
                   const impactoValido = e.kpis.impacto_valido;
+                  const isBattery = e.material.code === 'BATERIAS';
                   const renderEnv = (usesFlag: boolean, value: number, fmtKey: "co2" | "energia" | "agua" | "arboles") => {
+                    if (isBattery) return <span className="text-muted-foreground text-[10px]">N/A</span>;
                     if (!impactoValido) return <span className="text-amber-500 text-[10px] font-medium" title="Validación metodológica pendiente">PENDIENTE</span>;
                     if (!usesFlag) return <span className="text-muted-foreground text-[10px]">N/A</span>;
                     if (value === 0 && e.kg === 0) return <span className="text-muted-foreground">—</span>;
@@ -484,10 +486,14 @@ const Dashboard = () => {
                       <td className="px-3 py-2 font-medium">{e.material.name}</td>
                       <td className="px-3 py-2 text-muted-foreground text-xs">{e.material.code}</td>
                       {/* Bloque Económico */}
-                      <td className="px-3 py-2 font-semibold">{formatKPI("kg_brutos", e.kg)}</td>
-                      <td className="px-3 py-2 text-muted-foreground font-medium">{(e.material.default_yield * 100).toFixed(0)}%</td>
+                      <td className="px-3 py-2 font-semibold">
+                        {formatKPI("kg_brutos", e.kg)}{isBattery && e.kg > 0 ? " pzas" : ""}
+                      </td>
+                      <td className="px-3 py-2 text-muted-foreground font-medium">
+                        {isBattery ? "N/A" : `${(e.material.default_yield * 100).toFixed(0)}%`}
+                      </td>
                       <td className="px-3 py-2 font-medium text-muted-foreground/80">
-                        {e.kpis.kg_netos > 0 ? formatKPI("kg_netos", e.kpis.kg_netos) : "—"}
+                        {isBattery ? "N/A" : e.kpis.kg_netos > 0 ? formatKPI("kg_netos", e.kpis.kg_netos) : "—"}
                       </td>
                       <td className="px-3 py-2 font-semibold" style={{ color: e.kpis.economic_impact > 0 ? "hsl(var(--primary))" : undefined }}>
                         {e.kpis.economic_impact > 0 ? `$${formatKPI("economic_impact", e.kpis.economic_impact)}` : "—"}
