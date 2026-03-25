@@ -128,6 +128,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     setCostPerKgMapState({});
     setConfirmedMap({});
     setConfirmedSnapshots([]);
+    setProveedorMapState({});
   }, []);
 
   // ─── Load Catalog + Versioned Factors (Rule 2, 5, 14) ───
