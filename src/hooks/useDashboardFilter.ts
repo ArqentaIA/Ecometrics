@@ -144,6 +144,7 @@ export function useDashboardFilter() {
   const materialEntries: (MaterialEntry & { proveedor?: string; confirmed_at?: string })[] = useMemo(() => {
     const byCode: Record<string, {
       kg: number;
+      cost_per_kg_applied: number;
       proveedor: string | null;
       confirmed_at: string | null;
       kpis: { arboles: number; co2: number; energia: number; agua: number; kg_netos: number; economic_impact: number };
