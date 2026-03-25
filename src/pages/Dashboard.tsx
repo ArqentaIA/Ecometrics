@@ -64,21 +64,52 @@ const Dashboard = () => {
   };
 
   const exportCSV = () => {
-    const headers = ["#", "Material", "Código", "KG Brutos", "Yield %", "KG Netos", "Árboles", "CO₂e kg", "Energía kWh", "Agua L"];
-    const rows = materialEntries.map((e, i) => [
-      i + 1, e.material.name, e.material.code, e.kg,
-      e.material.default_yield,
-      formatKPI("kg_netos", e.kpis.kg_netos),
-      formatKPI("arboles", e.kpis.arboles),
-      formatKPI("co2", e.kpis.co2),
-      formatKPI("energia", e.kpis.energia),
-      formatKPI("agua", e.kpis.agua),
-    ]);
+    // Fixed column order: Identification | Bloque Económico | Bloque Ambiental | Estado
+    const headers = [
+      "#", "Material", "Codigo", "Familia",
+      // Bloque Económico
+      "KG_Brutos", "Yield_pct", "KG_Netos", "Precio_Unitario", "Valor_Economico",
+      // Bloque Ambiental
+      "CO2_kg", "Energia_kWh", "Agua_L", "Arboles",
+      // Estado
+      "Impacto_Ambiental",
+    ];
+    const csvEscape = (v: string | number) => {
+      const s = String(v);
+      return s.includes(",") || s.includes('"') ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const rows = materialEntries.map((e, i) => {
+      const impactoValido = e.kpis.impacto_valido;
+      const envLabel = (usesFlag: boolean, value: number, fmtKey: "co2" | "energia" | "agua" | "arboles") => {
+        if (!impactoValido) return "IMPACTO_PENDIENTE";
+        if (!usesFlag) return "N/A";
+        return formatKPI(fmtKey, value);
+      };
+      return [
+        i + 1,
+        csvEscape(e.material.name),
+        e.material.code,
+        e.material.family,
+        // Económico (siempre presente)
+        formatKPI("kg_brutos", e.kg),
+        e.material.default_yield,
+        formatKPI("kg_netos", e.kpis.kg_netos),
+        formatKPI("cost_per_kg", e.material.default_cost_per_kg ?? 0),
+        formatKPI("economic_impact", e.kpis.economic_impact),
+        // Ambiental (flag-driven)
+        envLabel(e.kpis.uses_co2, e.kpis.co2, "co2"),
+        envLabel(e.kpis.uses_energia, e.kpis.energia, "energia"),
+        envLabel(e.kpis.uses_agua, e.kpis.agua, "agua"),
+        envLabel(e.kpis.uses_arboles, e.kpis.arboles, "arboles"),
+        // Estado
+        impactoValido ? "VALIDADO" : "PENDIENTE",
+      ];
+    });
     const csv = [headers, ...rows].map(r => r.join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = "ecometrics-export.csv"; a.click();
+    a.href = url; a.download = `ecometrics-${dashYear}-export.csv`; a.click();
   };
 
   // Period label for display
