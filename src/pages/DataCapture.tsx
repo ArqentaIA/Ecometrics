@@ -273,7 +273,7 @@ const DataCapture = () => {
                         />
                       ) : (
                         <div className="flex items-center gap-1">
-                          <span className="text-[11px] text-muted-foreground whitespace-nowrap">$/kg</span>
+                          <span className="text-[11px] text-muted-foreground whitespace-nowrap">{isBattery ? "$/pza" : "$/kg"}</span>
                           <span className="win-input !w-24 text-right font-semibold text-sm tabular-nums bg-muted/50 cursor-not-allowed opacity-75">
                             {(costPerKgMap[entry.material.code] ?? entry.material.default_cost_per_kg ?? 0).toFixed(2)}
                           </span>
