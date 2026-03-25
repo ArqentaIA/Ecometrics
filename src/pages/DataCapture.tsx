@@ -321,6 +321,10 @@ const DataCapture = () => {
                       {" → "}KG netos estimados: <span className="font-semibold text-foreground">{formatKPI("kg_netos", entry.kpis.kg_netos)} kg</span>
                       <span className="ml-2 italic">(pérdida típica: {entry.material.yield_loss_reason})</span>
                     </div>
+                    {/* Rule 21: Disclaimer about calculation bases */}
+                    <div className="mt-1 ml-12 text-[10px] text-muted-foreground/70 italic">
+                      Indicadores ambientales calculados sobre kg netos estimados. El valor económico se calcula sobre kg brutos capturados.
+                    </div>
 
                     {state.pending && (
                       <div className="mt-2 ml-12 text-[11px] text-amber-600 font-medium flex items-center gap-1">
