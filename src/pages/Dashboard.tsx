@@ -66,56 +66,22 @@ const Dashboard = () => {
 
   const [exporting, setExporting] = useState(false);
 
-  const exportCSV = async () => {
+  const exportCSV = () => {
     setExporting(true);
     try {
-      // 1. Fresh read from material_captures (confirmed only, raw fields)
-      const monthFilter = isAllMonths ? null : selectedMonths;
-      let captureQuery = supabase
-        .from("material_captures")
-        .select("material_code, material_name, family, kg_brutos, cost_per_kg_applied, proveedor, confirmed_at, is_confirmed")
-        .eq("year", dashYear)
-        .eq("is_confirmed", true)
-        .not("confirmed_at", "is", null);
+      // ── REGLA CLAVE: exportar desde el mismo dataset final del dashboard ──
+      const datasetToExport = confirmedEntries;
 
-      if (monthFilter) {
-        captureQuery = captureQuery.in("month", monthFilter);
-      }
-
-      const { data: rawCaptures, error: capErr } = await captureQuery;
-      if (capErr || !rawCaptures) {
-        console.error("Export: error fetching captures", capErr);
-        return;
-      }
-
-      // 2. Fresh read from material_catalog (official yield + flags)
-      const { data: catalogData, error: catErr } = await supabase
-        .from("material_catalog")
-        .select("code, name, family, default_yield, uses_co2, uses_energia, uses_agua, uses_arboles, impacto_valido")
-        .eq("is_active", true);
-      if (catErr || !catalogData) {
-        console.error("Export: error fetching catalog", catErr);
-        return;
-      }
-      const catalogMap = Object.fromEntries(catalogData.map(c => [c.code, c]));
-
-      // 3. Fresh read from material_factors (official factors, active only)
-      const { data: factorsData, error: facErr } = await supabase
-        .from("material_factors")
-        .select("material_code, factor_co2, factor_energia, factor_agua, factor_arboles, fecha_inicio, created_at")
-        .eq("activo", true)
-        .order("fecha_inicio", { ascending: false });
-      if (facErr || !factorsData) {
-        console.error("Export: error fetching factors", facErr);
-        return;
-      }
-      // One active factor per material (most recent)
-      const factorsMap: Record<string, typeof factorsData[0]> = {};
-      factorsData.forEach(f => {
-        if (!factorsMap[f.material_code]) factorsMap[f.material_code] = f;
+      console.log("EXPORT_DEBUG", {
+        confirmedEntriesCount: datasetToExport.length,
+        dashboardTotalsKgBrutos: totals.kgBrutos,
       });
 
-      // 4. Build rows with recalculated values from source tables
+      if (datasetToExport.length === 0) {
+        alert("No hay datos confirmados para exportar en el periodo seleccionado.");
+        return;
+      }
+
       const headers = [
         "Material", "Codigo", "Familia",
         "KG_Brutos", "Yield", "KG_Netos",
@@ -124,63 +90,43 @@ const Dashboard = () => {
         "Proveedor", "Fecha_Confirmacion", "Estado",
       ];
 
-      const csvEscape = (v: string | number | null) => {
+      const csvEscape = (v: string | number | null | undefined) => {
         if (v === null || v === undefined) return "";
         const s = String(v);
         return s.includes(",") || s.includes('"') ? `"${s.replace(/"/g, '""')}"` : s;
       };
 
-      const rows = rawCaptures
-        .filter(c => Number(c.kg_brutos ?? 0) > 0)
-        .map(c => {
-          const code = c.material_code;
-          const cat = catalogMap[code];
-          const fac = factorsMap[code];
-          const kgBrutos = Number(c.kg_brutos ?? 0);
-          const costPerKg = Number(c.cost_per_kg_applied ?? 0);
+      const rows = datasetToExport.map(e => {
+        const isBattery = e.material.code === 'BATERIAS';
+        const impactoValido = e.kpis.impacto_valido;
 
-          // BATERÍAS: by piece, no yield, no env KPIs
-          const isBattery = code === 'BATERIAS';
-          const defaultYield = cat ? Number(cat.default_yield) : 0;
+        const envCell = (usesFlag: boolean, value: number): string => {
+          if (isBattery) return "N/A";
+          if (!impactoValido) return "IMPACTO_PENDIENTE";
+          if (!usesFlag) return "N/A";
+          return value.toFixed(4);
+        };
 
-          const kgNetos = isBattery ? null : kgBrutos * defaultYield;
-          const valorEconomico = kgBrutos * costPerKg;
+        return [
+          csvEscape(e.material.name),
+          e.material.code,
+          csvEscape(e.material.family),
+          e.kg.toFixed(2),
+          isBattery ? "N/A" : (e.material.default_yield * 100).toFixed(0),
+          isBattery ? "N/A" : e.kpis.kg_netos.toFixed(2),
+          (e.kpis as any).cost_per_kg_applied?.toFixed(2) ?? "0.00",
+          e.kpis.economic_impact.toFixed(2),
+          envCell(e.kpis.uses_co2, e.kpis.co2),
+          envCell(e.kpis.uses_energia, e.kpis.energia),
+          envCell(e.kpis.uses_agua, e.kpis.agua),
+          envCell(e.kpis.uses_arboles, e.kpis.arboles),
+          csvEscape((e as any).proveedor ?? "—"),
+          (e as any).confirmed_at ? new Date((e as any).confirmed_at).toISOString().split("T")[0] : "—",
+          "CONFIRMADO",
+        ];
+      });
 
-          // Environmental KPIs: recalculate from material_factors × kg_netos
-          const calcEnv = (usesFlag: boolean | undefined, factor: number | null | undefined): string => {
-            if (isBattery) return "N/A";
-            if (!cat?.impacto_valido) return "IMPACTO_PENDIENTE";
-            if (!usesFlag) return "N/A";
-            if (kgNetos === null || kgNetos === 0) return "N/A";
-            if (factor === null || factor === undefined) return "N/A";
-            return (kgNetos * Number(factor)).toFixed(4);
-          };
-
-          const co2 = calcEnv(cat?.uses_co2, fac?.factor_co2);
-          const energia = calcEnv(cat?.uses_energia, fac?.factor_energia);
-          const agua = calcEnv(cat?.uses_agua, fac?.factor_agua);
-          const arboles = calcEnv(cat?.uses_arboles, fac?.factor_arboles);
-
-          const estado = (c.is_confirmed && c.confirmed_at) ? "CONFIRMADO" : "PENDIENTE";
-
-          return [
-            csvEscape(c.material_name ?? cat?.name ?? code),
-            code,
-            csvEscape(c.family ?? cat?.family ?? ""),
-            kgBrutos.toFixed(2),
-            isBattery ? "N/A" : (defaultYield * 100).toFixed(0),
-            kgNetos !== null ? kgNetos.toFixed(2) : "N/A",
-            costPerKg.toFixed(2),
-            valorEconomico.toFixed(2),
-            co2,
-            energia,
-            agua,
-            arboles,
-            csvEscape(c.proveedor ?? "—"),
-            c.confirmed_at ? new Date(c.confirmed_at).toISOString().split("T")[0] : "—",
-            estado,
-          ];
-        });
+      console.log("EXPORT_DEBUG", { rowsExported: rows.length });
 
       const csv = [headers, ...rows].map(r => r.join(",")).join("\n");
       const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
