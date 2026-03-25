@@ -408,6 +408,14 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
 
 export function useEcoMetrics() {
   const ctx = useContext(EcoMetricsContext);
-  if (!ctx) throw new Error("useEcoMetrics must be used within EcoMetricsProvider");
+  if (!ctx) {
+    // During HMR, context may temporarily be null — force a reload
+    if (import.meta.hot) {
+      window.location.reload();
+      // Return a dummy to prevent render errors during reload
+      return {} as EcoMetricsState;
+    }
+    throw new Error("useEcoMetrics must be used within EcoMetricsProvider");
+  }
   return ctx;
 }
