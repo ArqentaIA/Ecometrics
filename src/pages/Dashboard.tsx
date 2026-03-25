@@ -82,7 +82,7 @@ const Dashboard = () => {
       }
 
       const headers = [
-        "Material", "Codigo", "Familia",
+        "Material", "Codigo", "Familia", "Unidad",
         "KG_Brutos", "Yield", "KG_Netos",
         "Precio_Unitario", "Valor_Economico",
         "CO2", "Energia", "Agua", "Arboles",
