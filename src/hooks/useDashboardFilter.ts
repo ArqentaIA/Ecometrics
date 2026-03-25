@@ -26,6 +26,7 @@ export function useDashboardFilter() {
     result_energia: number;
     result_agua: number;
     result_economic_impact: number;
+    proveedor: string | null;
   }>>([]);
 
   const isGlobalRole = userRole === 'admin' || userRole === 'administrador' || userRole === 'direccion';
