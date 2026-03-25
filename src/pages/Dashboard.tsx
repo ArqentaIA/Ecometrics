@@ -439,6 +439,7 @@ const Dashboard = () => {
                   <td className="px-3 py-2.5">{formatKPI("agua", totals.agua)}</td>
                   <td className="px-3 py-2.5">{formatKPI("arboles", totals.arboles)}</td>
                   <td className="px-3 py-2.5">—</td>
+                  <td className="px-3 py-2.5">—</td>
                 </tr>
               </tbody>
             </table>
