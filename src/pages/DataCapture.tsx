@@ -5,6 +5,7 @@ import ImpactCards from "@/components/ImpactCards";
 import { formatKPI } from "@/lib/calculationEngine";
 
 const MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+const PROVEEDORES = ["Rec. Primario", "Rec. Privado", "Rec. Comercial", "Rec. Industrial", "Otros"];
 
 interface CaptureState {
   confirmed: boolean;
