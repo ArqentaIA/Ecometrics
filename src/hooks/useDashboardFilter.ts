@@ -152,7 +152,7 @@ export function useDashboardFilter() {
 
     filteredCaptures.forEach(c => {
       if (!byCode[c.material_code]) {
-        byCode[c.material_code] = { kg: 0, proveedor: null, confirmed_at: null, kpis: { arboles: 0, co2: 0, energia: 0, agua: 0, kg_netos: 0, economic_impact: 0 } };
+        byCode[c.material_code] = { kg: 0, cost_per_kg_applied: 0, proveedor: null, confirmed_at: null, kpis: { arboles: 0, co2: 0, energia: 0, agua: 0, kg_netos: 0, economic_impact: 0 } };
       }
       const entry = byCode[c.material_code];
       entry.kg += c.kg_brutos;
