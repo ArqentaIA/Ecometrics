@@ -14,8 +14,6 @@ const CertificationBlock = ({
   folio, firma, hash, datasetId, fechaEmision, totalRegistros,
 }: CertificationBlockProps) => {
   const verifyUrl = getVerificationUrl(folio);
-
-  return (
     <div className="border border-border/60 rounded-lg bg-muted/30 p-5 mt-6">
       <div className="flex items-start justify-between gap-6">
         <div className="flex-1 space-y-2">

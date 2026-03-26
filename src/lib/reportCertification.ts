@@ -71,9 +71,13 @@ export function abbreviateHash(hash: string, length = 20): string {
   return hash.substring(0, length).toUpperCase();
 }
 
-/** URL de verificación */
-export function getVerificationUrl(folio: string): string {
-  return `${window.location.origin}/verificar?folio=${encodeURIComponent(folio)}`;
+/** URL base pública oficial del sistema */
+const APP_PUBLIC_URL = "https://www.ecometrics.sbs";
+
+/** URL de verificación — siempre usa dominio oficial, nunca preview/Lovable */
+export function getVerificationUrl(folio: string): string | null {
+  if (!APP_PUBLIC_URL) return null;
+  return `${APP_PUBLIC_URL}/verificar?folio=${encodeURIComponent(folio)}`;
 }
 
 /** Construye dataset rows canónico desde confirmedEntries para hash */
