@@ -130,7 +130,7 @@ const ReportView = forwardRef<HTMLDivElement, ReportViewProps>(
                     <td className="px-2 py-1 text-right">{isBattery ? "N/A" : e.kpis.kg_netos.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
                     <td className="px-2 py-1 text-right">{renderEnv(e, e.kpis.uses_co2, e.kpis.co2)}</td>
                     <td className="px-2 py-1 text-right">{renderEnv(e, e.kpis.uses_energia, e.kpis.energia)}</td>
-                    <td className="px-2 py-1 text-right">{renderEnv(e, e.kpis.uses_agua, e.kpis.agua)}</td>
+                    {hasAnyAgua && <td className="px-2 py-1 text-right">{renderEnv(e, e.kpis.uses_agua, e.kpis.agua)}</td>}
                     <td className="px-2 py-1 text-right">{renderEnv(e, e.kpis.uses_arboles, e.kpis.arboles)}</td>
                   </tr>
                 );
