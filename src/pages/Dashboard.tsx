@@ -509,7 +509,7 @@ const Dashboard = () => {
                   {/* Ambiental */}
                   <td className="px-3 py-2.5">{formatKPI("co2", totals.co2)}</td>
                   <td className="px-3 py-2.5">{formatKPI("energia", totals.energia)}</td>
-                  <td className="px-3 py-2.5">{formatKPI("agua", totals.agua)}</td>
+                  {hasAnyAgua && <td className="px-3 py-2.5">{formatKPI("agua", totals.agua)}</td>}
                   <td className="px-3 py-2.5">{formatKPI("arboles", totals.arboles)}</td>
                   <td className="px-3 py-2.5">—</td>
                   <td className="px-3 py-2.5">—</td>
