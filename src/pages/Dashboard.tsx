@@ -58,6 +58,12 @@ const Dashboard = () => {
     setTimeout(() => { refreshData(); setRefreshing(false); }, 800);
   };
 
+  // Flag: at least one confirmed material has valid agua factor
+  const hasAnyAgua = useMemo(() =>
+    materialEntries.some(e => e.kpis.uses_agua && e.kpis.factor_agua != null && e.kpis.impacto_valido),
+    [materialEntries]
+  );
+
   const sortedEntries = useMemo(() => {
     const entries = [...materialEntries];
     if (!sortCol) return entries;
