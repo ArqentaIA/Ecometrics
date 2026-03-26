@@ -453,9 +453,9 @@ const Dashboard = () => {
                   const impactoValido = e.kpis.impacto_valido;
                   const isBattery = e.material.code === 'BATERIAS';
                   const renderEnv = (usesFlag: boolean, value: number, fmtKey: "co2" | "energia" | "agua" | "arboles") => {
-                    if (isBattery) return <span className="text-muted-foreground text-[10px]">N/A</span>;
+                    if (isBattery) return <span className="text-muted-foreground text-[10px]">—</span>;
                     if (!impactoValido) return <span className="text-amber-500 text-[10px] font-medium" title="Validación metodológica pendiente">PENDIENTE</span>;
-                    if (!usesFlag) return <span className="text-muted-foreground text-[10px]">N/A</span>;
+                    if (!usesFlag) return <span className="text-muted-foreground text-[10px]">—</span>;
                     if (value === 0 && e.kg === 0) return <span className="text-muted-foreground">—</span>;
                     return formatKPI(fmtKey, value);
                   };
