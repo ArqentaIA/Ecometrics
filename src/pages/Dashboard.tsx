@@ -431,7 +431,7 @@ const Dashboard = () => {
                     // Ambiental
                     { key: "co2", label: "♻️ CO₂e kg" },
                     { key: "energia", label: "⚡ Energía kWh" },
-                    { key: "agua", label: "💧 Agua L" },
+                    ...(hasAnyAgua ? [{ key: "agua", label: "💧 Agua L" }] : []),
                     { key: "arboles", label: "🌳 Árboles" },
                     // Estado
                     { key: "", label: "Estado" },
