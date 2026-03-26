@@ -58,6 +58,12 @@ const Dashboard = () => {
     setTimeout(() => { refreshData(); setRefreshing(false); }, 800);
   };
 
+  // Flag: at least one confirmed material has valid agua factor
+  const hasAnyAgua = useMemo(() =>
+    materialEntries.some(e => e.kpis.uses_agua && e.kpis.factor_agua != null && e.kpis.impacto_valido),
+    [materialEntries]
+  );
+
   const sortedEntries = useMemo(() => {
     const entries = [...materialEntries];
     if (!sortCol) return entries;
@@ -325,18 +331,20 @@ const Dashboard = () => {
               .slice(0, 3)
               .map(e => ({ name: e.material.name, energia: e.kpis.energia }))}
           />
-          <WaterLiquidCard
-            value={totals.agua}
-            monthlyData={monthlyAgua}
-            periodLabel={periodLabel}
-            dashYear={dashYear}
-            confirmedEntries={confirmedEntries.map(e => ({
-              materialName: e.material.name,
-              agua: e.kpis.agua,
-              kgBrutos: e.kg,
-            }))}
-            lastUpdated={lastUpdated}
-          />
+          {hasAnyAgua && (
+            <WaterLiquidCard
+              value={totals.agua}
+              monthlyData={monthlyAgua}
+              periodLabel={periodLabel}
+              dashYear={dashYear}
+              confirmedEntries={confirmedEntries.map(e => ({
+                materialName: e.material.name,
+                agua: e.kpis.agua,
+                kgBrutos: e.kg,
+              }))}
+              lastUpdated={lastUpdated}
+            />
+          )}
           <EconomicImpactCard
             total={totals.economicImpact}
             monthlyData={monthlyEconomic}
@@ -405,9 +413,9 @@ const Dashboard = () => {
                   <th colSpan={4} className="px-3 py-1.5 text-center text-[10px] font-bold uppercase tracking-widest border-r border-nav-foreground/20" style={{ color: "hsl(var(--kpi-co2))" }}>
                     💰 Bloque Económico
                   </th>
-                  <th colSpan={4} className="px-3 py-1.5 text-center text-[10px] font-bold uppercase tracking-widest border-r border-nav-foreground/20" style={{ color: "hsl(var(--kpi-trees))" }}>
-                    🌿 Bloque Ambiental
-                  </th>
+                   <th colSpan={hasAnyAgua ? 4 : 3} className="px-3 py-1.5 text-center text-[10px] font-bold uppercase tracking-widest border-r border-nav-foreground/20" style={{ color: "hsl(var(--kpi-trees))" }}>
+                     🌿 Bloque Ambiental
+                   </th>
                   <th colSpan={2} className="px-3 py-1.5 text-center text-[10px] font-bold uppercase tracking-widest">Estado</th>
                 </tr>
                 <tr className="bg-nav text-nav-foreground">
@@ -423,7 +431,7 @@ const Dashboard = () => {
                     // Ambiental
                     { key: "co2", label: "♻️ CO₂e kg" },
                     { key: "energia", label: "⚡ Energía kWh" },
-                    { key: "agua", label: "💧 Agua L" },
+                    ...(hasAnyAgua ? [{ key: "agua", label: "💧 Agua L" }] : []),
                     { key: "arboles", label: "🌳 Árboles" },
                     // Estado
                     { key: "", label: "Estado" },
@@ -445,9 +453,9 @@ const Dashboard = () => {
                   const impactoValido = e.kpis.impacto_valido;
                   const isBattery = e.material.code === 'BATERIAS';
                   const renderEnv = (usesFlag: boolean, value: number, fmtKey: "co2" | "energia" | "agua" | "arboles") => {
-                    if (isBattery) return <span className="text-muted-foreground text-[10px]">N/A</span>;
+                    if (isBattery) return <span className="text-muted-foreground text-[10px]">—</span>;
                     if (!impactoValido) return <span className="text-amber-500 text-[10px] font-medium" title="Validación metodológica pendiente">PENDIENTE</span>;
-                    if (!usesFlag) return <span className="text-muted-foreground text-[10px]">N/A</span>;
+                    if (!usesFlag) return <span className="text-muted-foreground text-[10px]">—</span>;
                     if (value === 0 && e.kg === 0) return <span className="text-muted-foreground">—</span>;
                     return formatKPI(fmtKey, value);
                   };
@@ -477,7 +485,7 @@ const Dashboard = () => {
                       {/* Bloque Ambiental */}
                       <td className="px-3 py-2">{renderEnv(e.kpis.uses_co2, e.kpis.co2, "co2")}</td>
                       <td className="px-3 py-2">{renderEnv(e.kpis.uses_energia, e.kpis.energia, "energia")}</td>
-                      <td className="px-3 py-2">{renderEnv(e.kpis.uses_agua, e.kpis.agua, "agua")}</td>
+                      {hasAnyAgua && <td className="px-3 py-2">{renderEnv(e.kpis.uses_agua, e.kpis.agua, "agua")}</td>}
                       <td className="px-3 py-2">{renderEnv(e.kpis.uses_arboles, e.kpis.arboles, "arboles")}</td>
                       {/* Estado */}
                       <td className="px-3 py-2">
@@ -501,7 +509,7 @@ const Dashboard = () => {
                   {/* Ambiental */}
                   <td className="px-3 py-2.5">{formatKPI("co2", totals.co2)}</td>
                   <td className="px-3 py-2.5">{formatKPI("energia", totals.energia)}</td>
-                  <td className="px-3 py-2.5">{formatKPI("agua", totals.agua)}</td>
+                  {hasAnyAgua && <td className="px-3 py-2.5">{formatKPI("agua", totals.agua)}</td>}
                   <td className="px-3 py-2.5">{formatKPI("arboles", totals.arboles)}</td>
                   <td className="px-3 py-2.5">—</td>
                   <td className="px-3 py-2.5">—</td>

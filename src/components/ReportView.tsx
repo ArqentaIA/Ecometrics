@@ -34,12 +34,17 @@ const ReportView = forwardRef<HTMLDivElement, ReportViewProps>(
   ({ clientType, periodLabel, dashYear, totals, confirmedEntries, cert }, ref) => {
     const now = cert ? new Date(cert.fechaEmision) : new Date();
 
+    // Flag: at least one confirmed material has valid agua factor
+    const hasAnyAgua = confirmedEntries.some(e =>
+      e.kpis.uses_agua && e.kpis.factor_agua != null && e.kpis.impacto_valido
+    );
+
     const renderEnv = (e: MaterialEntry, usesFlag: boolean, value: number) => {
       const isBattery = e.material.code === "BATERIAS";
       const impactoValido = e.kpis.impacto_valido;
-      if (isBattery) return "N/A";
+      if (isBattery) return "—";
       if (!impactoValido) return "PENDIENTE";
-      if (!usesFlag) return "N/A";
+      if (!usesFlag) return "—";
       if (value === 0 && e.kg === 0) return "—";
       return value.toLocaleString("es-MX", { maximumFractionDigits: 2 });
     };
@@ -74,7 +79,7 @@ const ReportView = forwardRef<HTMLDivElement, ReportViewProps>(
             <KPIBlock label="Material Recuperado" value={formatKPI("kg_netos", totals.kgNetos)} unit="kg netos" color="#4CAF50" />
             <KPIBlock label="CO₂ Evitado" value={formatKPI("co2", totals.co2)} unit="kg CO₂e" color="#EF4444" />
             <KPIBlock label="Energía Ahorrada" value={formatKPI("energia", totals.energia)} unit="kWh" color="#F59E0B" />
-            <KPIBlock label="Agua Conservada" value={formatKPI("agua", totals.agua)} unit="litros" color="#3B82F6" />
+            {hasAnyAgua && <KPIBlock label="Agua Conservada" value={formatKPI("agua", totals.agua)} unit="litros" color="#3B82F6" />}
             <KPIBlock label="Árboles Equivalentes" value={formatKPI("arboles", totals.arboles)} unit="árboles" color="#16A34A" />
             <KPIBlock label="Impacto Económico" value={`$${formatKPI("economic_impact", totals.economicImpact)}`} unit="MXN" color="#9333EA" />
           </div>
@@ -108,7 +113,7 @@ const ReportView = forwardRef<HTMLDivElement, ReportViewProps>(
                 <th className="px-2 py-1.5 text-right font-semibold">KG Netos</th>
                 <th className="px-2 py-1.5 text-right font-semibold">CO₂e</th>
                 <th className="px-2 py-1.5 text-right font-semibold">Energía</th>
-                <th className="px-2 py-1.5 text-right font-semibold">Agua</th>
+                {hasAnyAgua && <th className="px-2 py-1.5 text-right font-semibold">Agua</th>}
                 <th className="px-2 py-1.5 text-right font-semibold">Árboles</th>
               </tr>
             </thead>
@@ -125,7 +130,7 @@ const ReportView = forwardRef<HTMLDivElement, ReportViewProps>(
                     <td className="px-2 py-1 text-right">{isBattery ? "N/A" : e.kpis.kg_netos.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
                     <td className="px-2 py-1 text-right">{renderEnv(e, e.kpis.uses_co2, e.kpis.co2)}</td>
                     <td className="px-2 py-1 text-right">{renderEnv(e, e.kpis.uses_energia, e.kpis.energia)}</td>
-                    <td className="px-2 py-1 text-right">{renderEnv(e, e.kpis.uses_agua, e.kpis.agua)}</td>
+                    {hasAnyAgua && <td className="px-2 py-1 text-right">{renderEnv(e, e.kpis.uses_agua, e.kpis.agua)}</td>}
                     <td className="px-2 py-1 text-right">{renderEnv(e, e.kpis.uses_arboles, e.kpis.arboles)}</td>
                   </tr>
                 );
@@ -137,7 +142,7 @@ const ReportView = forwardRef<HTMLDivElement, ReportViewProps>(
                 <td className="px-2 py-1.5 text-right">{totals.kgNetos.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
                 <td className="px-2 py-1.5 text-right">{totals.co2.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
                 <td className="px-2 py-1.5 text-right">{totals.energia.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
-                <td className="px-2 py-1.5 text-right">{totals.agua.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
+                {hasAnyAgua && <td className="px-2 py-1.5 text-right">{totals.agua.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>}
                 <td className="px-2 py-1.5 text-right">{totals.arboles.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
               </tr>
             </tbody>
