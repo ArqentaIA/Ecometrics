@@ -42,6 +42,7 @@ const Dashboard = () => {
 
   const [refreshing, setRefreshing] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [exporting, setExporting] = useState(false);
