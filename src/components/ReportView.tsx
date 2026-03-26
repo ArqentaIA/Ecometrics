@@ -113,7 +113,7 @@ const ReportView = forwardRef<HTMLDivElement, ReportViewProps>(
                 <th className="px-2 py-1.5 text-right font-semibold">KG Netos</th>
                 <th className="px-2 py-1.5 text-right font-semibold">CO₂e</th>
                 <th className="px-2 py-1.5 text-right font-semibold">Energía</th>
-                <th className="px-2 py-1.5 text-right font-semibold">Agua</th>
+                {hasAnyAgua && <th className="px-2 py-1.5 text-right font-semibold">Agua</th>}
                 <th className="px-2 py-1.5 text-right font-semibold">Árboles</th>
               </tr>
             </thead>
