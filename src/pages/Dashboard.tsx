@@ -283,8 +283,6 @@ const Dashboard = () => {
             {refreshing ? <span className="inline-block w-3.5 h-3.5 border-2 border-foreground border-t-transparent rounded-full animate-spin-slow" /> : "🔄"} Actualizar Datos
           </button>
           <button onClick={() => setReportOpen(true)} className="win-btn-standard text-xs bg-primary text-primary-foreground hover:bg-primary/90">📄 Seleccionar y generar reporte</button>
-          <button onClick={exportCSV} disabled={exporting} className="win-btn-standard text-xs">{exporting ? "⏳" : "📤"} Exportar CSV</button>
-          <button onClick={() => setShareOpen(true)} className="win-btn-standard text-xs">🔗 Compartir</button>
         </div>
       </div>
 
