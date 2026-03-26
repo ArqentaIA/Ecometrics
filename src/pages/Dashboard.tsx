@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import { supabase } from "@/integrations/supabase/client";
+import ReportModal from "@/components/ReportModal";
 import { useDashboardFilter } from "@/hooks/useDashboardFilter";
 import Navigation from "@/components/Navigation";
 import HeroReincorporacionIndustriaCard from "@/components/HeroReincorporacionIndustriaCard";
