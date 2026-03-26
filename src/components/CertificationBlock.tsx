@@ -53,16 +53,7 @@ const CertificationBlock = ({
             </div>
           </div>
         </div>
-        <div className="flex flex-col items-center gap-1.5 shrink-0">
-          {verifyUrl ? (
-            <>
-              <QRCodeSVG value={verifyUrl} size={80} level="M" />
-              <span className="text-[9px] text-muted-foreground text-center max-w-[100px]">Escanear para verificar en portal oficial ECOMETRICS</span>
-            </>
-          ) : (
-            <span className="text-[9px] text-destructive text-center max-w-[100px]">No hay dominio público configurado para verificación</span>
-          )}
-        </div>
+        {/* QR temporalmente deshabilitado */}
       </div>
       <div className="mt-4 border-t border-border/40 pt-3 space-y-2">
         <p className="text-[11px] leading-relaxed text-[hsl(220,9%,46%)]">
