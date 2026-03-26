@@ -34,12 +34,17 @@ const ReportView = forwardRef<HTMLDivElement, ReportViewProps>(
   ({ clientType, periodLabel, dashYear, totals, confirmedEntries, cert }, ref) => {
     const now = cert ? new Date(cert.fechaEmision) : new Date();
 
+    // Flag: at least one confirmed material has valid agua factor
+    const hasAnyAgua = confirmedEntries.some(e =>
+      e.kpis.uses_agua && e.kpis.factor_agua != null && e.kpis.impacto_valido
+    );
+
     const renderEnv = (e: MaterialEntry, usesFlag: boolean, value: number) => {
       const isBattery = e.material.code === "BATERIAS";
       const impactoValido = e.kpis.impacto_valido;
-      if (isBattery) return "N/A";
+      if (isBattery) return "—";
       if (!impactoValido) return "PENDIENTE";
-      if (!usesFlag) return "N/A";
+      if (!usesFlag) return "—";
       if (value === 0 && e.kg === 0) return "—";
       return value.toLocaleString("es-MX", { maximumFractionDigits: 2 });
     };
