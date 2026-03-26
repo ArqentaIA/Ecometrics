@@ -142,7 +142,7 @@ const ReportView = forwardRef<HTMLDivElement, ReportViewProps>(
                 <td className="px-2 py-1.5 text-right">{totals.kgNetos.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
                 <td className="px-2 py-1.5 text-right">{totals.co2.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
                 <td className="px-2 py-1.5 text-right">{totals.energia.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
-                <td className="px-2 py-1.5 text-right">{totals.agua.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
+                {hasAnyAgua && <td className="px-2 py-1.5 text-right">{totals.agua.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>}
                 <td className="px-2 py-1.5 text-right">{totals.arboles.toLocaleString("es-MX", { maximumFractionDigits: 1 })}</td>
               </tr>
             </tbody>
