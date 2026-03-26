@@ -14,6 +14,8 @@ const CertificationBlock = ({
   folio, firma, hash, datasetId, fechaEmision, totalRegistros,
 }: CertificationBlockProps) => {
   const verifyUrl = getVerificationUrl(folio);
+
+  return (
     <div className="border border-border/60 rounded-lg bg-muted/30 p-5 mt-6">
       <div className="flex items-start justify-between gap-6">
         <div className="flex-1 space-y-2">
@@ -52,8 +54,14 @@ const CertificationBlock = ({
           </div>
         </div>
         <div className="flex flex-col items-center gap-1.5 shrink-0">
-          <QRCodeSVG value={verifyUrl} size={80} level="M" />
-          <span className="text-[9px] text-muted-foreground text-center max-w-[90px]">Escanear para verificar</span>
+          {verifyUrl ? (
+            <>
+              <QRCodeSVG value={verifyUrl} size={80} level="M" />
+              <span className="text-[9px] text-muted-foreground text-center max-w-[100px]">Escanear para verificar en portal oficial ECOMETRICS</span>
+            </>
+          ) : (
+            <span className="text-[9px] text-destructive text-center max-w-[100px]">No hay dominio público configurado para verificación</span>
+          )}
         </div>
       </div>
       <div className="mt-4 border-t border-border/40 pt-3 space-y-2">
