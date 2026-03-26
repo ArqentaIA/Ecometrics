@@ -10,9 +10,12 @@ const Navigation = ({ showBell }: NavigationProps) => {
   const navigate = useNavigate();
   const { logout, user, roleLabel } = useEcoMetrics();
 
+  const isAdmin = user?.email && (roleLabel === "Administrador" || roleLabel === "Admin");
+
   const links = [
     { to: "/dashboard", label: "Dashboard" },
     { to: "/capture", label: "Captura" },
+    ...(isAdmin ? [{ to: "/admin/tokens", label: "🔑 Tokens" }] : []),
   ];
 
   const handleLogout = async () => {
