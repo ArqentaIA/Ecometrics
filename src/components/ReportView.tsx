@@ -79,7 +79,7 @@ const ReportView = forwardRef<HTMLDivElement, ReportViewProps>(
             <KPIBlock label="Material Recuperado" value={formatKPI("kg_netos", totals.kgNetos)} unit="kg netos" color="#4CAF50" />
             <KPIBlock label="CO₂ Evitado" value={formatKPI("co2", totals.co2)} unit="kg CO₂e" color="#EF4444" />
             <KPIBlock label="Energía Ahorrada" value={formatKPI("energia", totals.energia)} unit="kWh" color="#F59E0B" />
-            <KPIBlock label="Agua Conservada" value={formatKPI("agua", totals.agua)} unit="litros" color="#3B82F6" />
+            {hasAnyAgua && <KPIBlock label="Agua Conservada" value={formatKPI("agua", totals.agua)} unit="litros" color="#3B82F6" />}
             <KPIBlock label="Árboles Equivalentes" value={formatKPI("arboles", totals.arboles)} unit="árboles" color="#16A34A" />
             <KPIBlock label="Impacto Económico" value={`$${formatKPI("economic_impact", totals.economicImpact)}`} unit="MXN" color="#9333EA" />
           </div>
