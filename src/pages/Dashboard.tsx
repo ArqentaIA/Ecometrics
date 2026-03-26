@@ -531,6 +531,16 @@ const Dashboard = () => {
         </p>
       </footer>
 
+      {reportOpen && (
+        <ReportModal
+          onClose={() => setReportOpen(false)}
+          periodLabel={periodLabel}
+          dashYear={dashYear}
+          selectedMonths={selectedMonths}
+          totals={totals}
+          confirmedEntries={confirmedEntries}
+        />
+      )}
       {shareOpen && <ShareModal onClose={() => setShareOpen(false)} />}
     </div>
   );
