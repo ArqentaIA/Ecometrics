@@ -331,18 +331,20 @@ const Dashboard = () => {
               .slice(0, 3)
               .map(e => ({ name: e.material.name, energia: e.kpis.energia }))}
           />
-          <WaterLiquidCard
-            value={totals.agua}
-            monthlyData={monthlyAgua}
-            periodLabel={periodLabel}
-            dashYear={dashYear}
-            confirmedEntries={confirmedEntries.map(e => ({
-              materialName: e.material.name,
-              agua: e.kpis.agua,
-              kgBrutos: e.kg,
-            }))}
-            lastUpdated={lastUpdated}
-          />
+          {hasAnyAgua && (
+            <WaterLiquidCard
+              value={totals.agua}
+              monthlyData={monthlyAgua}
+              periodLabel={periodLabel}
+              dashYear={dashYear}
+              confirmedEntries={confirmedEntries.map(e => ({
+                materialName: e.material.name,
+                agua: e.kpis.agua,
+                kgBrutos: e.kg,
+              }))}
+              lastUpdated={lastUpdated}
+            />
+          )}
           <EconomicImpactCard
             total={totals.economicImpact}
             monthlyData={monthlyEconomic}
