@@ -45,7 +45,7 @@ const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto
 export default function ExcelUploadProcessor() {
   const {
     catalog, versionedFactors, currentMonth, currentYear,
-    user, loadCaptures, costPerKgMap,
+    user, loadCaptures, costPerKgMap, userRole,
   } = useEcoMetrics();
 
   const [dragOver, setDragOver] = useState(false);
