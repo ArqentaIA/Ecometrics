@@ -420,7 +420,13 @@ const DataCapture = () => {
               <p className="text-[11px] text-muted-foreground mt-1">o haz clic para seleccionar</p>
             </div>
             <div className="flex gap-3 mt-4">
-              <button className="win-btn-standard text-sm">📥 Descargar Plantilla</button>
+              <a
+                href="/Plantilla_Ecometrics_IRM_Final.xlsx"
+                download="Plantilla_Ecometrics_IRM_Final.xlsx"
+                className="win-btn-standard text-sm inline-flex items-center gap-2 no-underline"
+              >
+                📥 Descargar Plantilla
+              </a>
             </div>
             {uploadedFile && (
               <div className="mt-4 win-card p-4 flex items-center gap-3">
