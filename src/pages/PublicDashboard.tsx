@@ -87,8 +87,9 @@ const PublicDashboard = () => {
       const { data, error } = await supabase.rpc("validate_public_token", { _token: tokenParam });
       if (!error && data === true) {
         // Try auto-login with empty PIN (no-PIN tokens)
-        const { data: pinOk } = await supabase.rpc("validate_public_token_with_pin" as any, { _token: tokenParam, _pin: "" });
-        if (pinOk === true) {
+        const { data: pinOk, error: pinErr } = await supabase.rpc("validate_public_token_with_pin", { _token: tokenParam, _pin: "" });
+        console.log("AUTO_PIN_CHECK", { pinOk, pinErr });
+        if (!pinErr && pinOk === true) {
           setStage("valid");
         } else {
           setStage("pin-required");
