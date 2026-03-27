@@ -83,10 +83,16 @@ const PublicDashboard = () => {
       return;
     }
     const checkToken = async () => {
-      // First check if token exists and is active (without PIN)
+      // First check if token exists and is active
       const { data, error } = await supabase.rpc("validate_public_token", { _token: tokenParam });
       if (!error && data === true) {
-        setStage("pin-required");
+        // Try auto-login with empty PIN (no-PIN tokens)
+        const { data: pinOk } = await supabase.rpc("validate_public_token_with_pin" as any, { _token: tokenParam, _pin: "" });
+        if (pinOk === true) {
+          setStage("valid");
+        } else {
+          setStage("pin-required");
+        }
       } else {
         setStage("invalid");
       }
