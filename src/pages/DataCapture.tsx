@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from "react";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import Navigation from "@/components/Navigation";
 import ImpactCards from "@/components/ImpactCards";
+import ExcelUploadProcessor from "@/components/ExcelUploadProcessor";
 import { formatKPI } from "@/lib/calculationEngine";
 
 const MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
@@ -79,8 +80,6 @@ const DataCapture = () => {
   } = useEcoMetrics();
 
   const [activeTab, setActiveTab] = useState(0);
-  const [dragOver, setDragOver] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState<{ name: string; size: number } | null>(null);
   const [openImpact, setOpenImpact] = useState<Record<string, boolean>>({});
   const [captureStates, setCaptureStates] = useState<Record<string, CaptureState>>({});
 
@@ -401,44 +400,7 @@ const DataCapture = () => {
         </div>
       ) : (
         <div className="max-w-6xl mx-auto px-5 pb-8">
-          <div className="max-w-xl mx-auto">
-            <div
-              className={`border-2 border-dashed rounded-xl h-48 flex flex-col items-center justify-center transition-all duration-150 ${
-                dragOver ? "border-primary bg-primary/5" : "border-border"
-              }`}
-              onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={e => {
-                e.preventDefault();
-                setDragOver(false);
-                const file = e.dataTransfer.files[0];
-                if (file) setUploadedFile({ name: file.name, size: file.size });
-              }}
-            >
-              <span className="text-3xl mb-2">📁</span>
-              <p className="text-sm text-muted-foreground">Arrastra y suelta tu archivo Excel o CSV aquí</p>
-              <p className="text-[11px] text-muted-foreground mt-1">o haz clic para seleccionar</p>
-            </div>
-            <div className="flex gap-3 mt-4">
-              <a
-                href="/Plantilla_Ecometrics_IRM_Final.xlsx"
-                download="Plantilla_Ecometrics_IRM_Final.xlsx"
-                className="win-btn-standard text-sm inline-flex items-center gap-2 no-underline"
-              >
-                📥 Descargar Plantilla
-              </a>
-            </div>
-            {uploadedFile && (
-              <div className="mt-4 win-card p-4 flex items-center gap-3">
-                <span className="text-xl">✅</span>
-                <div className="flex-1">
-                  <div className="text-sm font-medium">{uploadedFile.name}</div>
-                  <div className="text-[11px] text-muted-foreground">{(uploadedFile.size / 1024).toFixed(1)} KB</div>
-                </div>
-                <button className="win-btn-accent text-sm px-4">Procesar Archivo</button>
-              </div>
-            )}
-          </div>
+          <ExcelUploadProcessor />
         </div>
       )}
     </div>
