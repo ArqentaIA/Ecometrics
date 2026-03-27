@@ -198,6 +198,7 @@ export default function ExcelUploadProcessor() {
           ...buildCaptureSnapshot(mat, row.kg, user.id, currentMonth + 1, currentYear, cost, factor),
           proveedor: CLIENT_TO_PROVEEDOR[row.cliente] ?? row.cliente,
           capture_origin: "excel_upload",
+          capture_role: userRole ?? 'user',
         };
       });
 
