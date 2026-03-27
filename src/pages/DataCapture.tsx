@@ -80,8 +80,6 @@ const DataCapture = () => {
   } = useEcoMetrics();
 
   const [activeTab, setActiveTab] = useState(0);
-  const [dragOver, setDragOver] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState<{ name: string; size: number } | null>(null);
   const [openImpact, setOpenImpact] = useState<Record<string, boolean>>({});
   const [captureStates, setCaptureStates] = useState<Record<string, CaptureState>>({});
 
