@@ -114,6 +114,35 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     return () => subscription.unsubscribe();
   }, []);
 
+  // ─── Auto-logout after 5 min of inactivity ───
+  useEffect(() => {
+    if (!user) return;
+
+    const INACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+    let timer: ReturnType<typeof setTimeout>;
+
+    const resetTimer = () => {
+      clearTimeout(timer);
+      timer = setTimeout(async () => {
+        await supabase.auth.signOut();
+        setKgMap({});
+        setCostPerKgMapState({});
+        setConfirmedMap({});
+        setConfirmedSnapshots([]);
+        setProveedorMapState({});
+      }, INACTIVITY_TIMEOUT);
+    };
+
+    const events: Array<keyof WindowEventMap> = ["mousedown", "keydown", "mousemove", "touchstart", "scroll"];
+    events.forEach(e => window.addEventListener(e, resetTimer));
+    resetTimer();
+
+    return () => {
+      clearTimeout(timer);
+      events.forEach(e => window.removeEventListener(e, resetTimer));
+    };
+  }, [user]);
+
   const isLoggedIn = !!user;
   const { role: userRole, roleLabel, permissions, loading: roleLoading } = useUserRole(user);
 
