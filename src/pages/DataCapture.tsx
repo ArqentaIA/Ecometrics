@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from "react";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import Navigation from "@/components/Navigation";
 import ImpactCards from "@/components/ImpactCards";
+import ExcelUploadProcessor from "@/components/ExcelUploadProcessor";
 import { formatKPI } from "@/lib/calculationEngine";
 
 const MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
