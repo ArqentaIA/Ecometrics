@@ -178,6 +178,12 @@ export function buildCaptureSnapshot(
   const appliedCost = costPerKg ?? material.default_cost_per_kg ?? 0;
   const kpis = calculateIndicators(material, kgBrutos, appliedCost, versionedFactor);
 
+  const impactoPendiente = !material.impacto_valido ||
+    (material.uses_co2 && kpis.factor_co2 == null) ||
+    (material.uses_energia && kpis.factor_energia == null) ||
+    (material.uses_agua && kpis.factor_agua == null) ||
+    (material.uses_arboles && kpis.factor_arboles == null);
+
   return {
     user_id: userId,
     material_code: material.code,
@@ -202,6 +208,8 @@ export function buildCaptureSnapshot(
     cost_per_kg_applied: appliedCost,
     result_economic_impact: kpis.economic_impact,
     is_confirmed: true,
+    status: 'validado',
+    impacto_pendiente: impactoPendiente,
     month,
     year,
     updated_at: new Date().toISOString(),
