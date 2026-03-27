@@ -45,7 +45,7 @@ const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto
 export default function ExcelUploadProcessor() {
   const {
     catalog, versionedFactors, currentMonth, currentYear,
-    user, loadCaptures, costPerKgMap,
+    user, loadCaptures, costPerKgMap, userRole,
   } = useEcoMetrics();
 
   const [dragOver, setDragOver] = useState(false);
@@ -198,6 +198,7 @@ export default function ExcelUploadProcessor() {
           ...buildCaptureSnapshot(mat, row.kg, user.id, currentMonth + 1, currentYear, cost, factor),
           proveedor: CLIENT_TO_PROVEEDOR[row.cliente] ?? row.cliente,
           capture_origin: "excel_upload",
+          capture_role: userRole ?? 'user',
         };
       });
 

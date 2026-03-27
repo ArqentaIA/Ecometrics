@@ -343,6 +343,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
       const snapshot = {
         ...buildCaptureSnapshot(material, kg, user.id, currentMonth + 1, currentYear, cost, factor),
         proveedor: prov,
+        capture_role: userRole ?? 'user',
       };
 
       const { error } = await supabase

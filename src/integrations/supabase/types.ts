@@ -116,17 +116,21 @@ export type Database = {
       material_captures: {
         Row: {
           capture_origin: string | null
+          capture_role: string | null
           confirmed_at: string | null
           confirmed_by: string | null
           cost_per_kg_applied: number | null
           created_at: string
+          evidence_url: string | null
           factor_agua_applied: number | null
           factor_arboles_applied: number | null
           factor_co2_applied: number | null
           factor_energia_applied: number | null
           factor_version: number | null
           family: string | null
+          folio: string | null
           id: string
+          impacto_pendiente: boolean
           is_additional_material: boolean | null
           is_confirmed: boolean | null
           kg_brutos: number
@@ -141,6 +145,7 @@ export type Database = {
           result_co2: number | null
           result_economic_impact: number | null
           result_energia: number | null
+          status: string
           temporary_material_id: string | null
           updated_at: string
           user_id: string
@@ -153,17 +158,21 @@ export type Database = {
         }
         Insert: {
           capture_origin?: string | null
+          capture_role?: string | null
           confirmed_at?: string | null
           confirmed_by?: string | null
           cost_per_kg_applied?: number | null
           created_at?: string
+          evidence_url?: string | null
           factor_agua_applied?: number | null
           factor_arboles_applied?: number | null
           factor_co2_applied?: number | null
           factor_energia_applied?: number | null
           factor_version?: number | null
           family?: string | null
+          folio?: string | null
           id?: string
+          impacto_pendiente?: boolean
           is_additional_material?: boolean | null
           is_confirmed?: boolean | null
           kg_brutos?: number
@@ -178,6 +187,7 @@ export type Database = {
           result_co2?: number | null
           result_economic_impact?: number | null
           result_energia?: number | null
+          status?: string
           temporary_material_id?: string | null
           updated_at?: string
           user_id: string
@@ -190,17 +200,21 @@ export type Database = {
         }
         Update: {
           capture_origin?: string | null
+          capture_role?: string | null
           confirmed_at?: string | null
           confirmed_by?: string | null
           cost_per_kg_applied?: number | null
           created_at?: string
+          evidence_url?: string | null
           factor_agua_applied?: number | null
           factor_arboles_applied?: number | null
           factor_co2_applied?: number | null
           factor_energia_applied?: number | null
           factor_version?: number | null
           family?: string | null
+          folio?: string | null
           id?: string
+          impacto_pendiente?: boolean
           is_additional_material?: boolean | null
           is_confirmed?: boolean | null
           kg_brutos?: number
@@ -215,6 +229,7 @@ export type Database = {
           result_co2?: number | null
           result_economic_impact?: number | null
           result_energia?: number | null
+          status?: string
           temporary_material_id?: string | null
           updated_at?: string
           user_id?: string
