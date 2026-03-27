@@ -10,7 +10,7 @@ const Navigation = ({ showBell }: NavigationProps) => {
   const navigate = useNavigate();
   const { logout, user, roleLabel } = useEcoMetrics();
 
-  const isAdmin = user?.email && (roleLabel === "Administrador" || roleLabel === "Admin");
+  const isAdmin = user?.email && (roleLabel === "Administrador" || roleLabel === "Admin" || roleLabel === "Dirección");
 
   const links = [
     { to: "/dashboard", label: "Dashboard" },
