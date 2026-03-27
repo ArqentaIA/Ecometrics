@@ -1,0 +1,2 @@
+INSERT INTO public.public_tokens (token, cliente, pin, activo, notas, fecha_vencimiento)
+VALUES ('7d69f17fa0af85ebc39d84a7c72ca03251f93976fa7e9d85', 'Embed Público (sin PIN)', '', true, 'Token público para embed en página web, sin código PIN requerido', '2027-12-31');
