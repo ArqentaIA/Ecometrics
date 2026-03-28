@@ -1,0 +1,1 @@
+UPDATE public.user_roles SET role = 'direccion' WHERE user_id = (SELECT id FROM auth.users WHERE email = 'admin@irmgroup.com') AND role = 'admin';
