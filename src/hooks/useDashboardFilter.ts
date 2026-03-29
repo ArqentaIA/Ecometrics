@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEcoMetrics, type KPITotals, type MaterialEntry } from "@/context/EcoMetricsContext";
 import { calculateIndicators, type CatalogMaterial, type VersionedFactor } from "@/lib/calculationEngine";
 
+const POLLING_INTERVAL = 10_000; // 10s fallback polling
+
 const EMPTY_TOTALS: KPITotals = { arboles: 0, co2: 0, energia: 0, agua: 0, kgBrutos: 0, kgNetos: 0, economicImpact: 0 };
 
 /** Raw capture row — only transactional facts, no legacy result_* fields */
@@ -81,9 +83,26 @@ export function useDashboardFilter() {
     if (user && catalog.length > 0) loadDashboardCaptures();
   }, [user, catalog, loadDashboardCaptures]);
 
-  // Realtime subscription — auto-refresh on capture changes
+  // Realtime subscription with polling fallback + visibility refresh
   useEffect(() => {
     if (!user) return;
+
+    const pollingRef = { id: null as ReturnType<typeof setInterval> | null };
+    let realtimeActive = false;
+
+    const startPolling = () => {
+      if (!pollingRef.id) {
+        console.log('DASHBOARD_DEBUG: starting polling fallback');
+        pollingRef.id = setInterval(() => loadDashboardCaptures(), POLLING_INTERVAL);
+      }
+    };
+    const stopPolling = () => {
+      if (pollingRef.id) {
+        clearInterval(pollingRef.id);
+        pollingRef.id = null;
+      }
+    };
+
     const channel = supabase
       .channel('dashboard-captures-realtime')
       .on(
@@ -94,9 +113,44 @@ export function useDashboardFilter() {
           loadDashboardCaptures();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('DASHBOARD_DEBUG: realtime status', status);
+        if (status === 'SUBSCRIBED') {
+          realtimeActive = true;
+          stopPolling();
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          realtimeActive = false;
+          startPolling();
+        }
+      });
+
+    // Start polling as immediate fallback until realtime connects
+    startPolling();
+
+    // Visibility change: refresh when tab becomes visible
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('DASHBOARD_DEBUG: tab visible, refreshing...');
+        loadDashboardCaptures();
+        // Re-check realtime status
+        if (!realtimeActive && !pollingRef.id) {
+          startPolling();
+        }
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    // Listen for capture-confirmed events from DataCapture
+    const handleCaptureConfirmed = () => {
+      console.log('DASHBOARD_DEBUG: capture-confirmed event received, refreshing...');
+      loadDashboardCaptures();
+    };
+    window.addEventListener('capture-confirmed', handleCaptureConfirmed);
 
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('capture-confirmed', handleCaptureConfirmed);
+      stopPolling();
       supabase.removeChannel(channel);
     };
   }, [user, loadDashboardCaptures]);
