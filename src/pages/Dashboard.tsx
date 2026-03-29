@@ -316,85 +316,103 @@ const Dashboard = () => {
           Indicadores calculados únicamente sobre capturas confirmadas, usando kg netos estimados y factores versionados por material. ({periodLabel})
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <TreesRingCard
-            value={totals.arboles}
-            target={800}
-            monthlyData={monthlyArboles}
-            allMonthsData={allMonthsArboles}
-            periodLabel={periodLabel}
-            dashYear={dashYear}
-          />
-          <CO2ImpactCard
-            total={totals.co2}
-            monthlyData={monthlyCo2}
-            allMonthsData={allMonthsCo2}
-            periodLabel={periodLabel}
-            dashYear={dashYear}
-            topMaterials={confirmedEntries
-              .filter(e => e.kpis.co2 > 0)
-              .sort((a, b) => b.kpis.co2 - a.kpis.co2)
-              .slice(0, 3)
-              .map(e => ({ name: e.material.name, co2: e.kpis.co2 }))}
-          />
-          <EnergyWaveCard
-            total={totals.energia}
-            monthlyData={monthlyEnergia}
-            allMonthsData={allMonthsEnergia}
-            periodLabel={periodLabel}
-            dashYear={dashYear}
-            topMaterials={confirmedEntries
-              .filter(e => e.kpis.energia > 0)
-              .sort((a, b) => b.kpis.energia - a.kpis.energia)
-              .slice(0, 3)
-              .map(e => ({ name: e.material.name, energia: e.kpis.energia }))}
-          />
-          {hasAnyAgua && (
-            <WaterLiquidCard
-              value={totals.agua}
-              monthlyData={monthlyAgua}
+          <div>
+            <TreesRingCard
+              value={totals.arboles}
+              target={800}
+              monthlyData={monthlyArboles}
+              allMonthsData={allMonthsArboles}
               periodLabel={periodLabel}
               dashYear={dashYear}
-              confirmedEntries={confirmedEntries.map(e => ({
-                materialName: e.material.name,
-                agua: e.kpis.agua,
-                kgBrutos: e.kg,
-              }))}
-              lastUpdated={lastUpdated}
             />
+            <DualPeriodBadge filteredValue={totals.arboles} yearValue={yearTotals.arboles} fmtKey="arboles" unit="árboles" dashYear={dashYear} isAllMonths={isAllMonths} />
+          </div>
+          <div>
+            <CO2ImpactCard
+              total={totals.co2}
+              monthlyData={monthlyCo2}
+              allMonthsData={allMonthsCo2}
+              periodLabel={periodLabel}
+              dashYear={dashYear}
+              topMaterials={confirmedEntries
+                .filter(e => e.kpis.co2 > 0)
+                .sort((a, b) => b.kpis.co2 - a.kpis.co2)
+                .slice(0, 3)
+                .map(e => ({ name: e.material.name, co2: e.kpis.co2 }))}
+            />
+            <DualPeriodBadge filteredValue={totals.co2} yearValue={yearTotals.co2} fmtKey="co2" unit="kg CO₂e" dashYear={dashYear} isAllMonths={isAllMonths} />
+          </div>
+          <div>
+            <EnergyWaveCard
+              total={totals.energia}
+              monthlyData={monthlyEnergia}
+              allMonthsData={allMonthsEnergia}
+              periodLabel={periodLabel}
+              dashYear={dashYear}
+              topMaterials={confirmedEntries
+                .filter(e => e.kpis.energia > 0)
+                .sort((a, b) => b.kpis.energia - a.kpis.energia)
+                .slice(0, 3)
+                .map(e => ({ name: e.material.name, energia: e.kpis.energia }))}
+            />
+            <DualPeriodBadge filteredValue={totals.energia} yearValue={yearTotals.energia} fmtKey="energia" unit="kWh" dashYear={dashYear} isAllMonths={isAllMonths} />
+          </div>
+          {hasAnyAgua && (
+            <div>
+              <WaterLiquidCard
+                value={totals.agua}
+                monthlyData={monthlyAgua}
+                periodLabel={periodLabel}
+                dashYear={dashYear}
+                confirmedEntries={confirmedEntries.map(e => ({
+                  materialName: e.material.name,
+                  agua: e.kpis.agua,
+                  kgBrutos: e.kg,
+                }))}
+                lastUpdated={lastUpdated}
+              />
+              <DualPeriodBadge filteredValue={totals.agua} yearValue={yearTotals.agua} fmtKey="agua" unit="litros" dashYear={dashYear} isAllMonths={isAllMonths} />
+            </div>
           )}
-          <EconomicImpactCard
-            total={totals.economicImpact}
-            monthlyData={monthlyEconomic}
-            allMonthsData={allMonthsEconomic}
-            periodLabel={periodLabel}
-            color="#9333EA"
-            dashYear={dashYear}
-            topMaterials={confirmedEntries
-              .filter(e => e.kpis.economic_impact > 0)
-              .sort((a, b) => b.kpis.economic_impact - a.kpis.economic_impact)
-              .slice(0, 3)
-              .map((e, i) => ({
-                name: e.material.name,
-                value: e.kpis.economic_impact,
-                color: ["#22C55E", "#3B82F6", "#F59E0B"][i % 3],
-              }))}
-          />
-          <HorizontalBar3D
-            emoji="📦" title="Volumen Total de Material Recuperado"
-            segments={confirmedEntries
-              .sort((a, b) => b.kg - a.kg)
-              .slice(0, 8)
-              .map((e, i) => ({
-                label: e.material.code,
-                value: e.kg,
-                color: ["#22C55E", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#F97316", "#EC4899"][i % 8],
-              }))}
-            extraSegments={confirmedEntries
-              .sort((a, b) => b.kg - a.kg)
-              .slice(8)
-              .map(e => ({ label: e.material.code, value: e.kg, color: "#94A3B8" }))}
-            unit="kg totales"
-          />
+          <div>
+            <EconomicImpactCard
+              total={totals.economicImpact}
+              monthlyData={monthlyEconomic}
+              allMonthsData={allMonthsEconomic}
+              periodLabel={periodLabel}
+              color="#9333EA"
+              dashYear={dashYear}
+              topMaterials={confirmedEntries
+                .filter(e => e.kpis.economic_impact > 0)
+                .sort((a, b) => b.kpis.economic_impact - a.kpis.economic_impact)
+                .slice(0, 3)
+                .map((e, i) => ({
+                  name: e.material.name,
+                  value: e.kpis.economic_impact,
+                  color: ["#22C55E", "#3B82F6", "#F59E0B"][i % 3],
+                }))}
+            />
+            <DualPeriodBadge filteredValue={totals.economicImpact} yearValue={yearTotals.economicImpact} fmtKey="economic_impact" unit="MXN" prefix="$" dashYear={dashYear} isAllMonths={isAllMonths} />
+          </div>
+          <div>
+            <HorizontalBar3D
+              emoji="📦" title="Volumen Total de Material Recuperado"
+              segments={confirmedEntries
+                .sort((a, b) => b.kg - a.kg)
+                .slice(0, 8)
+                .map((e, i) => ({
+                  label: e.material.code,
+                  value: e.kg,
+                  color: ["#22C55E", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#F97316", "#EC4899"][i % 8],
+                }))}
+              extraSegments={confirmedEntries
+                .sort((a, b) => b.kg - a.kg)
+                .slice(8)
+                .map(e => ({ label: e.material.code, value: e.kg, color: "#94A3B8" }))}
+              unit="kg totales"
+            />
+            <DualPeriodBadge filteredValue={totals.kgBrutos} yearValue={yearTotals.kgBrutos} fmtKey="kg_brutos" unit="kg" dashYear={dashYear} isAllMonths={isAllMonths} />
+          </div>
           
           <div className="lg:col-span-3">
             <HeroReincorporacionIndustriaCard
@@ -407,6 +425,7 @@ const Dashboard = () => {
               periodLabel={periodLabel}
               dashYear={dashYear}
             />
+            <DualPeriodBadge filteredValue={totals.kgNetos} yearValue={yearTotals.kgNetos} fmtKey="kg_netos" unit="kg netos" dashYear={dashYear} isAllMonths={isAllMonths} />
           </div>
         </div>
         <p className="text-[11px] text-muted-foreground mt-4 px-1 border-l-2 border-primary/40 pl-3">
