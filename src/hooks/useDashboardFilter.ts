@@ -140,8 +140,16 @@ export function useDashboardFilter() {
     };
     document.addEventListener('visibilitychange', handleVisibility);
 
+    // Listen for capture-confirmed events from DataCapture
+    const handleCaptureConfirmed = () => {
+      console.log('DASHBOARD_DEBUG: capture-confirmed event received, refreshing...');
+      loadDashboardCaptures();
+    };
+    window.addEventListener('capture-confirmed', handleCaptureConfirmed);
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('capture-confirmed', handleCaptureConfirmed);
       stopPolling();
       supabase.removeChannel(channel);
     };
