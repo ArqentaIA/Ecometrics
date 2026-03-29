@@ -1,8 +1,13 @@
 import { useState, useCallback, useRef } from "react";
-import * as XLSX from "xlsx";
 import { supabase } from "@/integrations/supabase/client";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import { buildCaptureSnapshot } from "@/lib/calculationEngine";
+import {
+  parseAndValidateTemplate,
+  generateRejectionReport,
+  type ValidatedRow,
+  type RejectedRow,
+} from "@/lib/excelValidator";
 import {
   Dialog,
   DialogContent,
@@ -11,26 +16,18 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
-const VALID_CLIENTS = ["Primario", "Privado", "Comercial", "Industrial", "Otros"];
+const MONTHS = [
+  "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+  "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre",
+];
+
 const CLIENT_TO_PROVEEDOR: Record<string, string> = {
-  "Primario": "Rec. Primario",
-  "Privado": "Rec. Privado",
-  "Comercial": "Rec. Comercial",
-  "Industrial": "Rec. Industrial",
-  "Otros": "Otros",
+  Primario: "Rec. Primario",
+  Privado: "Rec. Privado",
+  Comercial: "Rec. Comercial",
+  Industrial: "Rec. Industrial",
+  Otros: "Otros",
 };
-
-interface ParsedRow {
-  rowNum: number;
-  material: string;
-  kg: number;
-  cliente: string;
-}
-
-interface RejectedRow {
-  rowNum: number;
-  reason: string;
-}
 
 interface ImportResult {
   imported: number;
@@ -38,9 +35,9 @@ interface ImportResult {
   materialsSet: Set<string>;
   clientCounts: Record<string, number>;
   rejected: RejectedRow[];
+  periodMonth: number;
+  periodYear: number;
 }
-
-const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
 export default function ExcelUploadProcessor() {
   const {
@@ -56,14 +53,24 @@ export default function ExcelUploadProcessor() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const downloadRejectionReport = useCallback(() => {
+    if (!result || result.rejected.length === 0) return;
+    const blob = generateRejectionReport(result.rejected, result.periodMonth, result.periodYear);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Rechazados_${MONTHS[result.periodMonth - 1]}_${result.periodYear}.xlsx`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [result]);
+
   const processFile = useCallback(async (file: File) => {
     setErrorMsg(null);
     setResult(null);
 
-    // Validate extension
     const ext = file.name.split(".").pop()?.toLowerCase();
-    if (ext !== "xlsx" && ext !== "csv") {
-      setErrorMsg("Solo se aceptan archivos .xlsx o .csv");
+    if (ext !== "xlsx") {
+      setErrorMsg("Solo se aceptan archivos .xlsx generados desde la plantilla oficial.");
       return;
     }
 
@@ -77,128 +84,137 @@ export default function ExcelUploadProcessor() {
 
     try {
       const data = await file.arrayBuffer();
-      const wb = XLSX.read(data, { type: "array" });
+      setProgress(20);
 
-      // Find CAPTURA sheet
-      const sheetName = wb.SheetNames.find(s => s.toUpperCase() === "CAPTURA");
-      if (!sheetName) {
-        setErrorMsg("No se encontró la hoja 'CAPTURA' en el archivo.");
+      // ── Step 1: Parse & validate template structure ──
+      const parsed = parseAndValidateTemplate(data);
+
+      if (!parsed.valid) {
+        setErrorMsg(parsed.error ?? "Archivo no reconocido como plantilla Ecometrics.");
         setProcessing(false);
         return;
       }
 
-      const ws = wb.Sheets[sheetName];
-      const rows: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+      setProgress(40);
 
-      // Data starts at row 6 (index 5)
-      const dataRows = rows.slice(5);
-      if (dataRows.length === 0) {
-        setErrorMsg("No se encontraron datos a partir de la fila 6.");
-        setProcessing(false);
-        return;
-      }
+      // ── Step 2: Warn if template period differs from selected period ──
+      const templateMonth = parsed.periodMonth!;
+      const templateYear = parsed.periodYear!;
+      const selectedMonth = currentMonth + 1;
 
-      setProgress(25);
-
-      // Parse and validate
-      const validRows: ParsedRow[] = [];
-      const rejected: RejectedRow[] = [];
-
-      for (let i = 0; i < dataRows.length; i++) {
-        const row = dataRows[i];
-        const rowNum = i + 6; // Excel row number
-        const material = String(row[0] ?? "").trim().toUpperCase();
-        const kgRaw = row[1];
-        const cliente = String(row[2] ?? "").trim();
-
-        // Skip TOTAL KG row
-        if (material.includes("TOTAL KG") || material.includes("TOTAL")) continue;
-        // Skip empty rows
-        if (!material && !kgRaw && !cliente) continue;
-
-        const errors: string[] = [];
-        if (!material) errors.push("MATERIAL vacío");
-
-        const kg = typeof kgRaw === "number" ? kgRaw : parseFloat(String(kgRaw));
-        if (isNaN(kg) || kg <= 0) errors.push("KG debe ser un número mayor a 0");
-
-        // Normalize cliente
-        const clienteNorm = VALID_CLIENTS.find(
-          c => c.toLowerCase() === cliente.toLowerCase()
+      if (templateMonth !== selectedMonth || templateYear !== currentYear) {
+        setErrorMsg(
+          `El período de la plantilla (${MONTHS[templateMonth - 1]} ${templateYear}) no coincide con el período seleccionado (${MONTHS[currentMonth]} ${currentYear}). ` +
+          `Ajusta el período en la app o actualiza G2/H2 en la plantilla.`
         );
-        if (!clienteNorm) errors.push(`CLIENTE inválido: "${cliente}". Debe ser: ${VALID_CLIENTS.join(", ")}`);
-
-        if (errors.length > 0) {
-          rejected.push({ rowNum, reason: errors.join("; ") });
-          continue;
-        }
-
-        // Validate material exists in catalog
-        const catalogMat = catalog.find(m => m.code === material || m.name.toUpperCase() === material);
-        if (!catalogMat) {
-          rejected.push({ rowNum, reason: `Material "${material}" no encontrado en el catálogo` });
-          continue;
-        }
-
-        validRows.push({ rowNum, material: catalogMat.code, kg, cliente: clienteNorm! });
+        setProcessing(false);
+        return;
       }
 
-      setProgress(45);
-
-      if (validRows.length === 0) {
-        setResult({ imported: 0, totalKg: 0, materialsSet: new Set(), clientCounts: {}, rejected });
+      if (parsed.accepted.length === 0) {
+        setResult({
+          imported: 0, totalKg: 0, materialsSet: new Set(),
+          clientCounts: {}, rejected: parsed.rejected,
+          periodMonth: templateMonth, periodYear: templateYear,
+        });
         setShowResult(true);
         setProcessing(false);
         return;
       }
 
-      // Check for duplicates in DB
+      // ── Step 3: Match accepted rows to catalog codes ──
+      const toInsert: Array<ValidatedRow & { catalogCode: string }> = [];
+      const extraRejected: RejectedRow[] = [];
+
+      for (const row of parsed.accepted) {
+        const catalogMat = catalog.find(
+          m => m.name.toUpperCase() === row.material.toUpperCase() || m.code.toUpperCase() === row.material.toUpperCase()
+        );
+        if (!catalogMat) {
+          extraRejected.push({
+            rowNum: row.rowNum,
+            material: row.material,
+            kg: String(row.kg),
+            cliente: row.cliente,
+            fecha: row.fecha.toLocaleDateString("es-MX"),
+            notas: row.notas,
+            reason: `Material "${row.material}" no encontrado en el catálogo del sistema`,
+          });
+        } else {
+          toInsert.push({ ...row, catalogCode: catalogMat.code });
+        }
+      }
+
+      const allRejected = [...parsed.rejected, ...extraRejected];
+      setProgress(55);
+
+      if (toInsert.length === 0) {
+        setResult({
+          imported: 0, totalKg: 0, materialsSet: new Set(),
+          clientCounts: {}, rejected: allRejected,
+          periodMonth: templateMonth, periodYear: templateYear,
+        });
+        setShowResult(true);
+        setProcessing(false);
+        return;
+      }
+
+      // ── Step 4: Check for duplicates in DB ──
       const { data: existing } = await supabase
         .from("material_captures")
         .select("material_code, kg_brutos")
         .eq("user_id", user.id)
-        .eq("month", currentMonth + 1)
-        .eq("year", currentYear);
+        .eq("month", templateMonth)
+        .eq("year", templateYear);
 
-      setProgress(60);
+      setProgress(65);
 
       const existingSet = new Set(
         (existing ?? []).map(e => `${e.material_code}_${Number(e.kg_brutos)}`)
       );
 
-      const toInsert: ParsedRow[] = [];
-      for (const row of validRows) {
-        const key = `${row.material}_${row.kg}`;
+      const deduped: typeof toInsert = [];
+      for (const row of toInsert) {
+        const key = `${row.catalogCode}_${row.kg}`;
         if (existingSet.has(key)) {
-          rejected.push({
+          allRejected.push({
             rowNum: row.rowNum,
-            reason: "Registro duplicado: ya existe este material y KG para el período seleccionado.",
+            material: row.material,
+            kg: String(row.kg),
+            cliente: row.cliente,
+            fecha: row.fecha.toLocaleDateString("es-MX"),
+            notas: row.notas,
+            reason: "Registro duplicado: ya existe este material y KG para el período.",
           });
         } else {
-          toInsert.push(row);
-          // Add to set so intra-file duplicates are also caught
+          deduped.push(row);
           existingSet.add(key);
         }
       }
 
-      if (toInsert.length === 0) {
-        setResult({ imported: 0, totalKg: 0, materialsSet: new Set(), clientCounts: {}, rejected });
+      if (deduped.length === 0) {
+        setResult({
+          imported: 0, totalKg: 0, materialsSet: new Set(),
+          clientCounts: {}, rejected: allRejected,
+          periodMonth: templateMonth, periodYear: templateYear,
+        });
         setShowResult(true);
         setProcessing(false);
         return;
       }
 
-      // Build snapshots and insert
-      setProgress(75);
-      const snapshots = toInsert.map(row => {
-        const mat = catalog.find(m => m.code === row.material)!;
+      // ── Step 5: Build snapshots and upsert ──
+      setProgress(80);
+      const snapshots = deduped.map(row => {
+        const mat = catalog.find(m => m.code === row.catalogCode)!;
         const cost = costPerKgMap[mat.code] ?? mat.default_cost_per_kg ?? 0;
         const factor = versionedFactors[mat.code] ?? null;
         return {
-          ...buildCaptureSnapshot(mat, row.kg, user.id, currentMonth + 1, currentYear, cost, factor),
+          ...buildCaptureSnapshot(mat, row.kg, user.id, templateMonth, templateYear, cost, factor),
           proveedor: CLIENT_TO_PROVEEDOR[row.cliente] ?? row.cliente,
           capture_origin: "excel_upload",
-          capture_role: userRole ?? 'user',
+          capture_role: userRole ?? "user",
+          notes: row.notas || null,
         };
       });
 
@@ -213,29 +229,30 @@ export default function ExcelUploadProcessor() {
       }
 
       setProgress(90);
-
-      // Reload captures to refresh KPIs
       await loadCaptures();
-
       setProgress(100);
 
-      // Build result
-      const materialsSet = new Set(toInsert.map(r => r.material));
+      // ── Build result summary ──
+      const materialsSet = new Set(deduped.map(r => r.catalogCode));
       const clientCounts: Record<string, number> = {};
       let totalKg = 0;
-      for (const row of toInsert) {
+      for (const row of deduped) {
         totalKg += row.kg;
         clientCounts[row.cliente] = (clientCounts[row.cliente] ?? 0) + 1;
       }
 
-      setResult({ imported: toInsert.length, totalKg, materialsSet, clientCounts, rejected });
+      setResult({
+        imported: deduped.length, totalKg, materialsSet, clientCounts,
+        rejected: allRejected,
+        periodMonth: templateMonth, periodYear: templateYear,
+      });
       setShowResult(true);
     } catch (err: any) {
       setErrorMsg(`Error al procesar archivo: ${err.message}`);
     } finally {
       setProcessing(false);
     }
-  }, [catalog, versionedFactors, currentMonth, currentYear, user, loadCaptures, costPerKgMap]);
+  }, [catalog, versionedFactors, currentMonth, currentYear, user, loadCaptures, costPerKgMap, userRole]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -255,7 +272,7 @@ export default function ExcelUploadProcessor() {
       <input
         ref={fileInputRef}
         type="file"
-        accept=".xlsx,.csv"
+        accept=".xlsx"
         className="hidden"
         onChange={handleFileSelect}
       />
@@ -282,8 +299,8 @@ export default function ExcelUploadProcessor() {
         ) : (
           <>
             <span className="text-3xl mb-2">📁</span>
-            <p className="text-sm text-muted-foreground">Arrastra y suelta tu archivo Excel o CSV aquí</p>
-            <p className="text-[11px] text-muted-foreground mt-1">o haz clic para seleccionar</p>
+            <p className="text-sm text-muted-foreground">Arrastra y suelta tu archivo Excel aquí</p>
+            <p className="text-[11px] text-muted-foreground mt-1">o haz clic para seleccionar (.xlsx)</p>
           </>
         )}
       </div>
@@ -296,8 +313,8 @@ export default function ExcelUploadProcessor() {
 
       <div className="flex gap-3 mt-4">
         <a
-          href="/Plantilla_Ecometrics_IRM_Final.xlsx"
-          download="Plantilla_Ecometrics_IRM_Final.xlsx"
+          href="/Plantilla_Ecometrics_IRM.xlsx"
+          download="Plantilla_Ecometrics_IRM.xlsx"
           className="win-btn-standard text-sm inline-flex items-center gap-2 no-underline"
         >
           📥 Descargar Plantilla
@@ -316,7 +333,7 @@ export default function ExcelUploadProcessor() {
             </DialogTitle>
             <DialogDescription>
               {result && result.imported > 0
-                ? `Se importaron ${result.imported} registros con un total de ${result.totalKg.toLocaleString("es-MX", { maximumFractionDigits: 2 })} kg para ${MONTHS[currentMonth]} ${currentYear}.`
+                ? `${result.imported} registros aceptados, ${result.rejected.length} rechazados — ${MONTHS[result.periodMonth - 1]} ${result.periodYear}.`
                 : "Todos los registros fueron rechazados por validación o duplicados."
               }
             </DialogDescription>
@@ -352,7 +369,7 @@ export default function ExcelUploadProcessor() {
           {result && result.rejected.length > 0 && (
             <div className="mt-3 win-card p-3 border border-amber-500/30 bg-amber-500/5">
               <div className="text-sm font-semibold text-amber-700 mb-2">
-                ⚠️ {result.rejected.length} registro{result.rejected.length > 1 ? "s" : ""} no se importaron
+                ⚠️ {result.rejected.length} registro{result.rejected.length > 1 ? "s" : ""} rechazados
               </div>
               <div className="space-y-1 max-h-40 overflow-y-auto">
                 {result.rejected.map((r, i) => (
@@ -361,6 +378,12 @@ export default function ExcelUploadProcessor() {
                   </div>
                 ))}
               </div>
+              <button
+                onClick={downloadRejectionReport}
+                className="mt-3 win-btn-standard text-xs inline-flex items-center gap-1.5"
+              >
+                📄 Descargar reporte de rechazos (.xlsx)
+              </button>
             </div>
           )}
 
