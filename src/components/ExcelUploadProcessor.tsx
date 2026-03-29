@@ -229,7 +229,7 @@ export default function ExcelUploadProcessor() {
 
       const { error } = await supabase
         .from("material_captures")
-        .upsert(snapshots as any[], { onConflict: "user_id,material_code,month,year" });
+        .insert(snapshots as any[]);
 
       if (error) {
         setErrorMsg(`Error al guardar en Supabase: ${error.message}`);

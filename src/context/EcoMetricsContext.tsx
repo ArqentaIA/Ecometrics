@@ -348,7 +348,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
 
       const { error } = await supabase
         .from("material_captures")
-        .upsert(snapshot as any, { onConflict: "user_id,material_code,month,year" });
+        .insert(snapshot as any);
 
       if (error) return { error: error.message };
 
