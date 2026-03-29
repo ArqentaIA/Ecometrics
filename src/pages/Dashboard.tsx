@@ -433,7 +433,7 @@ const Dashboard = () => {
                    <th colSpan={hasAnyAgua ? 4 : 3} className="px-3 py-1.5 text-center text-[10px] font-bold uppercase tracking-widest border-r border-nav-foreground/20" style={{ color: "hsl(var(--kpi-trees))" }}>
                      🌿 Bloque Ambiental
                    </th>
-                  <th colSpan={2} className="px-3 py-1.5 text-center text-[10px] font-bold uppercase tracking-widest">Estado</th>
+                  <th colSpan={1} className="px-3 py-1.5 text-center text-[10px] font-bold uppercase tracking-widest">Estado</th>
                 </tr>
                 <tr className="bg-nav text-nav-foreground">
                   {[
