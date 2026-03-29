@@ -31,7 +31,8 @@ const Dashboard = () => {
   const {
     dashYear, setDashYear,
     selectedMonths, toggleMonth, clearSelection, isAllMonths,
-    confirmedTotals: totals,
+    confirmedTotals: totals, yearTotals,
+    distinctMaterialsCount, totalConfirmedRecords,
     materialEntries, confirmedEntries, monthlyEconomic, allMonthsEconomic,
     monthlyCo2, allMonthsCo2,
     monthlyEnergia, allMonthsEnergia,
