@@ -83,74 +83,59 @@ export function useDashboardFilter() {
     if (user && catalog.length > 0) loadDashboardCaptures();
   }, [user, catalog, loadDashboardCaptures]);
 
-  // Realtime subscription with polling fallback + visibility refresh
+  // Hybrid: always-on polling + realtime subscription + focus/visibility refresh
   useEffect(() => {
     if (!user) return;
 
-    const pollingRef = { id: null as ReturnType<typeof setInterval> | null };
-    let realtimeActive = false;
+    // ALWAYS poll every 15s regardless of websocket status
+    const pollId = setInterval(() => {
+      console.log('DASHBOARD_DEBUG: polling tick');
+      loadDashboardCaptures();
+    }, 15_000);
 
-    const startPolling = () => {
-      if (!pollingRef.id) {
-        console.log('DASHBOARD_DEBUG: starting polling fallback');
-        pollingRef.id = setInterval(() => loadDashboardCaptures(), POLLING_INTERVAL);
-      }
-    };
-    const stopPolling = () => {
-      if (pollingRef.id) {
-        clearInterval(pollingRef.id);
-        pollingRef.id = null;
-      }
-    };
-
+    // Realtime subscription (best-effort accelerator)
     const channel = supabase
       .channel('dashboard-captures-realtime')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'material_captures' },
         () => {
-          console.log('DASHBOARD_DEBUG: realtime change detected, refreshing...');
+          console.log('DASHBOARD_DEBUG: realtime change detected');
           loadDashboardCaptures();
         }
       )
       .subscribe((status) => {
         console.log('DASHBOARD_DEBUG: realtime status', status);
-        if (status === 'SUBSCRIBED') {
-          realtimeActive = true;
-          stopPolling();
-        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          realtimeActive = false;
-          startPolling();
-        }
       });
-
-    // Start polling as immediate fallback until realtime connects
-    startPolling();
 
     // Visibility change: refresh when tab becomes visible
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
         console.log('DASHBOARD_DEBUG: tab visible, refreshing...');
         loadDashboardCaptures();
-        // Re-check realtime status
-        if (!realtimeActive && !pollingRef.id) {
-          startPolling();
-        }
       }
     };
     document.addEventListener('visibilitychange', handleVisibility);
 
-    // Listen for capture-confirmed events from DataCapture
+    // Window focus: force refresh on every focus
+    const handleFocus = () => {
+      console.log('DASHBOARD_DEBUG: window focus, refreshing...');
+      loadDashboardCaptures();
+    };
+    window.addEventListener('focus', handleFocus);
+
+    // Cross-route capture-confirmed event
     const handleCaptureConfirmed = () => {
-      console.log('DASHBOARD_DEBUG: capture-confirmed event received, refreshing...');
+      console.log('DASHBOARD_DEBUG: capture-confirmed event received');
       loadDashboardCaptures();
     };
     window.addEventListener('capture-confirmed', handleCaptureConfirmed);
 
     return () => {
+      clearInterval(pollId);
       document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('focus', handleFocus);
       window.removeEventListener('capture-confirmed', handleCaptureConfirmed);
-      stopPolling();
       supabase.removeChannel(channel);
     };
   }, [user, loadDashboardCaptures]);
