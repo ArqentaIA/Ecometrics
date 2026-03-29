@@ -81,6 +81,26 @@ export function useDashboardFilter() {
     if (user && catalog.length > 0) loadDashboardCaptures();
   }, [user, catalog, loadDashboardCaptures]);
 
+  // Realtime subscription — auto-refresh on capture changes
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('dashboard-captures-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'material_captures' },
+        () => {
+          console.log('DASHBOARD_DEBUG: realtime change detected, refreshing...');
+          loadDashboardCaptures();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, loadDashboardCaptures]);
+
   // Build catalog + factors lookup maps
   const catalogMap = useMemo(() => {
     const map: Record<string, CatalogMaterial> = {};
