@@ -452,7 +452,6 @@ const Dashboard = () => {
                     { key: "arboles", label: "🌳 Árboles" },
                     // Estado
                     { key: "", label: "Estado" },
-                    { key: "", label: "Proveedor" },
                   ].map(col => (
                     <th
                       key={col.label}
