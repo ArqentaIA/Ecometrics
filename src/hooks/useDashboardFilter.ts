@@ -214,6 +214,30 @@ export function useDashboardFilter() {
     [filteredCaptures]
   );
 
+  // Full-year totals (unaffected by month filter)
+  const yearTotals: KPITotals = useMemo(() =>
+    enrichedCaptures.reduce(
+      (acc, c) => ({
+        arboles: acc.arboles + c.kpis.arboles,
+        co2: acc.co2 + c.kpis.co2,
+        energia: acc.energia + c.kpis.energia,
+        agua: acc.agua + c.kpis.agua,
+        kgBrutos: acc.kgBrutos + c.kg_brutos,
+        kgNetos: acc.kgNetos + c.kpis.kg_netos,
+        economicImpact: acc.economicImpact + c.kpis.economic_impact,
+      }),
+      { ...EMPTY_TOTALS }
+    ),
+    [enrichedCaptures]
+  );
+
+  // Summary counters
+  const distinctMaterialsCount = useMemo(() =>
+    new Set(enrichedCaptures.map(c => c.material_code)).size,
+    [enrichedCaptures]
+  );
+  const totalConfirmedRecords = rawCaptures.length;
+
   // Aggregate material entries by code
   const materialEntries: (MaterialEntry & { proveedor?: string; confirmed_at?: string })[] = useMemo(() => {
     const byCode: Record<string, {
