@@ -3,6 +3,7 @@ import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import { supabase } from "@/integrations/supabase/client";
 import ReportModal from "@/components/ReportModal";
 import { useDashboardFilter } from "@/hooks/useDashboardFilter";
+import DualPeriodBadge from "@/components/DualPeriodBadge";
 import Navigation from "@/components/Navigation";
 import HeroReincorporacionIndustriaCard from "@/components/HeroReincorporacionIndustriaCard";
 import ShareModal from "@/components/ShareModal";
@@ -30,7 +31,8 @@ const Dashboard = () => {
   const {
     dashYear, setDashYear,
     selectedMonths, toggleMonth, clearSelection, isAllMonths,
-    confirmedTotals: totals,
+    confirmedTotals: totals, yearTotals,
+    distinctMaterialsCount, totalConfirmedRecords,
     materialEntries, confirmedEntries, monthlyEconomic, allMonthsEconomic,
     monthlyCo2, allMonthsCo2,
     monthlyEnergia, allMonthsEnergia,
@@ -292,6 +294,21 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* Summary Counters Bar */}
+      <div className="max-w-7xl mx-auto px-5 mt-2">
+        <div className="flex items-center gap-6 bg-accent/40 border border-border rounded-lg px-5 py-2.5">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">📦</span>
+            <span className="text-sm font-semibold text-foreground">Materiales capturados: <span className="text-primary">{distinctMaterialsCount} de 25</span></span>
+          </div>
+          <div className="w-px h-5 bg-border" />
+          <div className="flex items-center gap-2">
+            <span className="text-sm">📋</span>
+            <span className="text-sm font-semibold text-foreground">Total de registros: <span className="text-primary">{totalConfirmedRecords} confirmados</span></span>
+          </div>
+        </div>
+      </div>
+
       {/* KPI Dashboard */}
       <section className="max-w-7xl mx-auto px-5 mb-7">
         <h2 className="font-heading text-lg font-bold tracking-tight mb-1">📊 Indicadores Clave de Impacto</h2>
@@ -299,85 +316,103 @@ const Dashboard = () => {
           Indicadores calculados únicamente sobre capturas confirmadas, usando kg netos estimados y factores versionados por material. ({periodLabel})
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <TreesRingCard
-            value={totals.arboles}
-            target={800}
-            monthlyData={monthlyArboles}
-            allMonthsData={allMonthsArboles}
-            periodLabel={periodLabel}
-            dashYear={dashYear}
-          />
-          <CO2ImpactCard
-            total={totals.co2}
-            monthlyData={monthlyCo2}
-            allMonthsData={allMonthsCo2}
-            periodLabel={periodLabel}
-            dashYear={dashYear}
-            topMaterials={confirmedEntries
-              .filter(e => e.kpis.co2 > 0)
-              .sort((a, b) => b.kpis.co2 - a.kpis.co2)
-              .slice(0, 3)
-              .map(e => ({ name: e.material.name, co2: e.kpis.co2 }))}
-          />
-          <EnergyWaveCard
-            total={totals.energia}
-            monthlyData={monthlyEnergia}
-            allMonthsData={allMonthsEnergia}
-            periodLabel={periodLabel}
-            dashYear={dashYear}
-            topMaterials={confirmedEntries
-              .filter(e => e.kpis.energia > 0)
-              .sort((a, b) => b.kpis.energia - a.kpis.energia)
-              .slice(0, 3)
-              .map(e => ({ name: e.material.name, energia: e.kpis.energia }))}
-          />
-          {hasAnyAgua && (
-            <WaterLiquidCard
-              value={totals.agua}
-              monthlyData={monthlyAgua}
+          <div>
+            <TreesRingCard
+              value={totals.arboles}
+              target={800}
+              monthlyData={monthlyArboles}
+              allMonthsData={allMonthsArboles}
               periodLabel={periodLabel}
               dashYear={dashYear}
-              confirmedEntries={confirmedEntries.map(e => ({
-                materialName: e.material.name,
-                agua: e.kpis.agua,
-                kgBrutos: e.kg,
-              }))}
-              lastUpdated={lastUpdated}
             />
+            <DualPeriodBadge filteredValue={totals.arboles} yearValue={yearTotals.arboles} fmtKey="arboles" unit="árboles" dashYear={dashYear} isAllMonths={isAllMonths} />
+          </div>
+          <div>
+            <CO2ImpactCard
+              total={totals.co2}
+              monthlyData={monthlyCo2}
+              allMonthsData={allMonthsCo2}
+              periodLabel={periodLabel}
+              dashYear={dashYear}
+              topMaterials={confirmedEntries
+                .filter(e => e.kpis.co2 > 0)
+                .sort((a, b) => b.kpis.co2 - a.kpis.co2)
+                .slice(0, 3)
+                .map(e => ({ name: e.material.name, co2: e.kpis.co2 }))}
+            />
+            <DualPeriodBadge filteredValue={totals.co2} yearValue={yearTotals.co2} fmtKey="co2" unit="kg CO₂e" dashYear={dashYear} isAllMonths={isAllMonths} />
+          </div>
+          <div>
+            <EnergyWaveCard
+              total={totals.energia}
+              monthlyData={monthlyEnergia}
+              allMonthsData={allMonthsEnergia}
+              periodLabel={periodLabel}
+              dashYear={dashYear}
+              topMaterials={confirmedEntries
+                .filter(e => e.kpis.energia > 0)
+                .sort((a, b) => b.kpis.energia - a.kpis.energia)
+                .slice(0, 3)
+                .map(e => ({ name: e.material.name, energia: e.kpis.energia }))}
+            />
+            <DualPeriodBadge filteredValue={totals.energia} yearValue={yearTotals.energia} fmtKey="energia" unit="kWh" dashYear={dashYear} isAllMonths={isAllMonths} />
+          </div>
+          {hasAnyAgua && (
+            <div>
+              <WaterLiquidCard
+                value={totals.agua}
+                monthlyData={monthlyAgua}
+                periodLabel={periodLabel}
+                dashYear={dashYear}
+                confirmedEntries={confirmedEntries.map(e => ({
+                  materialName: e.material.name,
+                  agua: e.kpis.agua,
+                  kgBrutos: e.kg,
+                }))}
+                lastUpdated={lastUpdated}
+              />
+              <DualPeriodBadge filteredValue={totals.agua} yearValue={yearTotals.agua} fmtKey="agua" unit="litros" dashYear={dashYear} isAllMonths={isAllMonths} />
+            </div>
           )}
-          <EconomicImpactCard
-            total={totals.economicImpact}
-            monthlyData={monthlyEconomic}
-            allMonthsData={allMonthsEconomic}
-            periodLabel={periodLabel}
-            color="#9333EA"
-            dashYear={dashYear}
-            topMaterials={confirmedEntries
-              .filter(e => e.kpis.economic_impact > 0)
-              .sort((a, b) => b.kpis.economic_impact - a.kpis.economic_impact)
-              .slice(0, 3)
-              .map((e, i) => ({
-                name: e.material.name,
-                value: e.kpis.economic_impact,
-                color: ["#22C55E", "#3B82F6", "#F59E0B"][i % 3],
-              }))}
-          />
-          <HorizontalBar3D
-            emoji="📦" title="Volumen Total de Material Recuperado"
-            segments={confirmedEntries
-              .sort((a, b) => b.kg - a.kg)
-              .slice(0, 8)
-              .map((e, i) => ({
-                label: e.material.code,
-                value: e.kg,
-                color: ["#22C55E", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#F97316", "#EC4899"][i % 8],
-              }))}
-            extraSegments={confirmedEntries
-              .sort((a, b) => b.kg - a.kg)
-              .slice(8)
-              .map(e => ({ label: e.material.code, value: e.kg, color: "#94A3B8" }))}
-            unit="kg totales"
-          />
+          <div>
+            <EconomicImpactCard
+              total={totals.economicImpact}
+              monthlyData={monthlyEconomic}
+              allMonthsData={allMonthsEconomic}
+              periodLabel={periodLabel}
+              color="#9333EA"
+              dashYear={dashYear}
+              topMaterials={confirmedEntries
+                .filter(e => e.kpis.economic_impact > 0)
+                .sort((a, b) => b.kpis.economic_impact - a.kpis.economic_impact)
+                .slice(0, 3)
+                .map((e, i) => ({
+                  name: e.material.name,
+                  value: e.kpis.economic_impact,
+                  color: ["#22C55E", "#3B82F6", "#F59E0B"][i % 3],
+                }))}
+            />
+            <DualPeriodBadge filteredValue={totals.economicImpact} yearValue={yearTotals.economicImpact} fmtKey="economic_impact" unit="MXN" prefix="$" dashYear={dashYear} isAllMonths={isAllMonths} />
+          </div>
+          <div>
+            <HorizontalBar3D
+              emoji="📦" title="Volumen Total de Material Recuperado"
+              segments={confirmedEntries
+                .sort((a, b) => b.kg - a.kg)
+                .slice(0, 8)
+                .map((e, i) => ({
+                  label: e.material.code,
+                  value: e.kg,
+                  color: ["#22C55E", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#06B6D4", "#F97316", "#EC4899"][i % 8],
+                }))}
+              extraSegments={confirmedEntries
+                .sort((a, b) => b.kg - a.kg)
+                .slice(8)
+                .map(e => ({ label: e.material.code, value: e.kg, color: "#94A3B8" }))}
+              unit="kg totales"
+            />
+            <DualPeriodBadge filteredValue={totals.kgBrutos} yearValue={yearTotals.kgBrutos} fmtKey="kg_brutos" unit="kg" dashYear={dashYear} isAllMonths={isAllMonths} />
+          </div>
           
           <div className="lg:col-span-3">
             <HeroReincorporacionIndustriaCard
@@ -390,6 +425,7 @@ const Dashboard = () => {
               periodLabel={periodLabel}
               dashYear={dashYear}
             />
+            <DualPeriodBadge filteredValue={totals.kgNetos} yearValue={yearTotals.kgNetos} fmtKey="kg_netos" unit="kg netos" dashYear={dashYear} isAllMonths={isAllMonths} />
           </div>
         </div>
         <p className="text-[11px] text-muted-foreground mt-4 px-1 border-l-2 border-primary/40 pl-3">
@@ -416,7 +452,7 @@ const Dashboard = () => {
                    <th colSpan={hasAnyAgua ? 4 : 3} className="px-3 py-1.5 text-center text-[10px] font-bold uppercase tracking-widest border-r border-nav-foreground/20" style={{ color: "hsl(var(--kpi-trees))" }}>
                      🌿 Bloque Ambiental
                    </th>
-                  <th colSpan={2} className="px-3 py-1.5 text-center text-[10px] font-bold uppercase tracking-widest">Estado</th>
+                  <th colSpan={1} className="px-3 py-1.5 text-center text-[10px] font-bold uppercase tracking-widest">Estado</th>
                 </tr>
                 <tr className="bg-nav text-nav-foreground">
                   {[
@@ -435,7 +471,6 @@ const Dashboard = () => {
                     { key: "arboles", label: "🌳 Árboles" },
                     // Estado
                     { key: "", label: "Estado" },
-                    { key: "", label: "Proveedor" },
                   ].map(col => (
                     <th
                       key={col.label}
@@ -495,7 +530,6 @@ const Dashboard = () => {
                             ? <span className="text-xs text-amber-500 font-medium">⏳ Pendiente</span>
                             : <span className="text-xs text-muted-foreground">—</span>}
                       </td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground">{(e as any).proveedor ?? "—"}</td>
                     </tr>
                   );
                 })}
@@ -511,7 +545,6 @@ const Dashboard = () => {
                   <td className="px-3 py-2.5">{formatKPI("energia", totals.energia)}</td>
                   {hasAnyAgua && <td className="px-3 py-2.5">{formatKPI("agua", totals.agua)}</td>}
                   <td className="px-3 py-2.5">{formatKPI("arboles", totals.arboles)}</td>
-                  <td className="px-3 py-2.5">—</td>
                   <td className="px-3 py-2.5">—</td>
                 </tr>
               </tbody>
