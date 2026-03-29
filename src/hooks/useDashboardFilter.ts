@@ -358,7 +358,8 @@ export function useDashboardFilter() {
   return {
     dashYear, setDashYear,
     selectedMonths, toggleMonth, clearSelection, isAllMonths,
-    confirmedTotals,
+    confirmedTotals, yearTotals,
+    distinctMaterialsCount, totalConfirmedRecords,
     materialEntries, confirmedEntries,
     monthlyEconomic, allMonthsEconomic,
     monthlyCo2, allMonthsCo2,
