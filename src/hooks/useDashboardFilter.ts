@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEcoMetrics, type KPITotals, type MaterialEntry } from "@/context/EcoMetricsContext";
 import { calculateIndicators, type CatalogMaterial, type VersionedFactor } from "@/lib/calculationEngine";
@@ -80,6 +80,26 @@ export function useDashboardFilter() {
   useEffect(() => {
     if (user && catalog.length > 0) loadDashboardCaptures();
   }, [user, catalog, loadDashboardCaptures]);
+
+  // Realtime subscription — auto-refresh on capture changes
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('dashboard-captures-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'material_captures' },
+        () => {
+          console.log('DASHBOARD_DEBUG: realtime change detected, refreshing...');
+          loadDashboardCaptures();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, loadDashboardCaptures]);
 
   // Build catalog + factors lookup maps
   const catalogMap = useMemo(() => {
