@@ -219,7 +219,7 @@ const DataCapture = () => {
               <button onClick={clearAll} className="win-btn-standard text-xs px-3">Limpiar todo</button>
             </div>
 
-            <div className="space-y-2 max-h-[72vh] overflow-y-auto pr-1">
+            <div className="space-y-2 overflow-y-auto pr-1 hide-scrollbar">
               {materialEntries.map((entry, idx) => {
                 const state = getState(entry.material.code);
                 const ts = state.timestamp ? formatTimestamp(state.timestamp) : null;
