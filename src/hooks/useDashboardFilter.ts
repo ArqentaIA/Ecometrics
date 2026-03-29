@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEcoMetrics, type KPITotals, type MaterialEntry } from "@/context/EcoMetricsContext";
 import { calculateIndicators, type CatalogMaterial, type VersionedFactor } from "@/lib/calculationEngine";
