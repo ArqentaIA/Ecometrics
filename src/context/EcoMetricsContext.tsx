@@ -355,6 +355,9 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
       setConfirmedMap(prev => ({ ...prev, [code]: true }));
       await loadCaptures();
 
+      // Signal dashboard to refresh (works across routes)
+      window.dispatchEvent(new CustomEvent('capture-confirmed'));
+
       return { error: null };
     } finally {
       setSavingCapture(false);
