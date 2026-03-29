@@ -3,6 +3,7 @@ import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import { supabase } from "@/integrations/supabase/client";
 import ReportModal from "@/components/ReportModal";
 import { useDashboardFilter } from "@/hooks/useDashboardFilter";
+import DualPeriodBadge from "@/components/DualPeriodBadge";
 import Navigation from "@/components/Navigation";
 import HeroReincorporacionIndustriaCard from "@/components/HeroReincorporacionIndustriaCard";
 import ShareModal from "@/components/ShareModal";
