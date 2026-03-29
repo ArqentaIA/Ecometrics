@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEcoMetrics, type KPITotals, type MaterialEntry } from "@/context/EcoMetricsContext";
 import { calculateIndicators, type CatalogMaterial, type VersionedFactor } from "@/lib/calculationEngine";
 
+const POLLING_INTERVAL = 10_000; // 10s fallback polling
+
 const EMPTY_TOTALS: KPITotals = { arboles: 0, co2: 0, energia: 0, agua: 0, kgBrutos: 0, kgNetos: 0, economicImpact: 0 };
 
 /** Raw capture row — only transactional facts, no legacy result_* fields */
