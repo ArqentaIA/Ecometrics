@@ -89,6 +89,15 @@ export default function ExcelUploadProcessor() {
       // ── Step 1: Parse & validate template structure ──
       const parsed = parseAndValidateTemplate(data);
 
+      // ── Remap legacy material names ──
+      const MATERIAL_REMAP: Record<string, string> = {
+        "CARTON DELGADO": "CAPLE",
+      };
+      for (const row of parsed.accepted) {
+        const remapped = MATERIAL_REMAP[row.material.toUpperCase()];
+        if (remapped) row.material = remapped;
+      }
+
       if (!parsed.valid) {
         setErrorMsg(parsed.error ?? "Archivo no reconocido como plantilla Ecometrics.");
         setProcessing(false);
