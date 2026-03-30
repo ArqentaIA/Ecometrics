@@ -112,7 +112,7 @@ const AdminTokens = () => {
   const [editingPin, setEditingPin] = useState<string | null>(null);
   const [editPinValue, setEditPinValue] = useState("");
 
-  const isAdmin = role === "admin" || role === "administrador";
+  const isAdmin = role === "admin" || role === "administrador" || role === "direccion";
 
   const fetchTokens = useCallback(async () => {
     setLoading(true);
