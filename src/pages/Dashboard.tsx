@@ -40,6 +40,7 @@ const Dashboard = () => {
     monthlyAgua, allMonthsAgua,
     monthlyKgNetos, allMonthsKgNetos,
     loading, lastUpdated, refreshData, catalogLoading,
+    rawCaptures, catalogMap,
   } = useDashboardFilter();
 
   const [refreshing, setRefreshing] = useState(false);
