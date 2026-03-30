@@ -349,11 +349,58 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
         capture_role: userRole ?? 'user',
       };
 
-      const { error } = await supabase
-        .from("material_captures")
-        .insert(snapshot as any);
+      // ─── Retry logic: 3 attempts, 2s delay ───
+      const MAX_RETRIES = 3;
+      const RETRY_DELAY = 2000;
+      let lastError: string | null = null;
 
-      if (error) return { error: error.message };
+      for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+          const { error } = await supabase
+            .from("material_captures")
+            .insert(snapshot as any);
+
+          if (error) {
+            lastError = error.message;
+            // Only retry on network-like errors, not validation errors
+            if (error.message.includes("network") || error.message.includes("fetch") || error.message.includes("Failed") || error.code === "PGRST000" || !error.code) {
+              console.warn(`Captura intento ${attempt}/${MAX_RETRIES} falló (red):`, error.message);
+              if (attempt < MAX_RETRIES) {
+                await new Promise(r => setTimeout(r, RETRY_DELAY));
+                continue;
+              }
+            }
+            // Non-retryable error — return immediately
+            return { error: lastError };
+          }
+
+          // Success
+          lastError = null;
+          break;
+        } catch (networkErr: any) {
+          // Catch fetch/network exceptions (e.g. offline)
+          lastError = networkErr?.message ?? "Error de red desconocido";
+          console.warn(`Captura intento ${attempt}/${MAX_RETRIES} excepción:`, lastError);
+          if (attempt < MAX_RETRIES) {
+            await new Promise(r => setTimeout(r, RETRY_DELAY));
+          }
+        }
+      }
+
+      // All retries exhausted — save to localStorage as fallback
+      if (lastError) {
+        const PENDING_KEY = "ecometrics_pending_captures";
+        const pending = JSON.parse(localStorage.getItem(PENDING_KEY) ?? "[]");
+        pending.push({ ...snapshot, _failedAt: new Date().toISOString(), _error: lastError });
+        localStorage.setItem(PENDING_KEY, JSON.stringify(pending));
+
+        toast({
+          title: "Error al guardar captura",
+          description: `No se pudo conectar después de ${MAX_RETRIES} intentos. El dato se guardó localmente y se reenviará cuando haya conexión.`,
+          variant: "destructive",
+        });
+        return { error: lastError };
+      }
 
       setConfirmedMap(prev => ({ ...prev, [code]: true }));
       await loadCaptures();
