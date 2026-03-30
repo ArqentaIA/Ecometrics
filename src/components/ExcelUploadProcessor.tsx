@@ -224,6 +224,11 @@ export default function ExcelUploadProcessor() {
           capture_origin: "excel_upload",
           capture_role: userRole ?? "user",
           notes: row.notas || null,
+          // Excel uploads enter as pending for review, not auto-confirmed
+          status: "pendiente",
+          is_confirmed: false,
+          confirmed_at: null,
+          confirmed_by: null,
         };
       });
 
