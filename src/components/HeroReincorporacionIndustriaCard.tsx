@@ -39,7 +39,18 @@ const HeroReincorporacionIndustriaCard = ({
 
   const totalReincorporado = totalKgNetos;
   const kgPerdida = totalKgBrutos - totalReincorporado;
-  const eficiencia = totalKgBrutos > 0 ? (totalReincorporado / totalKgBrutos) * 100 : 0;
+
+  // Efficiency excludes BATERIAS (managed by pieces, no yield concept)
+  const { efBrutos, efNetos } = useMemo(() => {
+    let b = 0, n = 0;
+    confirmedEntries.forEach(e => {
+      if (e.material.code === 'BATERIAS') return;
+      b += e.kg;
+      n += e.kpis.kg_netos;
+    });
+    return { efBrutos: b, efNetos: n };
+  }, [confirmedEntries]);
+  const eficiencia = efBrutos > 0 ? (efNetos / efBrutos) * 100 : 0;
 
   // Monthly breakdown for chart (brutos by month needed for per-month efficiency)
   const monthlyBrutosByMonth = useMemo(() => {
