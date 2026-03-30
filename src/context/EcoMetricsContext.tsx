@@ -57,6 +57,7 @@ interface EcoMetricsState {
   totalKg: number;
   refreshData: () => void;
   lastUpdated: Date;
+  captureVersion: number;
   savingCapture: boolean;
   saveCapture: (code: string) => Promise<{ error: string | null }>;
   loadCaptures: () => Promise<void>;
@@ -80,6 +81,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
   const [savingCapture, setSavingCapture] = useState(false);
   const [loadingCaptures, setLoadingCaptures] = useState(false);
   const [proveedorMap, setProveedorMapState] = useState<Record<string, string>>({});
+  const [captureVersion, setCaptureVersion] = useState(0);
 
   // Catalog state
   const [catalog, setCatalog] = useState<CatalogMaterial[]>([]);
@@ -355,7 +357,10 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
       setConfirmedMap(prev => ({ ...prev, [code]: true }));
       await loadCaptures();
 
-      // Signal dashboard to refresh (works across routes)
+      // Increment version so dashboard hook reacts even if not yet mounted
+      setCaptureVersion(v => v + 1);
+
+      // Signal dashboard to refresh (works if already mounted)
       window.dispatchEvent(new CustomEvent('capture-confirmed'));
 
       return { error: null };
@@ -430,7 +435,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
       materialEntries, setMaterialKg, setCostPerKg, costPerKgMap,
       proveedorMap, setProveedor, clearAll,
       kpiTotals, totalKg,
-      refreshData, lastUpdated,
+      refreshData, lastUpdated, captureVersion,
       savingCapture, saveCapture, loadCaptures, loadingCaptures,
       confirmedTotals,
     }}>

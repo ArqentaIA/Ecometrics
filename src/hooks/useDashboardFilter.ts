@@ -23,7 +23,7 @@ interface EnrichedCapture extends RawCapture {
 }
 
 export function useDashboardFilter() {
-  const { user, catalog, catalogLoading, versionedFactors, userRole } = useEcoMetrics();
+  const { user, catalog, catalogLoading, versionedFactors, userRole, captureVersion } = useEcoMetrics();
 
   const [dashYear, setDashYear] = useState(new Date().getFullYear());
   const [selectedMonths, setSelectedMonths] = useState<number[] | null>(null);
@@ -81,7 +81,7 @@ export function useDashboardFilter() {
 
   useEffect(() => {
     if (user && catalog.length > 0) loadDashboardCaptures();
-  }, [user, catalog, loadDashboardCaptures]);
+  }, [user, catalog, loadDashboardCaptures, captureVersion]);
 
   // Hybrid: always-on polling + realtime subscription + focus/visibility refresh
   useEffect(() => {
