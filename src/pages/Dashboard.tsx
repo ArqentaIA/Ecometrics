@@ -27,7 +27,7 @@ import VerificationTable from "@/components/VerificationTable";
 const MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
 const Dashboard = () => {
-  const { currentMonth, currentYear } = useEcoMetrics();
+  const { currentMonth, currentYear, versionedFactors } = useEcoMetrics();
 
   const {
     dashYear, setDashYear,
