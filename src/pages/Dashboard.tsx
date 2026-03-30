@@ -562,6 +562,15 @@ const Dashboard = () => {
         </section>
       )}
 
+      {/* Verification Table */}
+      <VerificationTable
+        rawCaptures={rawCaptures}
+        catalogMap={catalogMap}
+        versionedFactors={versionedFactors}
+        dashboardTotals={totals}
+        dashYear={dashYear}
+      />
+
       {/* Methodology disclaimer */}
       <footer className="max-w-7xl mx-auto px-5 pb-10 pt-4">
         <p className="text-[10px] leading-relaxed text-muted-foreground/60 text-center max-w-4xl mx-auto">
