@@ -22,11 +22,12 @@ import {
   deriveSignature, buildCanonicalDataset,
 } from "@/lib/reportCertification";
 import CertificationBlock from "@/components/CertificationBlock";
+import VerificationTable from "@/components/VerificationTable";
 
 const MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
 const Dashboard = () => {
-  const { currentMonth, currentYear } = useEcoMetrics();
+  const { currentMonth, currentYear, versionedFactors } = useEcoMetrics();
 
   const {
     dashYear, setDashYear,
@@ -40,6 +41,7 @@ const Dashboard = () => {
     monthlyAgua, allMonthsAgua,
     monthlyKgNetos, allMonthsKgNetos,
     loading, lastUpdated, refreshData, catalogLoading,
+    rawCaptures, catalogMap,
   } = useDashboardFilter();
 
   const [refreshing, setRefreshing] = useState(false);
@@ -559,6 +561,15 @@ const Dashboard = () => {
           <CertificationBlock {...lastCert} />
         </section>
       )}
+
+      {/* Verification Table */}
+      <VerificationTable
+        rawCaptures={rawCaptures}
+        catalogMap={catalogMap}
+        versionedFactors={versionedFactors}
+        dashboardTotals={totals}
+        dashYear={dashYear}
+      />
 
       {/* Methodology disclaimer */}
       <footer className="max-w-7xl mx-auto px-5 pb-10 pt-4">
