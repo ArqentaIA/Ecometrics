@@ -87,11 +87,10 @@ export function useDashboardFilter() {
   useEffect(() => {
     if (!user) return;
 
-    // ALWAYS poll every 15s regardless of websocket status
+    // Silent poll every 5 minutes for accumulated KPI refresh
     const pollId = setInterval(() => {
-      console.log('DASHBOARD_DEBUG: polling tick');
       loadDashboardCaptures();
-    }, 15_000);
+    }, 5 * 60 * 1000);
 
     // Realtime subscription (best-effort accelerator)
     const channel = supabase
