@@ -149,6 +149,36 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
   const isLoggedIn = !!user;
   const { role: userRole, roleLabel, permissions, loading: roleLoading } = useUserRole(user);
 
+  // ─── Auto-sync pending captures from localStorage ───
+  useEffect(() => {
+    if (!user) return;
+    const PENDING_KEY = "ecometrics_pending_captures";
+    const pending = JSON.parse(localStorage.getItem(PENDING_KEY) ?? "[]");
+    if (pending.length === 0) return;
+
+    (async () => {
+      const stillPending: any[] = [];
+      for (const item of pending) {
+        const { _failedAt, _error, ...snapshot } = item;
+        const { error } = await supabase.from("material_captures").insert(snapshot as any);
+        if (error) {
+          stillPending.push(item);
+        }
+      }
+      if (stillPending.length === 0) {
+        localStorage.removeItem(PENDING_KEY);
+        toast({ title: "Capturas pendientes sincronizadas", description: `${pending.length} captura(s) guardada(s) exitosamente.` });
+        setCaptureVersion(v => v + 1);
+      } else {
+        localStorage.setItem(PENDING_KEY, JSON.stringify(stillPending));
+        if (stillPending.length < pending.length) {
+          toast({ title: "Sincronización parcial", description: `${pending.length - stillPending.length} captura(s) sincronizada(s). ${stillPending.length} aún pendiente(s).` });
+          setCaptureVersion(v => v + 1);
+        }
+      }
+    })();
+  }, [user]);
+
   const login = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error: error ? error.message : null };
