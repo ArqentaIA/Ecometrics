@@ -57,6 +57,7 @@ interface EcoMetricsState {
   totalKg: number;
   refreshData: () => void;
   lastUpdated: Date;
+  captureVersion: number;
   savingCapture: boolean;
   saveCapture: (code: string) => Promise<{ error: string | null }>;
   loadCaptures: () => Promise<void>;
