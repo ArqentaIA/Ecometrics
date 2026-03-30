@@ -435,7 +435,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
       materialEntries, setMaterialKg, setCostPerKg, costPerKgMap,
       proveedorMap, setProveedor, clearAll,
       kpiTotals, totalKg,
-      refreshData, lastUpdated,
+      refreshData, lastUpdated, captureVersion,
       savingCapture, saveCapture, loadCaptures, loadingCaptures,
       confirmedTotals,
     }}>
