@@ -22,6 +22,7 @@ import {
   deriveSignature, buildCanonicalDataset,
 } from "@/lib/reportCertification";
 import CertificationBlock from "@/components/CertificationBlock";
+import VerificationTable from "@/components/VerificationTable";
 
 const MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
