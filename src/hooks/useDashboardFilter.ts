@@ -354,5 +354,6 @@ export function useDashboardFilter() {
     loading, lastUpdated,
     refreshData: loadDashboardCaptures,
     catalogLoading,
+    rawCaptures, catalogMap,
   };
 }
