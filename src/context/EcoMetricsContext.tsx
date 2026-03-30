@@ -81,6 +81,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
   const [savingCapture, setSavingCapture] = useState(false);
   const [loadingCaptures, setLoadingCaptures] = useState(false);
   const [proveedorMap, setProveedorMapState] = useState<Record<string, string>>({});
+  const [captureVersion, setCaptureVersion] = useState(0);
 
   // Catalog state
   const [catalog, setCatalog] = useState<CatalogMaterial[]>([]);
