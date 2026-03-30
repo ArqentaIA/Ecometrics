@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useMemo, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
+import { toast } from "@/hooks/use-toast";
 import {
   CatalogMaterial,
   CalculatedKPIs,
@@ -147,6 +148,36 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
 
   const isLoggedIn = !!user;
   const { role: userRole, roleLabel, permissions, loading: roleLoading } = useUserRole(user);
+
+  // ─── Auto-sync pending captures from localStorage ───
+  useEffect(() => {
+    if (!user) return;
+    const PENDING_KEY = "ecometrics_pending_captures";
+    const pending = JSON.parse(localStorage.getItem(PENDING_KEY) ?? "[]");
+    if (pending.length === 0) return;
+
+    (async () => {
+      const stillPending: any[] = [];
+      for (const item of pending) {
+        const { _failedAt, _error, ...snapshot } = item;
+        const { error } = await supabase.from("material_captures").insert(snapshot as any);
+        if (error) {
+          stillPending.push(item);
+        }
+      }
+      if (stillPending.length === 0) {
+        localStorage.removeItem(PENDING_KEY);
+        toast({ title: "Capturas pendientes sincronizadas", description: `${pending.length} captura(s) guardada(s) exitosamente.` });
+        setCaptureVersion(v => v + 1);
+      } else {
+        localStorage.setItem(PENDING_KEY, JSON.stringify(stillPending));
+        if (stillPending.length < pending.length) {
+          toast({ title: "Sincronización parcial", description: `${pending.length - stillPending.length} captura(s) sincronizada(s). ${stillPending.length} aún pendiente(s).` });
+          setCaptureVersion(v => v + 1);
+        }
+      }
+    })();
+  }, [user]);
 
   const login = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -348,11 +379,58 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
         capture_role: userRole ?? 'user',
       };
 
-      const { error } = await supabase
-        .from("material_captures")
-        .insert(snapshot as any);
+      // ─── Retry logic: 3 attempts, 2s delay ───
+      const MAX_RETRIES = 3;
+      const RETRY_DELAY = 2000;
+      let lastError: string | null = null;
 
-      if (error) return { error: error.message };
+      for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+          const { error } = await supabase
+            .from("material_captures")
+            .insert(snapshot as any);
+
+          if (error) {
+            lastError = error.message;
+            // Only retry on network-like errors, not validation errors
+            if (error.message.includes("network") || error.message.includes("fetch") || error.message.includes("Failed") || error.code === "PGRST000" || !error.code) {
+              console.warn(`Captura intento ${attempt}/${MAX_RETRIES} falló (red):`, error.message);
+              if (attempt < MAX_RETRIES) {
+                await new Promise(r => setTimeout(r, RETRY_DELAY));
+                continue;
+              }
+            }
+            // Non-retryable error — return immediately
+            return { error: lastError };
+          }
+
+          // Success
+          lastError = null;
+          break;
+        } catch (networkErr: any) {
+          // Catch fetch/network exceptions (e.g. offline)
+          lastError = networkErr?.message ?? "Error de red desconocido";
+          console.warn(`Captura intento ${attempt}/${MAX_RETRIES} excepción:`, lastError);
+          if (attempt < MAX_RETRIES) {
+            await new Promise(r => setTimeout(r, RETRY_DELAY));
+          }
+        }
+      }
+
+      // All retries exhausted — save to localStorage as fallback
+      if (lastError) {
+        const PENDING_KEY = "ecometrics_pending_captures";
+        const pending = JSON.parse(localStorage.getItem(PENDING_KEY) ?? "[]");
+        pending.push({ ...snapshot, _failedAt: new Date().toISOString(), _error: lastError });
+        localStorage.setItem(PENDING_KEY, JSON.stringify(pending));
+
+        toast({
+          title: "Error al guardar captura",
+          description: `No se pudo conectar después de ${MAX_RETRIES} intentos. El dato se guardó localmente y se reenviará cuando haya conexión.`,
+          variant: "destructive",
+        });
+        return { error: lastError };
+      }
 
       setConfirmedMap(prev => ({ ...prev, [code]: true }));
       await loadCaptures();
