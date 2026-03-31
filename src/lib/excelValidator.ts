@@ -89,34 +89,29 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
   if (!capturaSheet) {
     return { valid: false, error: "No se encontró la hoja 'CAPTURA' en el archivo. Verifica que estás usando la plantilla oficial.", accepted: [], rejected: [], catalogMaterials: [], catalogClients: [] };
   }
-  if (!catalogoSheet) {
-    return { valid: false, error: "No se encontró la hoja 'Catalogo' en el archivo. Verifica que no fue eliminada de la plantilla.", accepted: [], rejected: [], catalogMaterials: [], catalogClients: [] };
-  }
-
-  // 2. Read catalog lists
-  const catWs = wb.Sheets[catalogoSheet];
-  const catRows: any[][] = XLSX.utils.sheet_to_json(catWs, { header: 1, defval: "" });
-
+  // 2. Read catalog lists (optional — if no Catalogo sheet, skip template-level validation)
   const catalogMaterials: string[] = [];
   const catalogClients: string[] = [];
-  const clientSet = new Set<string>();
 
-  // Skip header row (row 1)
-  for (let i = 1; i < catRows.length; i++) {
-    const mat = String(catRows[i][0] ?? "").trim();
-    const cli = String(catRows[i][1] ?? "").trim();
-    if (mat) catalogMaterials.push(mat);
-    if (cli && !clientSet.has(cli.toUpperCase())) {
-      catalogClients.push(cli);
-      clientSet.add(cli.toUpperCase());
+  if (catalogoSheet) {
+    const catWs = wb.Sheets[catalogoSheet];
+    const catRows: any[][] = XLSX.utils.sheet_to_json(catWs, { header: 1, defval: "" });
+    const clientSet = new Set<string>();
+
+    for (let i = 1; i < catRows.length; i++) {
+      const mat = String(catRows[i][0] ?? "").trim();
+      const cli = String(catRows[i][1] ?? "").trim();
+      if (mat) catalogMaterials.push(mat);
+      if (cli && !clientSet.has(cli.toUpperCase())) {
+        catalogClients.push(cli);
+        clientSet.add(cli.toUpperCase());
+      }
     }
   }
 
-  if (catalogMaterials.length === 0) {
-    return { valid: false, error: "La hoja 'Catalogo' no contiene materiales válidos.", accepted: [], rejected: [], catalogMaterials, catalogClients };
-  }
+  const hasCatalogSheet = catalogMaterials.length > 0;
 
-  // Material lookup map (normalized)
+  // Material lookup map (normalized) — only used if Catalogo sheet exists
   const matLookup = new Map<string, string>();
   catalogMaterials.forEach(m => matLookup.set(normalizeName(m), m));
 
