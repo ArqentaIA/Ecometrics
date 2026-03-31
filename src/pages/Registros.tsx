@@ -160,6 +160,9 @@ const Registros = () => {
                         <TableCell className="py-2 text-xs text-muted-foreground">
                           {new Date(r.created_at).toLocaleDateString("es-MX")}
                         </TableCell>
+                        <TableCell className="py-2 text-xs text-muted-foreground">
+                          {new Date(r.created_at).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}
+                        </TableCell>
                         <TableCell className="py-2 text-center">
                           <Button
                             variant="ghost"
