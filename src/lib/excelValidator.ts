@@ -15,6 +15,7 @@ export interface ValidatedRow {
   rowNum: number;
   material: string;
   kg: number;
+  precio: number | null;  // Column F — optional per-row price
   cliente: string;
   fecha: Date;
   notas: string;
@@ -148,6 +149,7 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
     const rawCli = String(row[2] ?? "").trim();
     const rawFecha = row[3];
     const rawNotas = String(row[4] ?? "").trim();
+    const rawPrecio = row[5]; // Column F — optional price
 
     // Skip TOTAL row
     if (rawMat.toUpperCase().includes("TOTAL")) continue;
@@ -199,10 +201,15 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
         reason: errors.join("; "),
       });
     } else {
+      // Parse optional price from column F
+      const precioNum = typeof rawPrecio === "number" ? rawPrecio : parseFloat(String(rawPrecio ?? ""));
+      const precioValid = !isNaN(precioNum) && precioNum > 0 ? precioNum : null;
+
       accepted.push({
         rowNum,
-        material: matchedMat || rawMat,  // Use catalog name if matched, otherwise raw value for code matching
+        material: matchedMat || rawMat,
         kg: kgNum,
+        precio: precioValid,
         cliente: matchedCli!,
         fecha: parsedDate!,
         notas: rawNotas,
