@@ -157,14 +157,16 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
 
     const errors: string[] = [];
 
-    // Validate MATERIAL
+    // Validate MATERIAL — match against template catalog by name;
+    // if not found, pass through raw value for system catalog matching by code
     const matchedMat = matLookup.get(normalizeName(rawMat));
-    if (!matchedMat) {
-      errors.push(`Material no reconocido: ${rawMat || "(vacío)"}`);
+    if (!rawMat) {
+      errors.push(`Material vacío`);
     }
 
     // Validate KG
-    const isBattery = matchedMat?.toUpperCase() === "BATERIAS";
+    const materialForCheck = (matchedMat || rawMat).toUpperCase();
+    const isBattery = materialForCheck === "BATERIAS";
     const kgNum = typeof rawKg === "number" ? rawKg : parseFloat(String(rawKg));
     if (isNaN(kgNum) || kgNum <= 0) {
       errors.push(`KG inválido: debe ser número positivo`);
@@ -199,7 +201,7 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
     } else {
       accepted.push({
         rowNum,
-        material: matchedMat!,
+        material: matchedMat || rawMat,  // Use catalog name if matched, otherwise raw value for code matching
         kg: kgNum,
         cliente: matchedCli!,
         fecha: parsedDate!,
