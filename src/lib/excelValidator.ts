@@ -89,34 +89,29 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
   if (!capturaSheet) {
     return { valid: false, error: "No se encontró la hoja 'CAPTURA' en el archivo. Verifica que estás usando la plantilla oficial.", accepted: [], rejected: [], catalogMaterials: [], catalogClients: [] };
   }
-  if (!catalogoSheet) {
-    return { valid: false, error: "No se encontró la hoja 'Catalogo' en el archivo. Verifica que no fue eliminada de la plantilla.", accepted: [], rejected: [], catalogMaterials: [], catalogClients: [] };
-  }
-
-  // 2. Read catalog lists
-  const catWs = wb.Sheets[catalogoSheet];
-  const catRows: any[][] = XLSX.utils.sheet_to_json(catWs, { header: 1, defval: "" });
-
+  // 2. Read catalog lists (optional — if no Catalogo sheet, skip template-level validation)
   const catalogMaterials: string[] = [];
   const catalogClients: string[] = [];
-  const clientSet = new Set<string>();
 
-  // Skip header row (row 1)
-  for (let i = 1; i < catRows.length; i++) {
-    const mat = String(catRows[i][0] ?? "").trim();
-    const cli = String(catRows[i][1] ?? "").trim();
-    if (mat) catalogMaterials.push(mat);
-    if (cli && !clientSet.has(cli.toUpperCase())) {
-      catalogClients.push(cli);
-      clientSet.add(cli.toUpperCase());
+  if (catalogoSheet) {
+    const catWs = wb.Sheets[catalogoSheet];
+    const catRows: any[][] = XLSX.utils.sheet_to_json(catWs, { header: 1, defval: "" });
+    const clientSet = new Set<string>();
+
+    for (let i = 1; i < catRows.length; i++) {
+      const mat = String(catRows[i][0] ?? "").trim();
+      const cli = String(catRows[i][1] ?? "").trim();
+      if (mat) catalogMaterials.push(mat);
+      if (cli && !clientSet.has(cli.toUpperCase())) {
+        catalogClients.push(cli);
+        clientSet.add(cli.toUpperCase());
+      }
     }
   }
 
-  if (catalogMaterials.length === 0) {
-    return { valid: false, error: "La hoja 'Catalogo' no contiene materiales válidos.", accepted: [], rejected: [], catalogMaterials, catalogClients };
-  }
+  const hasCatalogSheet = catalogMaterials.length > 0;
 
-  // Material lookup map (normalized)
+  // Material lookup map (normalized) — only used if Catalogo sheet exists
   const matLookup = new Map<string, string>();
   catalogMaterials.forEach(m => matLookup.set(normalizeName(m), m));
 
@@ -128,27 +123,50 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
   const capWs = wb.Sheets[capturaSheet];
   const capRows: any[][] = XLSX.utils.sheet_to_json(capWs, { header: 1, defval: "" });
 
-  const periodMonth = Number(capRows[1]?.[6]); // G2 (0-indexed col 6)
-  const periodYear = Number(capRows[1]?.[7]);   // H2 (0-indexed col 7)
+  // Try to read period from G2/H2; if missing, infer from first valid date in data
+  let periodMonth = Number(capRows[1]?.[6]) || 0; // G2 (0-indexed col 6)
+  let periodYear = Number(capRows[1]?.[7]) || 0;   // H2 (0-indexed col 7)
 
+  // Find header row dynamically (look for "MATERIAL" in column A)
+  let headerRowIdx = -1;
+  for (let i = 0; i < Math.min(capRows.length, 15); i++) {
+    const cell = normalizeName(String(capRows[i]?.[0] ?? ""));
+    if (cell === "MATERIAL") { headerRowIdx = i; break; }
+  }
+  const dataStartIdx = headerRowIdx >= 0 ? headerRowIdx + 1 : 5;
+
+  // If period not set, infer from first valid date in data
   if (!periodMonth || periodMonth < 1 || periodMonth > 12 || !periodYear || periodYear < 2000) {
-    return { valid: false, error: `Período inválido en la plantilla: MES=${capRows[1]?.[6]}, AÑO=${capRows[1]?.[7]}. Actualiza G2 y H2 en la hoja CAPTURA.`, accepted: [], rejected: [], catalogMaterials, catalogClients };
+    for (let i = dataStartIdx; i < capRows.length; i++) {
+      // Try date columns: index 3 (D) first, then index 6 (G)
+      for (const colIdx of [3, 6]) {
+        const d = excelDateToJS(capRows[i]?.[colIdx]);
+        if (d) { periodMonth = d.getMonth() + 1; periodYear = d.getFullYear(); break; }
+      }
+      if (periodMonth > 0 && periodYear >= 2000) break;
+    }
   }
 
-  // 4. Parse data rows (row 6+ = index 5+)
-  const dataRows = capRows.slice(5);
+  if (!periodMonth || periodMonth < 1 || periodMonth > 12 || !periodYear || periodYear < 2000) {
+    return { valid: false, error: `No se pudo determinar el período. Incluye fechas válidas o configura G2 (mes) y H2 (año) en la hoja CAPTURA.`, accepted: [], rejected: [], catalogMaterials, catalogClients };
+  }
+
+  // 4. Parse data rows dynamically
+  const dataRows = capRows.slice(dataStartIdx);
   const accepted: ValidatedRow[] = [];
   const rejected: RejectedRow[] = [];
 
   for (let i = 0; i < dataRows.length; i++) {
     const row = dataRows[i];
-    const rowNum = i + 6;
+    const rowNum = dataStartIdx + i + 1; // 1-indexed Excel row
 
     const rawMat = String(row[0] ?? "").trim();
     const rawKg = row[1];
     const rawCli = String(row[2] ?? "").trim();
-    const rawFecha = row[3];
-    const rawNotas = String(row[4] ?? "").trim();
+    // Date may be in column D (index 3) or column G (index 6)
+    let rawFecha = row[3];
+    if (!excelDateToJS(rawFecha) && row[6]) rawFecha = row[6];
+    const rawNotas = String(row[4] ?? row[7] ?? "").trim();
     const rawPrecio = row[5]; // Column F — optional price
 
     // Skip TOTAL row
@@ -161,7 +179,7 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
 
     // Validate MATERIAL — match against template catalog by name;
     // if not found, pass through raw value for system catalog matching by code
-    const matchedMat = matLookup.get(normalizeName(rawMat));
+    const matchedMat = hasCatalogSheet ? matLookup.get(normalizeName(rawMat)) : undefined;
     if (!rawMat) {
       errors.push(`Material vacío`);
     }
@@ -176,9 +194,9 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
       errors.push(`BATERIAS debe capturarse en piezas enteras (Pzs), no decimales`);
     }
 
-    // Validate CLIENTE
-    const matchedCli = cliLookup.get(normalizeName(rawCli));
-    if (!matchedCli) {
+    // Validate CLIENTE — only enforce if Catalogo sheet had clients
+    const matchedCli = hasCatalogSheet ? cliLookup.get(normalizeName(rawCli)) : (rawCli || null);
+    if (hasCatalogSheet && !matchedCli) {
       errors.push(`Cliente no válido: ${rawCli || "(vacío)"}. Debe ser: ${catalogClients.join(", ")}`);
     }
 
@@ -210,7 +228,7 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
         material: matchedMat || rawMat,
         kg: kgNum,
         precio: precioValid,
-        cliente: matchedCli!,
+        cliente: matchedCli || rawCli,
         fecha: parsedDate!,
         notas: rawNotas,
       });
