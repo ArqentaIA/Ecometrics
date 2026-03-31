@@ -134,6 +134,7 @@ const Registros = () => {
                       <TableHead className="text-xs font-semibold">Proveedor</TableHead>
                       <TableHead className="text-xs font-semibold">Mes</TableHead>
                       <TableHead className="text-xs font-semibold">Fecha</TableHead>
+                      <TableHead className="text-xs font-semibold">Hora</TableHead>
                       <TableHead className="text-xs font-semibold text-center">Acción</TableHead>
                     </TableRow>
                   </TableHeader>
