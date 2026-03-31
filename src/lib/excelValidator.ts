@@ -157,10 +157,11 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
 
     const errors: string[] = [];
 
-    // Validate MATERIAL
+    // Validate MATERIAL — match against template catalog by name;
+    // if not found, pass through raw value for system catalog matching by code
     const matchedMat = matLookup.get(normalizeName(rawMat));
-    if (!matchedMat) {
-      errors.push(`Material no reconocido: ${rawMat || "(vacío)"}`);
+    if (!rawMat) {
+      errors.push(`Material vacío`);
     }
 
     // Validate KG
