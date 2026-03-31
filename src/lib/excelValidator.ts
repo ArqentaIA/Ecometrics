@@ -149,6 +149,7 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
     const rawCli = String(row[2] ?? "").trim();
     const rawFecha = row[3];
     const rawNotas = String(row[4] ?? "").trim();
+    const rawPrecio = row[5]; // Column F — optional price
 
     // Skip TOTAL row
     if (rawMat.toUpperCase().includes("TOTAL")) continue;
