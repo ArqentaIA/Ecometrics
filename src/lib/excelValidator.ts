@@ -41,6 +41,11 @@ export interface TemplateParseResult {
   catalogClients: string[];
 }
 
+/** Normalize a material/client name: trim, collapse whitespace, strip non-breaking spaces */
+function normalizeName(s: string): string {
+  return s.replace(/[\u00A0\u2007\u202F]/g, " ").replace(/\s+/g, " ").trim().toUpperCase();
+}
+
 /** Parse an Excel serial date number to JS Date */
 function excelDateToJS(val: any): Date | null {
   if (val instanceof Date) return val;
