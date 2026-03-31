@@ -171,15 +171,29 @@ export default function ExcelUploadProcessor() {
         return;
       }
 
-      // ── Step 4: All rows pass — multiple captures per material/month allowed ──
+      // ── Step 4: Dedup guard — remove previous unconfirmed Excel imports for this period ──
       setProgress(65);
+      const { error: deleteErr } = await supabase
+        .from("material_captures")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("month", templateMonth)
+        .eq("year", templateYear)
+        .eq("capture_origin", "excel_upload")
+        .eq("is_confirmed", false);
+
+      if (deleteErr) {
+        console.warn("EXCEL_IMPORT: could not clean previous unconfirmed imports:", deleteErr.message);
+      }
+
       const deduped = toInsert;
 
-      // ── Step 5: Build snapshots and upsert ──
+      // ── Step 5: Build snapshots and insert ──
       setProgress(80);
       const snapshots = deduped.map(row => {
         const mat = catalog.find(m => m.code === row.catalogCode)!;
-        const cost = costPerKgMap[mat.code] ?? mat.default_cost_per_kg ?? 0;
+        // Priority: Excel price > DataCapture price > catalog default
+        const cost = row.precio ?? costPerKgMap[mat.code] ?? mat.default_cost_per_kg ?? 0;
         const factor = versionedFactors[mat.code] ?? null;
         return {
           ...buildCaptureSnapshot(mat, row.kg, user.id, templateMonth, templateYear, cost, factor),
