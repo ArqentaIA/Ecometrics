@@ -123,11 +123,32 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
   const capWs = wb.Sheets[capturaSheet];
   const capRows: any[][] = XLSX.utils.sheet_to_json(capWs, { header: 1, defval: "" });
 
-  const periodMonth = Number(capRows[1]?.[6]); // G2 (0-indexed col 6)
-  const periodYear = Number(capRows[1]?.[7]);   // H2 (0-indexed col 7)
+  // Try to read period from G2/H2; if missing, infer from first valid date in data
+  let periodMonth = Number(capRows[1]?.[6]) || 0; // G2 (0-indexed col 6)
+  let periodYear = Number(capRows[1]?.[7]) || 0;   // H2 (0-indexed col 7)
+
+  // Find header row dynamically (look for "MATERIAL" in column A)
+  let headerRowIdx = -1;
+  for (let i = 0; i < Math.min(capRows.length, 15); i++) {
+    const cell = normalizeName(String(capRows[i]?.[0] ?? ""));
+    if (cell === "MATERIAL") { headerRowIdx = i; break; }
+  }
+  const dataStartIdx = headerRowIdx >= 0 ? headerRowIdx + 1 : 5;
+
+  // If period not set, infer from first valid date in data
+  if (!periodMonth || periodMonth < 1 || periodMonth > 12 || !periodYear || periodYear < 2000) {
+    for (let i = dataStartIdx; i < capRows.length; i++) {
+      // Try date columns: index 3 (D) first, then index 6 (G)
+      for (const colIdx of [3, 6]) {
+        const d = excelDateToJS(capRows[i]?.[colIdx]);
+        if (d) { periodMonth = d.getMonth() + 1; periodYear = d.getFullYear(); break; }
+      }
+      if (periodMonth > 0 && periodYear >= 2000) break;
+    }
+  }
 
   if (!periodMonth || periodMonth < 1 || periodMonth > 12 || !periodYear || periodYear < 2000) {
-    return { valid: false, error: `Período inválido en la plantilla: MES=${capRows[1]?.[6]}, AÑO=${capRows[1]?.[7]}. Actualiza G2 y H2 en la hoja CAPTURA.`, accepted: [], rejected: [], catalogMaterials, catalogClients };
+    return { valid: false, error: `No se pudo determinar el período. Incluye fechas válidas o configura G2 (mes) y H2 (año) en la hoja CAPTURA.`, accepted: [], rejected: [], catalogMaterials, catalogClients };
   }
 
   // 4. Parse data rows (row 6+ = index 5+)
