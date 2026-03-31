@@ -11,11 +11,22 @@ const MONTHS_ES = [
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
 ];
 
+const HEADER_ALIASES = {
+  material: ["MATERIAL"],
+  kg: ["KG", "KGS", "TOTAL KG / UNID.", "TOTAL KG/UNID.", "TOTAL KG", "TOTAL KG / UNIDAD"],
+  cliente: ["CLIENTE"],
+  fecha: ["FECHA"],
+  notas: ["NOTAS", "OBSERVACIONES"],
+  precio: ["PRECIO", "PRECIO PROM.", "PRECIO PROM", "PRECIO PROMEDIO"],
+  importePagado: ["IMPORTE PAGADO", "IMPORTE", "TOTAL PAGADO", "IMPORTE TOTAL"],
+} as const;
+
 export interface ValidatedRow {
   rowNum: number;
   material: string;
   kg: number;
-  precio: number | null;  // Column F — optional per-row price
+  precio: number | null;
+  importePagado: number | null;
   cliente: string;
   fecha: Date;
   notas: string;
@@ -34,7 +45,7 @@ export interface RejectedRow {
 export interface TemplateParseResult {
   valid: boolean;
   error?: string;
-  periodMonth?: number;   // 1-12
+  periodMonth?: number;
   periodYear?: number;
   accepted: ValidatedRow[];
   rejected: RejectedRow[];
@@ -42,30 +53,37 @@ export interface TemplateParseResult {
   catalogClients: string[];
 }
 
-/** Normalize a material/client name: trim, collapse whitespace, strip non-breaking spaces */
 function normalizeName(s: string): string {
   return s.replace(/[\u00A0\u2007\u202F]/g, " ").replace(/\s+/g, " ").trim().toUpperCase();
 }
 
-/** Parse an Excel serial date number to JS Date */
-function excelDateToJS(val: any): Date | null {
+function parseNumericCell(val: unknown): number | null {
+  if (typeof val === "number" && Number.isFinite(val)) return val;
+  if (val == null || val === "") return null;
+
+  const cleaned = String(val)
+    .replace(/[$\s]/g, "")
+    .replace(/,/g, "")
+    .trim();
+
+  const parsed = Number(cleaned);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function excelDateToJS(val: unknown): Date | null {
   if (val instanceof Date) return val;
   if (typeof val === "number") {
-    // Excel serial date
     const d = new Date((val - 25569) * 86400 * 1000);
     if (!isNaN(d.getTime())) return d;
   }
   if (typeof val === "string") {
-    // Try DD/MM/YYYY or YYYY-MM-DD
     const parts = val.split(/[\/\-\.]/);
     if (parts.length === 3) {
       const [a, b, c] = parts.map(Number);
-      // DD/MM/YYYY
       if (a <= 31 && b <= 12 && c >= 2000) {
         const d = new Date(c, b - 1, a);
         if (!isNaN(d.getTime())) return d;
       }
-      // YYYY-MM-DD
       if (a >= 2000 && b <= 12 && c <= 31) {
         const d = new Date(a, b - 1, c);
         if (!isNaN(d.getTime())) return d;
@@ -75,27 +93,47 @@ function excelDateToJS(val: any): Date | null {
   return null;
 }
 
-/**
- * Validate an uploaded xlsx file against the IRM template structure.
- * Reads valid MATERIAL and CLIENTE lists from the hidden "Catalogo" sheet.
- */
+function findHeaderRow(rows: unknown[][]): number {
+  for (let i = 0; i < Math.min(rows.length, 20); i++) {
+    const found = rows[i]?.some(cell => normalizeName(String(cell ?? "")) === "MATERIAL");
+    if (found) return i;
+  }
+  return -1;
+}
+
+function findColumnIndex(headerRow: unknown[], aliases: readonly string[], fallback: number): number {
+  const normalizedAliases = aliases.map(normalizeName);
+  const idx = headerRow.findIndex(cell => normalizedAliases.includes(normalizeName(String(cell ?? ""))));
+  return idx >= 0 ? idx : fallback;
+}
+
+function uniqueIndices(indices: Array<number | undefined>): number[] {
+  return Array.from(new Set(indices.filter((value): value is number => typeof value === "number" && value >= 0)));
+}
+
 export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult {
   const wb = XLSX.read(data, { type: "array", cellDates: true });
 
-  // 1. Verify required sheets exist
   const capturaSheet = wb.SheetNames.find(s => s.toUpperCase() === "CAPTURA");
   const catalogoSheet = wb.SheetNames.find(s => s.toUpperCase() === "CATALOGO");
 
   if (!capturaSheet) {
-    return { valid: false, error: "No se encontró la hoja 'CAPTURA' en el archivo. Verifica que estás usando la plantilla oficial.", accepted: [], rejected: [], catalogMaterials: [], catalogClients: [] };
+    return {
+      valid: false,
+      error: "No se encontró la hoja 'CAPTURA' en el archivo. Verifica que estás usando la plantilla oficial.",
+      accepted: [],
+      rejected: [],
+      catalogMaterials: [],
+      catalogClients: [],
+    };
   }
-  // 2. Read catalog lists (optional — if no Catalogo sheet, skip template-level validation)
+
   const catalogMaterials: string[] = [];
   const catalogClients: string[] = [];
 
   if (catalogoSheet) {
     const catWs = wb.Sheets[catalogoSheet];
-    const catRows: any[][] = XLSX.utils.sheet_to_json(catWs, { header: 1, defval: "" });
+    const catRows: unknown[][] = XLSX.utils.sheet_to_json(catWs, { header: 1, defval: "" });
     const clientSet = new Set<string>();
 
     for (let i = 1; i < catRows.length; i++) {
@@ -110,97 +148,108 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
   }
 
   const hasCatalogSheet = catalogMaterials.length > 0;
-
-  // Material lookup map (normalized) — only used if Catalogo sheet exists
   const matLookup = new Map<string, string>();
   catalogMaterials.forEach(m => matLookup.set(normalizeName(m), m));
 
-  // Client lookup map (normalized)
   const cliLookup = new Map<string, string>();
   catalogClients.forEach(c => cliLookup.set(normalizeName(c), c));
 
-  // 3. Read period from CAPTURA G2 and H2
   const capWs = wb.Sheets[capturaSheet];
-  const capRows: any[][] = XLSX.utils.sheet_to_json(capWs, { header: 1, defval: "" });
+  const capRows: unknown[][] = XLSX.utils.sheet_to_json(capWs, { header: 1, defval: "" });
 
-  // Try to read period from G2/H2; if missing, infer from first valid date in data
-  let periodMonth = Number(capRows[1]?.[6]) || 0; // G2 (0-indexed col 6)
-  let periodYear = Number(capRows[1]?.[7]) || 0;   // H2 (0-indexed col 7)
+  let periodMonth = Number(capRows[1]?.[6]) || 0;
+  let periodYear = Number(capRows[1]?.[7]) || 0;
 
-  // Find header row dynamically (look for "MATERIAL" in column A)
-  let headerRowIdx = -1;
-  for (let i = 0; i < Math.min(capRows.length, 15); i++) {
-    const cell = normalizeName(String(capRows[i]?.[0] ?? ""));
-    if (cell === "MATERIAL") { headerRowIdx = i; break; }
-  }
+  const headerRowIdx = findHeaderRow(capRows);
   const dataStartIdx = headerRowIdx >= 0 ? headerRowIdx + 1 : 5;
+  const headerRow = headerRowIdx >= 0 ? capRows[headerRowIdx] : [];
 
-  // If period not set, infer from first valid date in data
+  const colIndexes = {
+    material: findColumnIndex(headerRow, HEADER_ALIASES.material, 0),
+    kg: findColumnIndex(headerRow, HEADER_ALIASES.kg, 1),
+    cliente: findColumnIndex(headerRow, HEADER_ALIASES.cliente, 2),
+    fecha: findColumnIndex(headerRow, HEADER_ALIASES.fecha, 3),
+    notas: findColumnIndex(headerRow, HEADER_ALIASES.notas, 4),
+    precio: findColumnIndex(headerRow, HEADER_ALIASES.precio, 5),
+    importePagado: findColumnIndex(headerRow, HEADER_ALIASES.importePagado, 6),
+  };
+
+  const dateCandidates = uniqueIndices([colIndexes.fecha, 3, 6, 7]);
+
   if (!periodMonth || periodMonth < 1 || periodMonth > 12 || !periodYear || periodYear < 2000) {
     for (let i = dataStartIdx; i < capRows.length; i++) {
-      // Try date columns: index 3 (D) first, then index 6 (G)
-      for (const colIdx of [3, 6]) {
+      for (const colIdx of dateCandidates) {
         const d = excelDateToJS(capRows[i]?.[colIdx]);
-        if (d) { periodMonth = d.getMonth() + 1; periodYear = d.getFullYear(); break; }
+        if (d) {
+          periodMonth = d.getMonth() + 1;
+          periodYear = d.getFullYear();
+          break;
+        }
       }
       if (periodMonth > 0 && periodYear >= 2000) break;
     }
   }
 
   if (!periodMonth || periodMonth < 1 || periodMonth > 12 || !periodYear || periodYear < 2000) {
-    return { valid: false, error: `No se pudo determinar el período. Incluye fechas válidas o configura G2 (mes) y H2 (año) en la hoja CAPTURA.`, accepted: [], rejected: [], catalogMaterials, catalogClients };
+    return {
+      valid: false,
+      error: "No se pudo determinar el período. Incluye fechas válidas o configura G2 (mes) y H2 (año) en la hoja CAPTURA.",
+      accepted: [],
+      rejected: [],
+      catalogMaterials,
+      catalogClients,
+    };
   }
 
-  // 4. Parse data rows dynamically
   const dataRows = capRows.slice(dataStartIdx);
   const accepted: ValidatedRow[] = [];
   const rejected: RejectedRow[] = [];
 
   for (let i = 0; i < dataRows.length; i++) {
     const row = dataRows[i];
-    const rowNum = dataStartIdx + i + 1; // 1-indexed Excel row
+    const rowNum = dataStartIdx + i + 1;
 
-    const rawMat = String(row[0] ?? "").trim();
-    const rawKg = row[1];
-    const rawCli = String(row[2] ?? "").trim();
-    // Date may be in column D (index 3) or column G (index 6)
-    let rawFecha = row[3];
-    if (!excelDateToJS(rawFecha) && row[6]) rawFecha = row[6];
-    const rawNotas = String(row[4] ?? row[7] ?? "").trim();
-    const rawPrecio = row[5]; // Column F — optional price
+    const rawMat = String(row[colIndexes.material] ?? "").trim();
+    const rawCli = String(row[colIndexes.cliente] ?? "").trim();
+    const rawNotas = String(row[colIndexes.notas] ?? row[4] ?? row[7] ?? "").trim();
+    const rawKg = row[colIndexes.kg];
+    const rawPrecio = row[colIndexes.precio];
+    const rawImportePagado = row[colIndexes.importePagado];
 
-    // Skip TOTAL row
+    let rawFecha: unknown = undefined;
+    for (const colIdx of dateCandidates) {
+      const candidate = row[colIdx];
+      if (excelDateToJS(candidate)) {
+        rawFecha = candidate;
+        break;
+      }
+      if (rawFecha === undefined && candidate) rawFecha = candidate;
+    }
+
     if (rawMat.toUpperCase().includes("TOTAL")) continue;
-
-    // Skip empty rows silently
-    if (!rawMat && !rawKg && !rawCli && !rawFecha) continue;
+    if (!rawMat && !rawKg && !rawCli && !rawFecha && !rawPrecio && !rawImportePagado) continue;
 
     const errors: string[] = [];
 
-    // Validate MATERIAL — match against template catalog by name;
-    // if not found, pass through raw value for system catalog matching by code
     const matchedMat = hasCatalogSheet ? matLookup.get(normalizeName(rawMat)) : undefined;
-    if (!rawMat) {
-      errors.push(`Material vacío`);
-    }
+    if (!rawMat) errors.push("Material vacío");
+    if (!rawCli) errors.push("Cliente vacío");
 
-    // Validate KG
     const materialForCheck = (matchedMat || rawMat).toUpperCase();
     const isBattery = materialForCheck === "BATERIAS";
-    const kgNum = typeof rawKg === "number" ? rawKg : parseFloat(String(rawKg));
-    if (isNaN(kgNum) || kgNum <= 0) {
-      errors.push(`KG inválido: debe ser número positivo`);
+    const kgNum = parseNumericCell(rawKg);
+
+    if (kgNum == null || kgNum <= 0) {
+      errors.push("KG inválido: debe ser número positivo");
     } else if (isBattery && !Number.isInteger(kgNum)) {
-      errors.push(`BATERIAS debe capturarse en piezas enteras (Pzs), no decimales`);
+      errors.push("BATERIAS debe capturarse en piezas enteras (Pzs), no decimales");
     }
 
-    // Validate CLIENTE — only enforce if Catalogo sheet had clients
     const matchedCli = hasCatalogSheet ? cliLookup.get(normalizeName(rawCli)) : (rawCli || null);
     if (hasCatalogSheet && !matchedCli) {
       errors.push(`Cliente no válido: ${rawCli || "(vacío)"}. Debe ser: ${catalogClients.join(", ")}`);
     }
 
-    // Validate FECHA
     const parsedDate = excelDateToJS(rawFecha);
     if (!parsedDate) {
       errors.push(`Fecha inválida: ${rawFecha || "(vacío)"}`);
@@ -218,21 +267,22 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
         notas: rawNotas,
         reason: errors.join("; "),
       });
-    } else {
-      // Parse optional price from column F
-      const precioNum = typeof rawPrecio === "number" ? rawPrecio : parseFloat(String(rawPrecio ?? ""));
-      const precioValid = !isNaN(precioNum) && precioNum > 0 ? precioNum : null;
-
-      accepted.push({
-        rowNum,
-        material: matchedMat || rawMat,
-        kg: kgNum,
-        precio: precioValid,
-        cliente: matchedCli || rawCli,
-        fecha: parsedDate!,
-        notas: rawNotas,
-      });
+      continue;
     }
+
+    const precioNum = parseNumericCell(rawPrecio);
+    const importePagadoNum = parseNumericCell(rawImportePagado);
+
+    accepted.push({
+      rowNum,
+      material: matchedMat || rawMat,
+      kg: kgNum!,
+      precio: precioNum != null && precioNum > 0 ? precioNum : null,
+      importePagado: importePagadoNum != null && importePagadoNum > 0 ? importePagadoNum : null,
+      cliente: matchedCli || rawCli,
+      fecha: parsedDate!,
+      notas: rawNotas,
+    });
   }
 
   return {
@@ -246,9 +296,6 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
   };
 }
 
-/**
- * Generate a rejection report as an xlsx Blob.
- */
 export function generateRejectionReport(
   rejected: RejectedRow[],
   periodMonth: number,
@@ -263,7 +310,6 @@ export function generateRejectionReport(
 
   const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
 
-  // Set column widths
   ws["!cols"] = [
     { wch: 6 }, { wch: 30 }, { wch: 12 }, { wch: 15 }, { wch: 14 }, { wch: 30 }, { wch: 60 },
   ];
