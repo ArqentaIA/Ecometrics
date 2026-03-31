@@ -41,6 +41,11 @@ export interface TemplateParseResult {
   catalogClients: string[];
 }
 
+/** Normalize a material/client name: trim, collapse whitespace, strip non-breaking spaces */
+function normalizeName(s: string): string {
+  return s.replace(/[\u00A0\u2007\u202F]/g, " ").replace(/\s+/g, " ").trim().toUpperCase();
+}
+
 /** Parse an Excel serial date number to JS Date */
 function excelDateToJS(val: any): Date | null {
   if (val instanceof Date) return val;
@@ -110,13 +115,13 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
     return { valid: false, error: "La hoja 'Catalogo' no contiene materiales válidos.", accepted: [], rejected: [], catalogMaterials, catalogClients };
   }
 
-  // Material lookup map (uppercase)
+  // Material lookup map (normalized)
   const matLookup = new Map<string, string>();
-  catalogMaterials.forEach(m => matLookup.set(m.toUpperCase(), m));
+  catalogMaterials.forEach(m => matLookup.set(normalizeName(m), m));
 
-  // Client lookup map (uppercase)
+  // Client lookup map (normalized)
   const cliLookup = new Map<string, string>();
-  catalogClients.forEach(c => cliLookup.set(c.toUpperCase(), c));
+  catalogClients.forEach(c => cliLookup.set(normalizeName(c), c));
 
   // 3. Read period from CAPTURA G2 and H2
   const capWs = wb.Sheets[capturaSheet];
@@ -153,7 +158,7 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
     const errors: string[] = [];
 
     // Validate MATERIAL
-    const matchedMat = matLookup.get(rawMat.toUpperCase());
+    const matchedMat = matLookup.get(normalizeName(rawMat));
     if (!matchedMat) {
       errors.push(`Material no reconocido: ${rawMat || "(vacío)"}`);
     }
@@ -168,7 +173,7 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
     }
 
     // Validate CLIENTE
-    const matchedCli = cliLookup.get(rawCli.toUpperCase());
+    const matchedCli = cliLookup.get(normalizeName(rawCli));
     if (!matchedCli) {
       errors.push(`Cliente no válido: ${rawCli || "(vacío)"}. Debe ser: ${catalogClients.join(", ")}`);
     }
