@@ -151,20 +151,22 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
     return { valid: false, error: `No se pudo determinar el período. Incluye fechas válidas o configura G2 (mes) y H2 (año) en la hoja CAPTURA.`, accepted: [], rejected: [], catalogMaterials, catalogClients };
   }
 
-  // 4. Parse data rows (row 6+ = index 5+)
-  const dataRows = capRows.slice(5);
+  // 4. Parse data rows dynamically
+  const dataRows = capRows.slice(dataStartIdx);
   const accepted: ValidatedRow[] = [];
   const rejected: RejectedRow[] = [];
 
   for (let i = 0; i < dataRows.length; i++) {
     const row = dataRows[i];
-    const rowNum = i + 6;
+    const rowNum = dataStartIdx + i + 1; // 1-indexed Excel row
 
     const rawMat = String(row[0] ?? "").trim();
     const rawKg = row[1];
     const rawCli = String(row[2] ?? "").trim();
-    const rawFecha = row[3];
-    const rawNotas = String(row[4] ?? "").trim();
+    // Date may be in column D (index 3) or column G (index 6)
+    let rawFecha = row[3];
+    if (!excelDateToJS(rawFecha) && row[6]) rawFecha = row[6];
+    const rawNotas = String(row[4] ?? row[7] ?? "").trim();
     const rawPrecio = row[5]; // Column F — optional price
 
     // Skip TOTAL row
@@ -177,7 +179,7 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
 
     // Validate MATERIAL — match against template catalog by name;
     // if not found, pass through raw value for system catalog matching by code
-    const matchedMat = matLookup.get(normalizeName(rawMat));
+    const matchedMat = hasCatalogSheet ? matLookup.get(normalizeName(rawMat)) : undefined;
     if (!rawMat) {
       errors.push(`Material vacío`);
     }
@@ -192,9 +194,9 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
       errors.push(`BATERIAS debe capturarse en piezas enteras (Pzs), no decimales`);
     }
 
-    // Validate CLIENTE
-    const matchedCli = cliLookup.get(normalizeName(rawCli));
-    if (!matchedCli) {
+    // Validate CLIENTE — only enforce if Catalogo sheet had clients
+    const matchedCli = hasCatalogSheet ? cliLookup.get(normalizeName(rawCli)) : (rawCli || null);
+    if (hasCatalogSheet && !matchedCli) {
       errors.push(`Cliente no válido: ${rawCli || "(vacío)"}. Debe ser: ${catalogClients.join(", ")}`);
     }
 
@@ -226,7 +228,7 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
         material: matchedMat || rawMat,
         kg: kgNum,
         precio: precioValid,
-        cliente: matchedCli!,
+        cliente: matchedCli || rawCli,
         fecha: parsedDate!,
         notas: rawNotas,
       });
