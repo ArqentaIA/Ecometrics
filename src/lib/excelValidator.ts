@@ -158,7 +158,7 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
     const errors: string[] = [];
 
     // Validate MATERIAL
-    const matchedMat = matLookup.get(rawMat.toUpperCase());
+    const matchedMat = matLookup.get(normalizeName(rawMat));
     if (!matchedMat) {
       errors.push(`Material no reconocido: ${rawMat || "(vacío)"}`);
     }
