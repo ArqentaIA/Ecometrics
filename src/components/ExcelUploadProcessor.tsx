@@ -168,49 +168,9 @@ export default function ExcelUploadProcessor() {
         return;
       }
 
-      // ── Step 4: Check for duplicates in DB ──
-      const { data: existing } = await supabase
-        .from("material_captures")
-        .select("material_code, kg_brutos")
-        .eq("user_id", user.id)
-        .eq("month", templateMonth)
-        .eq("year", templateYear);
-
+      // ── Step 4: All rows pass — multiple captures per material/month allowed ──
       setProgress(65);
-
-      const existingSet = new Set(
-        (existing ?? []).map(e => `${e.material_code}_${Number(e.kg_brutos)}`)
-      );
-
-      const deduped: typeof toInsert = [];
-      for (const row of toInsert) {
-        const key = `${row.catalogCode}_${row.kg}`;
-        if (existingSet.has(key)) {
-          allRejected.push({
-            rowNum: row.rowNum,
-            material: row.material,
-            kg: String(row.kg),
-            cliente: row.cliente,
-            fecha: row.fecha.toLocaleDateString("es-MX"),
-            notas: row.notas,
-            reason: "Registro duplicado: ya existe este material y KG para el período.",
-          });
-        } else {
-          deduped.push(row);
-          existingSet.add(key);
-        }
-      }
-
-      if (deduped.length === 0) {
-        setResult({
-          imported: 0, totalKg: 0, materialsSet: new Set(),
-          clientCounts: {}, rejected: allRejected,
-          periodMonth: templateMonth, periodYear: templateYear,
-        });
-        setShowResult(true);
-        setProcessing(false);
-        return;
-      }
+      const deduped = toInsert;
 
       // ── Step 5: Build snapshots and upsert ──
       setProgress(80);
@@ -348,7 +308,7 @@ export default function ExcelUploadProcessor() {
             <DialogDescription>
               {result && result.imported > 0
                 ? `${result.imported} registros aceptados, ${result.rejected.length} rechazados — ${MONTHS[result.periodMonth - 1]} ${result.periodYear}.`
-                : "Todos los registros fueron rechazados por validación o duplicados."
+                : "Todos los registros fueron rechazados por validación."
               }
             </DialogDescription>
           </DialogHeader>
