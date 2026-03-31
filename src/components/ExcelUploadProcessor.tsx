@@ -192,8 +192,11 @@ export default function ExcelUploadProcessor() {
       setProgress(80);
       const snapshots = deduped.map(row => {
         const mat = catalog.find(m => m.code === row.catalogCode)!;
-        // Priority: Excel price > DataCapture price > catalog default
-        const cost = row.precio ?? costPerKgMap[mat.code] ?? mat.default_cost_per_kg ?? 0;
+        const exactCostFromAmount = row.importePagado != null && row.kg > 0
+          ? row.importePagado / row.kg
+          : null;
+        // Priority: exact paid amount > Excel unit price > DataCapture price > catalog default
+        const cost = exactCostFromAmount ?? row.precio ?? costPerKgMap[mat.code] ?? mat.default_cost_per_kg ?? 0;
         const factor = versionedFactors[mat.code] ?? null;
         return {
           ...buildCaptureSnapshot(mat, row.kg, user.id, templateMonth, templateYear, cost, factor),
