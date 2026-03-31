@@ -173,7 +173,7 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
     }
 
     // Validate CLIENTE
-    const matchedCli = cliLookup.get(rawCli.toUpperCase());
+    const matchedCli = cliLookup.get(normalizeName(rawCli));
     if (!matchedCli) {
       errors.push(`Cliente no válido: ${rawCli || "(vacío)"}. Debe ser: ${catalogClients.join(", ")}`);
     }

@@ -135,9 +135,12 @@ export default function ExcelUploadProcessor() {
       const toInsert: Array<ValidatedRow & { catalogCode: string }> = [];
       const extraRejected: RejectedRow[] = [];
 
+      const normalize = (s: string) => s.replace(/[\u00A0\u2007\u202F]/g, " ").replace(/\s+/g, " ").trim().toUpperCase();
+
       for (const row of parsed.accepted) {
+        const rowNorm = normalize(row.material);
         const catalogMat = catalog.find(
-          m => m.name.toUpperCase() === row.material.toUpperCase() || m.code.toUpperCase() === row.material.toUpperCase()
+          m => normalize(m.name) === rowNorm || normalize(m.code) === rowNorm
         );
         if (!catalogMat) {
           extraRejected.push({
