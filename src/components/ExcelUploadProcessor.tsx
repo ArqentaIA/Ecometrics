@@ -308,7 +308,7 @@ export default function ExcelUploadProcessor() {
             <DialogDescription>
               {result && result.imported > 0
                 ? `${result.imported} registros aceptados, ${result.rejected.length} rechazados — ${MONTHS[result.periodMonth - 1]} ${result.periodYear}.`
-                : "Todos los registros fueron rechazados por validación o duplicados."
+                : "Todos los registros fueron rechazados por validación."
               }
             </DialogDescription>
           </DialogHeader>
