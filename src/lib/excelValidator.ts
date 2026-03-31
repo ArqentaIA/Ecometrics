@@ -201,10 +201,15 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
         reason: errors.join("; "),
       });
     } else {
+      // Parse optional price from column F
+      const precioNum = typeof rawPrecio === "number" ? rawPrecio : parseFloat(String(rawPrecio ?? ""));
+      const precioValid = !isNaN(precioNum) && precioNum > 0 ? precioNum : null;
+
       accepted.push({
         rowNum,
-        material: matchedMat || rawMat,  // Use catalog name if matched, otherwise raw value for code matching
+        material: matchedMat || rawMat,
         kg: kgNum,
+        precio: precioValid,
         cliente: matchedCli!,
         fecha: parsedDate!,
         notas: rawNotas,
