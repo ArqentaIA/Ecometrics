@@ -15,6 +15,7 @@ export interface ValidatedRow {
   rowNum: number;
   material: string;
   kg: number;
+  precio: number | null;  // Column F — optional per-row price
   cliente: string;
   fecha: Date;
   notas: string;
