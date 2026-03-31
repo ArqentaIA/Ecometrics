@@ -200,7 +200,7 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
     } else {
       accepted.push({
         rowNum,
-        material: matchedMat!,
+        material: matchedMat || rawMat,  // Use catalog name if matched, otherwise raw value for code matching
         kg: kgNum,
         cliente: matchedCli!,
         fecha: parsedDate!,
