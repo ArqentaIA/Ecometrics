@@ -11,6 +11,7 @@ import PublicDashboard from "./pages/PublicDashboard";
 import AdminTokens from "./pages/AdminTokens";
 import NotFound from "./pages/NotFound";
 import Verificar from "./pages/Verificar";
+import Registros from "./pages/Registros";
 
 const queryClient = new QueryClient();
 
