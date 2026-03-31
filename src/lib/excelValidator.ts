@@ -165,7 +165,8 @@ export function parseAndValidateTemplate(data: ArrayBuffer): TemplateParseResult
     }
 
     // Validate KG
-    const isBattery = matchedMat?.toUpperCase() === "BATERIAS";
+    const materialForCheck = (matchedMat || rawMat).toUpperCase();
+    const isBattery = materialForCheck === "BATERIAS";
     const kgNum = typeof rawKg === "number" ? rawKg : parseFloat(String(rawKg));
     if (isNaN(kgNum) || kgNum <= 0) {
       errors.push(`KG inválido: debe ser número positivo`);
