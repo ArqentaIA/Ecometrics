@@ -11,6 +11,7 @@ import PublicDashboard from "./pages/PublicDashboard";
 import AdminTokens from "./pages/AdminTokens";
 import NotFound from "./pages/NotFound";
 import Verificar from "./pages/Verificar";
+import Registros from "./pages/Registros";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const AppRoutes = () => {
       <Route path="/capture" element={<ProtectedRoute><DataCapture /></ProtectedRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/public-dashboard" element={<PublicDashboard />} />
+      <Route path="/registros" element={<ProtectedRoute><Registros /></ProtectedRoute>} />
       <Route path="/admin/tokens" element={<ProtectedRoute><AdminTokens /></ProtectedRoute>} />
       <Route path="/verificar" element={<Verificar />} />
       <Route path="*" element={<NotFound />} />
