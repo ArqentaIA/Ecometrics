@@ -16,6 +16,7 @@ const Navigation = ({ showBell }: NavigationProps) => {
     { to: "/dashboard", label: "Dashboard" },
     { to: "/capture", label: "Captura" },
     { to: "/registros", label: "Registros" },
+    { to: "/tracking-dashboard", label: "📍 Tracking" },
     ...(isAdmin ? [{ to: "/admin/tokens", label: "🔑 Tokens" }] : []),
   ];
 
