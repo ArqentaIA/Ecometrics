@@ -45,7 +45,7 @@ const Login = () => {
         <div className="win-acrylic-strong rounded-xl p-8">
           <div className="flex flex-col items-center mb-7">
             <img src={logoImr} alt="IMR Group" className="h-20 object-contain mb-4" />
-            <h1 className="font-heading text-[28px] font-bold text-foreground mt-2 tracking-tight">EcoMetrics</h1>
+            <h1 className="font-heading text-[28px] font-bold text-foreground mt-2 tracking-tight">IMR Circular Intelligence</h1>
             <p className="text-xs text-muted-foreground mt-1">Inicia sesión para continuar</p>
           </div>
 
