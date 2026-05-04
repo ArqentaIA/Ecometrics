@@ -192,13 +192,13 @@ const WaterLiquidCard = ({
             Equivalente hídrico
           </p>
           <div className="grid grid-cols-2 gap-2">
-            <div className="text-center">
+            <div className="text-center rounded-md p-1.5 transition-all duration-200 hover:bg-sky-100/70 hover:shadow-md hover:scale-105 cursor-default">
               <p className="text-[11px] font-bold" style={{ color: "hsl(201 96% 32%)" }}>
                 🚿 {showers.toLocaleString("es-MX")}
               </p>
               <p className="text-[8px] text-muted-foreground leading-tight">duchas domésticas</p>
             </div>
-            <div className="text-center">
+            <div className="text-center rounded-md p-1.5 transition-all duration-200 hover:bg-sky-100/70 hover:shadow-md hover:scale-105 cursor-default">
               <p className="text-[11px] font-bold" style={{ color: "hsl(201 96% 32%)" }}>
                 🧑 {peoplePerDay.toLocaleString("es-MX")}
               </p>
