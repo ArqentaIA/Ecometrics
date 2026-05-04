@@ -122,6 +122,19 @@ const KPIsContent = ({ token, initialKpis }: { token: string; initialKpis: strin
     });
   };
 
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+      else await document.exitFullscreen();
+    } catch (e) { /* noop */ }
+  };
+
   const periodLabel = isAllMonths ? `Acumulado ${dashYear}` : selectedMonths!.map(m => MONTHS[m - 1]).join(", ") + ` ${dashYear}`;
 
   if (catalogLoading || loading)
@@ -192,6 +205,11 @@ const KPIsContent = ({ token, initialKpis }: { token: string; initialKpis: strin
             className="ml-auto text-[11px] text-primary font-medium hover:underline">Mostrar todos</button>
           <button onClick={() => setVisible(new Set())}
             className="text-[11px] text-muted-foreground font-medium hover:underline">Ocultar todos</button>
+          <button onClick={toggleFullscreen}
+            title={isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
+            className="ml-2 px-3 py-1.5 rounded-full text-xs font-semibold border bg-primary/10 text-primary border-primary/30 hover:bg-primary/20 transition-all">
+            {isFullscreen ? "🗗 Salir" : "⛶ Pantalla completa"}
+          </button>
         </div>
       </div>
 

@@ -65,6 +65,28 @@ const PinScreen = ({ onSubmit, error, loading }: { onSubmit: (pin: string) => vo
   );
 };
 
+const FullscreenButton = () => {
+  const [isFs, setIsFs] = useState(false);
+  useEffect(() => {
+    const onChange = () => setIsFs(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+  const toggle = async () => {
+    try {
+      if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+      else await document.exitFullscreen();
+    } catch { /* noop */ }
+  };
+  return (
+    <button onClick={toggle}
+      title={isFs ? "Salir de pantalla completa" : "Pantalla completa"}
+      className="ml-2 px-3 py-1.5 rounded-md text-xs font-semibold bg-filter-bar-foreground/15 text-filter-bar-foreground hover:bg-filter-bar-foreground/25 transition-all">
+      {isFs ? "🗗 Salir" : "⛶ Pantalla completa"}
+    </button>
+  );
+};
+
 const PublicDashboard = () => {
   const [searchParams] = useSearchParams();
   const tokenParam = searchParams.get("token");
@@ -225,6 +247,8 @@ const PublicDashboardContent = ({ token }: { token: string }) => {
           <span className="ml-auto text-xs text-filter-bar-foreground/70 font-medium">
             {periodLabel}
           </span>
+          <FullscreenButton />
+
         </div>
       </div>
 
