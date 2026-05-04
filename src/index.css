@@ -99,6 +99,29 @@
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    position: relative;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url('/imr-fondo.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    opacity: 0.30;
+    filter: brightness(1.15) saturate(1.05);
+    pointer-events: none;
+    z-index: -1;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(180deg, hsl(var(--background) / 0.55), hsl(var(--background) / 0.75));
+    pointer-events: none;
+    z-index: -1;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
