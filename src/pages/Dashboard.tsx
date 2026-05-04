@@ -318,8 +318,11 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="flex-1 min-w-[260px] flex items-center px-2">
+        <div className="flex-1 min-w-[260px] flex flex-col justify-center px-2">
           <h2 className="font-heading text-lg font-bold tracking-tight">📊 Indicadores Clave de Impacto</h2>
+          <p className="text-[11px] text-muted-foreground italic mt-0.5">
+            Indicadores calculados únicamente sobre capturas confirmadas, usando kg netos estimados y factores versionados por material. ({periodLabel})
+          </p>
         </div>
 
         <div className="flex gap-1.5">
@@ -332,9 +335,6 @@ const Dashboard = () => {
 
       {/* KPI Dashboard */}
       <section className="max-w-7xl mx-auto px-5 mb-7">
-        <p className="text-[11px] text-muted-foreground italic mb-3">
-          Indicadores calculados únicamente sobre capturas confirmadas, usando kg netos estimados y factores versionados por material. ({periodLabel})
-        </p>
 
         {/* Visual control bar — toggle metric visibility (UI only) */}
         <div className="mb-4 flex flex-wrap items-center gap-2 p-2.5 rounded-lg border border-border bg-accent/30">
