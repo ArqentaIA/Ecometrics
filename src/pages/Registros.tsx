@@ -3,6 +3,8 @@ import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import { useRegistrosStore } from "@/stores/useRegistrosStore";
 import Navigation from "@/components/Navigation";
 import HeaderLogos from "@/components/HeaderLogos";
+import acLogo from "@/assets/logo-ac-recicladores.png";
+import logoImrGris from "@/assets/logo-imr-gris.png";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
