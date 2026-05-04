@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Navigation from "@/components/Navigation";
+import logoAC from "@/assets/logo-ac-recicladores.png";
+import logoIMR from "@/assets/logo-imr.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
