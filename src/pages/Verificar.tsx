@@ -26,7 +26,7 @@ const Verificar = () => {
         setError("Reporte no encontrado o inválido.");
         return;
       }
-      setResult(data);
+      setResult(record);
     } catch (e: any) {
       setError(e.message ?? "Error al verificar");
     } finally {
