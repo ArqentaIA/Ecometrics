@@ -62,7 +62,8 @@ const ReportView = forwardRef<HTMLDivElement, ReportViewProps>(
             <img src={logoImrGris} alt="IMR Group" className="h-14 w-auto" />
             <img src={logoAC} alt="Asociación de Recicladores del Estado de Querétaro A.C." className="h-16 w-auto" />
             <div>
-              <p className="text-[11px] text-gray-500">{periodLabel}</p>
+              <h1 className="text-[16px] font-bold tracking-tight uppercase text-gray-800">IMR Circular Intelligence</h1>
+              <p className="text-[11px] text-gray-500 mt-0.5">{periodLabel}</p>
             </div>
           </div>
           <div className="text-right">
