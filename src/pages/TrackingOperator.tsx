@@ -76,9 +76,12 @@ const TrackingOperator = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white p-4">
       <div className="max-w-md mx-auto">
+        <div className="text-center mb-3">
+          <h1 className="font-heading text-[18px] font-bold tracking-tight uppercase">IMR Circular Intelligence</h1>
+        </div>
         <header className="mb-4">
           <p className="text-[11px] uppercase tracking-wider text-slate-400">Tracking Operativo</p>
-          <h1 className="text-xl font-bold">{route.nombre}</h1>
+          <h2 className="text-xl font-bold">{route.nombre}</h2>
           <p className="text-sm text-slate-300">Operador: {route.operador}</p>
         </header>
 
