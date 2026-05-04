@@ -308,7 +308,7 @@ const AdminTokens = () => {
                   {tokens.map((t, i) => (
                     <tr
                       key={t.id}
-                      className={`transition-colors duration-100 hover:bg-accent/50 ${i % 2 === 0 ? "bg-card" : "bg-accent/20"}`}
+                      className={`transition-colors duration-100 hover:bg-white/30 ${i % 2 === 0 ? "bg-white/10" : "bg-white/5"}`}
                     >
                       <td className="px-4 py-2.5">
                         <code className="bg-secondary px-1.5 py-0.5 rounded text-[11px] font-mono">{t.token.slice(0, 12)}…</code>
