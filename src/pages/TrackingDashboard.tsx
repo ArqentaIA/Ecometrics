@@ -25,6 +25,9 @@ const TrackingDashboard = () => {
         <header className="mb-5">
           <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Módulo independiente</p>
           <h1 className="text-2xl font-bold text-foreground">Tracking Operativo</h1>
+          <p className="text-sm font-medium text-primary italic mt-0.5">
+            La trazabilidad que respalda cada operación.
+          </p>
           <p className="text-sm text-muted-foreground">
             Visualización de rutas, ubicación de operadores y evidencia digital · <span className="text-amber-700 font-medium">Prototipo UI</span>
           </p>
