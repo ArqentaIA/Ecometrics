@@ -430,23 +430,29 @@ const SimMap = ({ route }: { route: SimRoute }) => {
 
   return (
     <div className="relative rounded-xl overflow-hidden border border-border shadow-inner" style={{ height: 500 }}>
-      {/* Mapa estático simulado por zona (OpenStreetMap) */}
+      {/* Mapa real por zona (OpenStreetMap embed centrado en el promedio de puntos) */}
       {(() => {
         const centerLat = points.length ? points.reduce((s, p) => s + p.lat, 0) / points.length : op_lat;
         const centerLng = points.length ? points.reduce((s, p) => s + p.lng, 0) / points.length : op_lng;
-        const zoom = route.id === "RC-QRO" ? 13 : 12;
+        // Span ajustable según ruta: rutas más amplias usan mayor span
+        const span = route.id === "RC-QRO" ? 0.05 : 0.09;
+        const minLng = centerLng - span;
+        const maxLng = centerLng + span;
+        const minLat = centerLat - span * 0.6;
+        const maxLat = centerLat + span * 0.6;
+        const bbox = `${minLng.toFixed(5)},${minLat.toFixed(5)},${maxLng.toFixed(5)},${maxLat.toFixed(5)}`;
         return (
-          <img
-            src={`https://staticmap.openstreetmap.de/staticmap.php?center=${centerLat.toFixed(4)},${centerLng.toFixed(4)}&zoom=${zoom}&size=1200x600&maptype=mapnik`}
-            alt={`Mapa de ${route.nombre}`}
-            className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
-            draggable={false}
-            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+          <iframe
+            key={route.id}
+            title={`Mapa ${route.nombre}`}
+            src={`https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik`}
+            className="absolute inset-0 w-full h-full pointer-events-none border-0"
+            loading="lazy"
           />
         );
       })()}
-      {/* Velo claro para legibilidad */}
-      <div className="absolute inset-0 bg-white/35" />
+      {/* Velo claro para legibilidad de la capa SVG superior */}
+      <div className="absolute inset-0 bg-white/40 pointer-events-none" />
       <svg className="relative w-full h-full" viewBox={viewBox} preserveAspectRatio="xMidYMid meet">
         <defs>
           <filter id="sim-glow">
