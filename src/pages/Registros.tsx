@@ -3,6 +3,8 @@ import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import { useRegistrosStore } from "@/stores/useRegistrosStore";
 import Navigation from "@/components/Navigation";
 import HeaderLogos from "@/components/HeaderLogos";
+import acLogo from "@/assets/logo-ac-recicladores.png";
+import logoImrGris from "@/assets/logo-imr-gris.png";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
@@ -63,6 +65,25 @@ const Registros = () => {
   return (
     <div className="min-h-screen">
       <Navigation />
+
+      {/* Hero Banner */}
+      <section className="relative overflow-hidden" style={{
+        background: "linear-gradient(135deg, hsl(120 30% 82% / 0.5), hsl(90 25% 86% / 0.5))",
+        borderBottom: "1px solid rgba(0,0,0,0.04)",
+      }}>
+        <div className="absolute inset-0 pointer-events-none">
+          <img src={acLogo} alt="" className="absolute right-[196px] top-1/2 -translate-y-1/2 h-[85%] object-contain object-right" style={{ width: "22%", opacity: 0.95 }} />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to right, hsl(120 30% 82%) 35%, hsl(120 30% 82% / 0.6) 50%, transparent 75%)" }} />
+        </div>
+        <div className="max-w-7xl mx-auto px-5 py-5 flex items-center gap-6 relative z-10">
+          <img src={logoImrGris} alt="IMR Group" className="h-20 w-auto object-contain" />
+          <div className="flex-1 text-center" style={{ transform: "translateX(-120px)" }}>
+            <h1 className="font-heading text-[28px] font-bold text-foreground tracking-tight uppercase">IMR Circular Intelligence</h1>
+            <p className="font-heading text-[13px] text-muted-foreground tracking-wide mt-1">La trazabilidad que respalda cada operación.</p>
+          </div>
+        </div>
+      </section>
+
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-5">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -73,9 +94,6 @@ const Registros = () => {
             </p>
           </div>
           <div className="flex items-center gap-4">
-            <div className="mr-[76px]">
-              <HeaderLogos size="h-24" />
-            </div>
             {undoStack.length > 0 && (
               <Button variant="outline" size="sm" onClick={handleRestore} disabled={restoring}>
                 ↩ Deshacer ({undoStack.length})
