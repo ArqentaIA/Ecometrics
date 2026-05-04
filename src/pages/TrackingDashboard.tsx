@@ -205,7 +205,7 @@ const TrackingDashboard = () => {
   const total = route.points.length;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <Navigation />
       <main className="max-w-7xl mx-auto px-5 py-6">
         <header className="mb-5 flex items-start justify-between gap-4">
