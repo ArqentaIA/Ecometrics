@@ -1,5 +1,6 @@
 import { forwardRef } from "react";
 import logoImrGris from "@/assets/logo-imr-gris.png";
+import logoAC from "@/assets/logo-ac-recicladores.png";
 import CertificationBlock from "@/components/CertificationBlock";
 import HorizontalBarChart from "@/components/HorizontalBarChart";
 import { formatKPI } from "@/lib/calculationEngine";
