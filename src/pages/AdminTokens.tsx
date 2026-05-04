@@ -25,6 +25,7 @@ interface PublicToken {
 }
 
 const BASE_URL = "https://www.ecometrics.sbs/public-dashboard";
+const KPIS_URL = "https://www.ecometrics.sbs/public-kpis";
 
 const generateToken = () => {
   const bytes = crypto.getRandomValues(new Uint8Array(24));
@@ -141,6 +142,11 @@ const AdminTokens = () => {
   const copyUrl = (token: string) => {
     navigator.clipboard.writeText(`${BASE_URL}?token=${token}`);
     toast({ title: "URL copiada al portapapeles" });
+  };
+
+  const copyKpisUrl = (token: string) => {
+    navigator.clipboard.writeText(`${KPIS_URL}?token=${token}`);
+    toast({ title: "URL solo KPIs copiada", description: "El cliente podrá elegir qué indicadores ver." });
   };
 
   const handleCreate = async () => {
@@ -387,8 +393,16 @@ const AdminTokens = () => {
                           <button
                             onClick={() => copyUrl(t.token)}
                             className="win-btn-standard text-[11px] px-2.5 py-1"
+                            title="Dashboard completo"
                           >
-                            📋 URL
+                            📋 Full
+                          </button>
+                          <button
+                            onClick={() => copyKpisUrl(t.token)}
+                            className="text-[11px] px-2.5 py-1 rounded-md font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                            title="Solo Indicadores Clave (visualización dinámica)"
+                          >
+                            📊 KPIs
                           </button>
                         </div>
                       </td>
