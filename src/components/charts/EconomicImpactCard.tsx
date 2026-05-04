@@ -294,7 +294,7 @@ const EconomicImpactCard = ({
           </p>
           <div className="space-y-1.5">
             {topMaterials.slice(0, 3).map(mat => (
-              <div key={mat.name} className="flex items-center justify-between">
+              <div key={mat.name} className="flex items-center justify-between rounded-md px-2 py-1 -mx-2 transition-all duration-200 hover:bg-purple-50/70 hover:shadow-md hover:scale-[1.02] cursor-default">
                 <div className="flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full" style={{ background: mat.color }} />
                   <span className="text-[10px] font-medium truncate max-w-[120px]">{mat.name}</span>
