@@ -133,9 +133,6 @@ const TrackingMap = ({ route, height = 480 }: Props) => {
         </div>
       </div>
 
-      <div className="absolute top-3 right-3 bg-amber-100 text-amber-900 text-[10px] px-2 py-1 rounded-md font-semibold border border-amber-300">
-        MAPA SIMULADO · Listo para Google Maps API
-      </div>
     </div>
   );
 };
