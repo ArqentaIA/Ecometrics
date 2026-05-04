@@ -31,6 +31,7 @@ const AppRoutes = () => {
       <Route path="/capture" element={<ProtectedRoute><DataCapture /></ProtectedRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/public-dashboard" element={<PublicDashboard />} />
+      <Route path="/public-kpis" element={<PublicKPIs />} />
       <Route path="/registros" element={<ProtectedRoute><Registros /></ProtectedRoute>} />
       <Route path="/admin/tokens" element={<ProtectedRoute><AdminTokens /></ProtectedRoute>} />
       <Route path="/verificar" element={<Verificar />} />
