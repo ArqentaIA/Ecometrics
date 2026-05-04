@@ -45,6 +45,37 @@ const Dashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+
+  // Visual layer: metric visibility (UI only, no data impact)
+  const METRIC_KEYS = ["arboles", "co2", "energia", "agua", "economic", "volumen", "reincorporacion"] as const;
+  type MetricKey = typeof METRIC_KEYS[number];
+  const METRIC_LABELS: Record<MetricKey, { label: string; icon: string }> = {
+    arboles: { label: "Árboles", icon: "🌳" },
+    co2: { label: "CO₂e", icon: "💨" },
+    energia: { label: "Energía", icon: "⚡" },
+    agua: { label: "Agua", icon: "💧" },
+    economic: { label: "Económico", icon: "💰" },
+    volumen: { label: "Volumen", icon: "📦" },
+    reincorporacion: { label: "Reincorporación", icon: "🏭" },
+  };
+  const [visibleMetrics, setVisibleMetrics] = useState<Set<MetricKey>>(new Set(METRIC_KEYS));
+  const toggleMetric = (k: MetricKey) =>
+    setVisibleMetrics(prev => {
+      const next = new Set(prev);
+      next.has(k) ? next.delete(k) : next.add(k);
+      return next;
+    });
+  const showAllMetrics = () => setVisibleMetrics(new Set(METRIC_KEYS));
+  const clearAllMetrics = () => setVisibleMetrics(new Set());
+
+  // Adaptive grid: count visible top-row cards (excludes hero reincorporación which spans all)
+  const topRowKeys: MetricKey[] = ["arboles", "co2", "energia", "agua", "economic", "volumen"];
+  const visibleTopCount = topRowKeys.filter(k => visibleMetrics.has(k) && (k !== "agua" || true)).length;
+  const gridColsClass =
+    visibleTopCount <= 1 ? "grid-cols-1"
+    : visibleTopCount === 2 ? "grid-cols-1 md:grid-cols-2"
+    : visibleTopCount === 3 ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+    : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [exporting, setExporting] = useState(false);
