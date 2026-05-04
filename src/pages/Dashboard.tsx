@@ -240,7 +240,7 @@ const Dashboard = () => {
         <div className="max-w-7xl mx-auto px-5 py-5 flex items-center gap-6 relative z-10">
           <img src={logoImrGris} alt="IRM Group" className="h-20 w-auto object-contain" />
           <div className="flex-1 text-center" style={{ transform: "translateX(-120px)" }}>
-            <h1 className="font-heading text-[28px] font-bold text-foreground tracking-tight uppercase">SISTEMA ECOMETRICS.</h1>
+            <h1 className="font-heading text-[28px] font-bold text-foreground tracking-tight uppercase">IMR Circular Intelligence</h1>
             <p className="font-heading text-[13px] text-muted-foreground tracking-wide mt-1">La trazabilidad que respalda cada operación.</p>
           </div>
         </div>
