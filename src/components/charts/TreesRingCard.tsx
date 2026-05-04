@@ -150,11 +150,11 @@ const TreesRingCard = ({
 
       {/* Environmental equivalence */}
       {value > 0 && (
-        <div className="w-full mt-3 pt-3 border-t" style={{ borderColor: "hsl(var(--border))" }}>
-          <p className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider mb-1.5">
+        <div className="w-full mt-3 pt-3 border-t group/impact rounded-md px-2 -mx-2 transition-all duration-200 hover:bg-emerald-50/60 hover:shadow-md hover:scale-[1.02] cursor-default" style={{ borderColor: "hsl(var(--border))" }}>
+          <p className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider mb-1.5 group-hover/impact:text-emerald-700 transition-colors">
             Impacto ambiental equivalente
           </p>
-          <p className="text-[10px] text-foreground">
+          <p className="text-[10px] text-foreground group-hover/impact:text-[11px] transition-all">
             <span className="font-bold" style={{ color: COLOR_INTENSE }}>{Math.round(value)}</span> árboles preservados ≈{" "}
             <span className="font-bold" style={{ color: COLOR_INTENSE }}>{co2Absorbed.toLocaleString("es-MX")}</span> kg de CO₂ absorbido/año
           </p>
