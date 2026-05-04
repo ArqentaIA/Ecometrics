@@ -14,7 +14,7 @@ import WaterLiquidCard from "@/components/charts/WaterLiquidCard";
 import EconomicImpactCard from "@/components/charts/EconomicImpactCard";
 import HorizontalBar3D from "@/components/charts/HorizontalBar3D";
 
-import recyclingHero from "@/assets/recycling-hero.png";
+import acLogo from "@/assets/logo-ac-recicladores.png";
 import logoImrGris from "@/assets/logo-imr-gris.png";
 import { formatKPI } from "@/lib/calculationEngine";
 import {
@@ -203,7 +203,7 @@ const Dashboard = () => {
         borderBottom: "1px solid rgba(0,0,0,0.04)",
       }}>
         <div className="absolute inset-0 pointer-events-none">
-          <img src={recyclingHero} alt="" className="absolute right-0 top-0 h-full object-cover object-right" style={{ width: "25%", opacity: 0.7 }} />
+          <img src={acLogo} alt="" className="absolute right-0 top-0 h-full object-cover object-right" style={{ width: "25%", opacity: 0.7 }} />
           <div className="absolute inset-0" style={{ background: "linear-gradient(to right, hsl(120 30% 82%) 35%, hsl(120 30% 82% / 0.6) 50%, transparent 75%)" }} />
         </div>
         <div className="max-w-7xl mx-auto px-5 py-5 flex items-center gap-6 relative z-10">
