@@ -325,21 +325,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Summary Counters Bar */}
-      <div className="max-w-7xl mx-auto px-5 mt-2">
-        <div className="flex items-center gap-6 bg-accent/40 border border-border rounded-lg px-5 py-2.5">
-          <div className="flex items-center gap-2">
-            <span className="text-sm">📦</span>
-            <span className="text-sm font-semibold text-foreground">Materiales capturados: <span className="text-primary">{distinctMaterialsCount} de 25</span></span>
-          </div>
-          <div className="w-px h-5 bg-border" />
-          <div className="flex items-center gap-2">
-            <span className="text-sm">📋</span>
-            <span className="text-sm font-semibold text-foreground">Total de registros: <span className="text-primary">{totalConfirmedRecords} confirmados</span></span>
-          </div>
-        </div>
-      </div>
-
       {/* KPI Dashboard */}
       <section className="max-w-7xl mx-auto px-5 mb-7">
         <h2 className="font-heading text-lg font-bold tracking-tight mb-1">📊 Indicadores Clave de Impacto</h2>
