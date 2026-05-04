@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { abbreviateHash } from "@/lib/reportCertification";
 import logoImrGris from "@/assets/logo-imr-gris.png";
+import logoAC from "@/assets/logo-ac-recicladores.png";
 
 const Verificar = () => {
   const [searchParams] = useSearchParams();
