@@ -73,7 +73,9 @@ const Registros = () => {
             </p>
           </div>
           <div className="flex items-center gap-4">
-            <HeaderLogos />
+            <div className="mr-[76px]">
+              <HeaderLogos size="h-24" />
+            </div>
             {undoStack.length > 0 && (
               <Button variant="outline" size="sm" onClick={handleRestore} disabled={restoring}>
                 ↩ Deshacer ({undoStack.length})
