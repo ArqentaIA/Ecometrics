@@ -660,7 +660,7 @@ export type Database = {
     Functions: {
       check_token_expiry: { Args: never; Returns: number }
       get_confirmed_captures_summary: {
-        Args: { _year: number }
+        Args: { _token: string; _year: number }
         Returns: {
           kg_brutos: number
           kg_netos: number
@@ -674,7 +674,7 @@ export type Database = {
         }[]
       }
       get_public_material_catalog: {
-        Args: never
+        Args: { _token: string }
         Returns: {
           code: string
           default_yield: number
