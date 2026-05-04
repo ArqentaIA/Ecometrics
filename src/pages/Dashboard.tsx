@@ -318,9 +318,9 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <p className="flex-1 min-w-[260px] text-[11px] text-muted-foreground italic px-2">
-          Indicadores calculados únicamente sobre capturas confirmadas, usando kg netos estimados y factores versionados por material. ({periodLabel})
-        </p>
+        <div className="flex-1 min-w-[260px] flex items-center px-2">
+          <h2 className="font-heading text-lg font-bold tracking-tight">📊 Indicadores Clave de Impacto</h2>
+        </div>
 
         <div className="flex gap-1.5">
           <button onClick={handleRefresh} disabled={refreshing} className="win-btn-standard text-xs">
