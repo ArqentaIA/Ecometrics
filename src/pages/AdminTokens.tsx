@@ -25,6 +25,7 @@ interface PublicToken {
 }
 
 const BASE_URL = "https://www.ecometrics.sbs/public-dashboard";
+const KPIS_URL = "https://www.ecometrics.sbs/public-kpis";
 
 const generateToken = () => {
   const bytes = crypto.getRandomValues(new Uint8Array(24));
