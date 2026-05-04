@@ -210,13 +210,13 @@ const TrackingDashboard = () => {
       <main className="max-w-7xl mx-auto px-5 py-6">
         <header className="mb-5 flex items-start justify-between gap-4">
           <div>
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Módulo independiente · Simulación</p>
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Módulo operativo</p>
             <h1 className="text-2xl font-bold text-foreground">Tracking Operativo</h1>
             <p className="text-sm font-medium text-primary italic mt-0.5">
               La trazabilidad que respalda cada operación.
             </p>
             <p className="text-sm text-muted-foreground">
-              Logística simulada de recolección industrial · <span className="text-amber-700 font-medium">Modo simulación controlada</span>
+              Logística de recolección industrial · <span className="text-primary font-medium">Monitoreo en tiempo real</span>
             </p>
           </div>
           <div className="flex items-center gap-6 shrink-0">
@@ -379,7 +379,7 @@ const TrackingDashboard = () => {
             </div>
 
             <p className="text-[10px] text-muted-foreground mt-4 text-center">
-              Datos en memoria · Sin conexión a backend · Operador simulado se mueve cada 5 s
+              Actualización de posición del operador cada 5 s
             </p>
           </section>
         </div>
