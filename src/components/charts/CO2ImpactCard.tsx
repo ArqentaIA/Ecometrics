@@ -306,15 +306,15 @@ const CO2ImpactCard = ({
       {topMat && (
         <div className="mt-3 pt-3 border-t" style={{ borderColor: "hsl(var(--border))" }}>
           <div className="grid grid-cols-3 gap-2">
-            <div className="text-center">
+            <div className="text-center rounded-md p-1.5 transition-all duration-200 hover:bg-emerald-50/60 hover:shadow-md hover:scale-105 cursor-default">
               <p className="text-[8px] text-muted-foreground uppercase tracking-wider leading-tight mb-0.5">Mayor mitigación</p>
               <p className="text-[10px] font-bold truncate" style={{ color: COLOR_DARK }}>{topMat.name}</p>
             </div>
-            <div className="text-center">
+            <div className="text-center rounded-md p-1.5 transition-all duration-200 hover:bg-emerald-50/60 hover:shadow-md hover:scale-105 cursor-default">
               <p className="text-[8px] text-muted-foreground uppercase tracking-wider leading-tight mb-0.5">Equivalente</p>
               <p className="text-[10px] font-bold" style={{ color: COLOR_DARK }}>= {carsEquiv} autos/año</p>
             </div>
-            <div className="text-center">
+            <div className="text-center rounded-md p-1.5 transition-all duration-200 hover:bg-emerald-50/60 hover:shadow-md hover:scale-105 cursor-default">
               <p className="text-[8px] text-muted-foreground uppercase tracking-wider leading-tight mb-0.5">Participación</p>
               <p className="text-[10px] font-bold" style={{ color: COLOR_DARK }}>{topMatPct}% del CO₂</p>
             </div>

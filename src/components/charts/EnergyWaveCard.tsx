@@ -327,11 +327,11 @@ const EnergyWaveCard = ({
             Equivalente energético
           </p>
           <div className="grid grid-cols-2 gap-2">
-            <div className="text-center">
+            <div className="text-center rounded-md p-1.5 transition-all duration-200 hover:bg-amber-50/60 hover:shadow-md hover:scale-105 cursor-default">
               <p className="text-[10px] font-bold" style={{ color: COLOR_DARK }}>🏠 {homesEquiv.toLocaleString("es-MX")}</p>
               <p className="text-[8px] text-muted-foreground leading-tight">hogares / 1 mes</p>
             </div>
-            <div className="text-center">
+            <div className="text-center rounded-md p-1.5 transition-all duration-200 hover:bg-amber-50/60 hover:shadow-md hover:scale-105 cursor-default">
               <p className="text-[10px] font-bold" style={{ color: COLOR_DARK }}>🔌 {evsEquiv.toLocaleString("es-MX")}</p>
               <p className="text-[8px] text-muted-foreground leading-tight">cargas de VE</p>
             </div>
