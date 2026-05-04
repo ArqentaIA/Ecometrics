@@ -47,6 +47,7 @@ const Verificar = () => {
       <header className="w-full border-b" style={{ borderColor: "#c8e6c9", background: "rgba(255,255,255,0.85)", backdropFilter: "blur(8px)" }}>
         <div className="max-w-2xl mx-auto px-6 py-4 flex items-center gap-4">
           <img src={logoImrGris} alt="IMR Group" className="h-10 w-auto" />
+          <img src={logoAC} alt="Asociación de Recicladores del Estado de Querétaro A.C." className="h-12 w-auto" />
           <div>
             <h1 className="text-sm font-bold tracking-tight text-gray-800 uppercase">ECOMETRICS</h1>
             <p className="text-[10px] text-gray-500">Sistema de Integridad Documental</p>
