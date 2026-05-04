@@ -187,14 +187,14 @@ const Dashboard = () => {
 
   if (catalogLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <span className="text-muted-foreground">Cargando catálogo…</span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <Navigation showBell />
 
       {/* Hero Banner */}

@@ -190,7 +190,7 @@ const AdminTokens = () => {
 
   if (roleLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <span className="text-muted-foreground">Verificando permisos…</span>
       </div>
     );
@@ -198,7 +198,7 @@ const AdminTokens = () => {
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen">
         <Navigation showBell />
         <div className="flex items-center justify-center pt-32">
           <p className="text-destructive font-semibold">Acceso restringido a administradores.</p>
@@ -208,7 +208,7 @@ const AdminTokens = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <Navigation showBell />
 
       <div className="max-w-5xl mx-auto px-5 py-8">
