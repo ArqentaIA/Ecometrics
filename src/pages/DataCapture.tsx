@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import Navigation from "@/components/Navigation";
+import HeaderLogos from "@/components/HeaderLogos";
 import ImpactCards from "@/components/ImpactCards";
 import ExcelUploadProcessor from "@/components/ExcelUploadProcessor";
 import { formatKPI } from "@/lib/calculationEngine";
@@ -158,7 +159,10 @@ const DataCapture = () => {
           <span className="opacity-40">›</span>
           <span className="text-foreground font-medium">{MONTHS[currentMonth]} {currentYear}</span>
         </div>
-        <h1 className="font-heading text-2xl font-bold tracking-tight mb-5">Captura de Datos</h1>
+        <div className="flex items-start justify-between gap-4 mb-5">
+          <h1 className="font-heading text-2xl font-bold tracking-tight">Captura de Datos</h1>
+          <HeaderLogos />
+        </div>
       </div>
 
       {/* Period Selector */}

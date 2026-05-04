@@ -6,6 +6,7 @@ import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
+import HeaderLogos from "@/components/HeaderLogos";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -217,12 +218,15 @@ const AdminTokens = () => {
             <h1 className="font-heading text-xl font-bold tracking-tight">🔑 Gestión de Tokens de Acceso Público</h1>
             <p className="text-xs text-muted-foreground mt-1">Administra los tokens de acceso al dashboard público para clientes externos.</p>
           </div>
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="win-btn-accent text-sm px-4 py-2"
-          >
-            {showForm ? "Cancelar" : "+ Nuevo Token"}
-          </button>
+          <div className="flex items-center gap-4">
+            <HeaderLogos />
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="win-btn-accent text-sm px-4 py-2"
+            >
+              {showForm ? "Cancelar" : "+ Nuevo Token"}
+            </button>
+          </div>
         </div>
 
         {/* Create Form */}
