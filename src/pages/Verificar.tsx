@@ -49,7 +49,7 @@ const Verificar = () => {
           <img src={logoImrGris} alt="IMR Group" className="h-10 w-auto" />
           <img src={logoAC} alt="Asociación de Recicladores del Estado de Querétaro A.C." className="h-12 w-auto" />
           <div>
-            <h1 className="text-sm font-bold tracking-tight text-gray-800 uppercase">ECOMETRICS</h1>
+            <h1 className="text-sm font-bold tracking-tight text-gray-800 uppercase">IMR Circular Intelligence</h1>
             <p className="text-[10px] text-gray-500">Sistema de Integridad Documental</p>
           </div>
         </div>
