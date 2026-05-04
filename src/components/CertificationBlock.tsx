@@ -53,7 +53,12 @@ const CertificationBlock = ({
             </div>
           </div>
         </div>
-        {/* QR temporalmente deshabilitado */}
+        <div className="flex flex-col items-center gap-1.5 shrink-0">
+          <div className="bg-white p-2 rounded-md border border-border/60">
+            <QRCodeSVG value={verifyUrl} size={92} level="M" includeMargin={false} />
+          </div>
+          <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-medium">Escanea para verificar</span>
+        </div>
       </div>
       <div className="mt-4 border-t border-border/40 pt-3 space-y-2">
         <p className="text-[11px] leading-relaxed text-[hsl(220,9%,46%)]">
