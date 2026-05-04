@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import { useRegistrosStore } from "@/stores/useRegistrosStore";
 import Navigation from "@/components/Navigation";
+import HeaderLogos from "@/components/HeaderLogos";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
@@ -71,7 +72,8 @@ const Registros = () => {
               Últimos 100 registros confirmados — {dashYear}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
+            <HeaderLogos />
             {undoStack.length > 0 && (
               <Button variant="outline" size="sm" onClick={handleRestore} disabled={restoring}>
                 ↩ Deshacer ({undoStack.length})
