@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import Navigation from "@/components/Navigation";
+import HeaderLogos from "@/components/HeaderLogos";
 import ImpactCards from "@/components/ImpactCards";
 import ExcelUploadProcessor from "@/components/ExcelUploadProcessor";
 import { formatKPI } from "@/lib/calculationEngine";
