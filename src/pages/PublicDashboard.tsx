@@ -145,7 +145,7 @@ const PublicDashboardContent = () => {
     monthlyAgua, allMonthsAgua,
     monthlyKgNetos, allMonthsKgNetos,
     loading, lastUpdated, catalogLoading,
-  } = usePublicDashboardFilter();
+  } = usePublicDashboardFilter(tokenParam);
 
   const periodLabel = isAllMonths
     ? `Acumulado ${dashYear}`
