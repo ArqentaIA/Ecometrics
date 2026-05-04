@@ -430,14 +430,21 @@ const SimMap = ({ route }: { route: SimRoute }) => {
 
   return (
     <div className="relative rounded-xl overflow-hidden border border-border shadow-inner" style={{ height: 500 }}>
-      {/* Mapa estático simulado de Querétaro (OpenStreetMap) */}
-      <img
-        src="https://staticmap.openstreetmap.de/staticmap.php?center=20.5888,-100.3899&zoom=12&size=1200x600&maptype=mapnik"
-        alt="Mapa de Querétaro, México"
-        className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
-        draggable={false}
-        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-      />
+      {/* Mapa estático simulado por zona (OpenStreetMap) */}
+      {(() => {
+        const centerLat = points.length ? points.reduce((s, p) => s + p.lat, 0) / points.length : op_lat;
+        const centerLng = points.length ? points.reduce((s, p) => s + p.lng, 0) / points.length : op_lng;
+        const zoom = route.id === "RC-QRO" ? 13 : 12;
+        return (
+          <img
+            src={`https://staticmap.openstreetmap.de/staticmap.php?center=${centerLat.toFixed(4)},${centerLng.toFixed(4)}&zoom=${zoom}&size=1200x600&maptype=mapnik`}
+            alt={`Mapa de ${route.nombre}`}
+            className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+            draggable={false}
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+          />
+        );
+      })()}
       {/* Velo claro para legibilidad */}
       <div className="absolute inset-0 bg-white/35" />
       <svg className="relative w-full h-full" viewBox={viewBox} preserveAspectRatio="xMidYMid meet">
