@@ -1,5 +1,6 @@
 import { forwardRef } from "react";
 import logoImrGris from "@/assets/logo-imr-gris.png";
+import logoAC from "@/assets/logo-ac-recicladores.png";
 import CertificationBlock from "@/components/CertificationBlock";
 import HorizontalBarChart from "@/components/HorizontalBarChart";
 import { formatKPI } from "@/lib/calculationEngine";
@@ -59,6 +60,7 @@ const ReportView = forwardRef<HTMLDivElement, ReportViewProps>(
         <div className="flex items-center justify-between px-8 py-5" style={{ background: "linear-gradient(135deg, #e8f5e9, #f1f8e9)", borderBottom: "2px solid #4CAF50" }}>
           <div className="flex items-center gap-4">
             <img src={logoImrGris} alt="IMR Group" className="h-14 w-auto" />
+            <img src={logoAC} alt="Asociación de Recicladores del Estado de Querétaro A.C." className="h-16 w-auto" />
             <div>
               <h1 className="text-[18px] font-bold tracking-tight uppercase text-gray-800">Reporte de Impacto Ambiental</h1>
               <p className="text-[11px] text-gray-500 mt-0.5">Sistema ECOMETRICS — {periodLabel}</p>
