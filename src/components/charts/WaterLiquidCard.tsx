@@ -208,27 +208,6 @@ const WaterLiquidCard = ({
         </div>
       )}
 
-      {/* Micro indicators */}
-      <div className="w-full pt-2 border-t space-y-1.5" style={{ borderColor: "hsl(var(--border))" }}>
-        <div className="flex items-center justify-between text-[10px]">
-          <span className="text-muted-foreground">Promedio por captura</span>
-          <span className="font-semibold text-foreground">{avgPerCapture.toLocaleString("es-MX")} L</span>
-        </div>
-        {topMaterial && (
-          <div className="flex items-center justify-between text-[10px]">
-            <span className="text-muted-foreground">Material líder</span>
-            <span className="font-semibold text-foreground truncate ml-2 max-w-[120px]">{topMaterial}</span>
-          </div>
-        )}
-        {lastUpdated && (
-          <div className="flex items-center justify-between text-[10px]">
-            <span className="text-muted-foreground">Última sync</span>
-            <span className="font-semibold text-foreground">
-              {new Date(lastUpdated).toLocaleDateString("es-MX", { day: "2-digit", month: "short" })}
-            </span>
-          </div>
-        )}
-      </div>
     </div>
   );
 };
