@@ -285,7 +285,7 @@ const AdminTokens = () => {
         )}
 
         {/* Tokens Table */}
-        <div className="win-card overflow-hidden">
+        <div className="rounded-lg overflow-hidden border border-white/30 bg-white/10 backdrop-blur-sm shadow-sm">
           {loading ? (
             <div className="p-8 text-center text-muted-foreground">Cargando tokens…</div>
           ) : tokens.length === 0 ? (
