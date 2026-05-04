@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import DataCapture from "./pages/DataCapture";
 import Dashboard from "./pages/Dashboard";
 import PublicDashboard from "./pages/PublicDashboard";
+import PublicKPIs from "./pages/PublicKPIs";
 import AdminTokens from "./pages/AdminTokens";
 import NotFound from "./pages/NotFound";
 import Verificar from "./pages/Verificar";
