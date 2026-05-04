@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Navigation from "@/components/Navigation";
+import logoAC from "@/assets/logo-ac-recicladores.png";
+import logoIMR from "@/assets/logo-imr.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -206,15 +208,21 @@ const TrackingDashboard = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       <main className="max-w-7xl mx-auto px-5 py-6">
-        <header className="mb-5">
-          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Módulo independiente · Simulación</p>
-          <h1 className="text-2xl font-bold text-foreground">Tracking Operativo</h1>
-          <p className="text-sm font-medium text-primary italic mt-0.5">
-            La trazabilidad que respalda cada operación.
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Logística simulada de recolección industrial · <span className="text-amber-700 font-medium">Modo simulación controlada</span>
-          </p>
+        <header className="mb-5 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Módulo independiente · Simulación</p>
+            <h1 className="text-2xl font-bold text-foreground">Tracking Operativo</h1>
+            <p className="text-sm font-medium text-primary italic mt-0.5">
+              La trazabilidad que respalda cada operación.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Logística simulada de recolección industrial · <span className="text-amber-700 font-medium">Modo simulación controlada</span>
+            </p>
+          </div>
+          <div className="flex items-center gap-6 shrink-0">
+            <img src={logoAC} alt="Asociación de Recicladores del Estado de Querétaro A.C." className="h-14 w-auto object-contain" />
+            <img src={logoIMR} alt="IMR" className="h-14 w-auto object-contain" />
+          </div>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-5">
