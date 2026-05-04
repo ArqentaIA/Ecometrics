@@ -220,8 +220,8 @@ const TrackingDashboard = () => {
             </p>
           </div>
           <div className="flex items-center gap-6 shrink-0">
-            <img src={logoAC} alt="Asociación de Recicladores del Estado de Querétaro A.C." className="h-14 w-auto object-contain" />
-            <img src={logoIMR} alt="IMR" className="h-14 w-auto object-contain" />
+            <img src={logoIMR} alt="IMR" className="h-20 w-auto object-contain" />
+            <img src={logoAC} alt="Asociación de Recicladores del Estado de Querétaro A.C." className="h-20 w-auto object-contain" />
           </div>
         </header>
 
