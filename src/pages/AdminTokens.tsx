@@ -144,6 +144,11 @@ const AdminTokens = () => {
     toast({ title: "URL copiada al portapapeles" });
   };
 
+  const copyKpisUrl = (token: string) => {
+    navigator.clipboard.writeText(`${KPIS_URL}?token=${token}`);
+    toast({ title: "URL solo KPIs copiada", description: "El cliente podrá elegir qué indicadores ver." });
+  };
+
   const handleCreate = async () => {
     if (!newCliente.trim() || !newPin.trim() || !newFechaVenc) return;
     setSaving(true);
