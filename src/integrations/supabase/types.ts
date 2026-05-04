@@ -709,6 +709,19 @@ export type Database = {
         Args: { _pin: string; _token: string }
         Returns: boolean
       }
+      verify_report_by_folio: {
+        Args: { _folio: string }
+        Returns: {
+          dataset_id: string
+          fecha_generacion: string
+          firma_digital: string
+          folio: string
+          hash_sha256: string
+          parametros_json: Json
+          tipo_reporte: string
+          total_registros: number
+        }[]
+      }
     }
     Enums: {
       app_role:

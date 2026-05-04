@@ -19,16 +19,14 @@ const Verificar = () => {
     setResult(null);
     try {
       const { data, error: err } = await supabase
-        .from("report_audit_log")
-        .select("folio, hash_sha256, firma_digital, dataset_id, tipo_reporte, fecha_generacion, parametros_json, total_registros")
-        .eq("folio", folio.trim())
-        .maybeSingle();
+        .rpc("verify_report_by_folio", { _folio: folio.trim() });
       if (err) throw err;
-      if (!data) {
+      const record = Array.isArray(data) ? data[0] : data;
+      if (!record) {
         setError("Reporte no encontrado o inválido.");
         return;
       }
-      setResult(data);
+      setResult(record);
     } catch (e: any) {
       setError(e.message ?? "Error al verificar");
     } finally {
