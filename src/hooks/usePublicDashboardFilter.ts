@@ -37,7 +37,7 @@ export interface PublicMaterialEntry {
 
 const EMPTY_TOTALS: KPITotals = { arboles: 0, co2: 0, energia: 0, agua: 0, kgBrutos: 0, kgNetos: 0, economicImpact: 0 };
 
-export function usePublicDashboardFilter() {
+export function usePublicDashboardFilter(token: string | null) {
   const [dashYear, setDashYear] = useState(new Date().getFullYear());
   const [selectedMonths, setSelectedMonths] = useState<number[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -58,10 +58,11 @@ export function usePublicDashboardFilter() {
     result_economic_impact: number;
   }>>([]);
 
-  // Load catalog via secure RPC (no pricing data exposed)
+  // Load catalog via secure RPC (no pricing data exposed, token-gated)
   useEffect(() => {
+    if (!token) return;
     const loadCatalog = async () => {
-      const { data } = await supabase.rpc("get_public_material_catalog" as any);
+      const { data } = await supabase.rpc("get_public_material_catalog" as any, { _token: token });
       setCatalog(((data as any[]) ?? []).map((r: any) => ({
         id: 0,
         code: r.code,
@@ -89,11 +90,12 @@ export function usePublicDashboardFilter() {
       setCatalogLoading(false);
     };
     loadCatalog();
-  }, []);
+  }, [token]);
 
   const loadCaptures = useCallback(async () => {
+    if (!token) return;
     setLoading(true);
-    const { data, error } = await supabase.rpc("get_confirmed_captures_summary", { _year: dashYear });
+    const { data, error } = await supabase.rpc("get_confirmed_captures_summary" as any, { _year: dashYear, _token: token });
 
     if (!error && data) {
       setCaptures((data as any[]).map((r: any) => ({

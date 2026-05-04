@@ -129,10 +129,10 @@ const PublicDashboard = () => {
     return <PinScreen onSubmit={handlePinSubmit} error={pinError} loading={stage === "checking-pin"} />;
   }
 
-  return <PublicDashboardContent />;
+  return <PublicDashboardContent token={tokenParam!} />;
 };
 
-const PublicDashboardContent = () => {
+const PublicDashboardContent = ({ token }: { token: string }) => {
   const {
     dashYear, setDashYear,
     selectedMonths, toggleMonth, clearSelection, isAllMonths,
@@ -145,7 +145,7 @@ const PublicDashboardContent = () => {
     monthlyAgua, allMonthsAgua,
     monthlyKgNetos, allMonthsKgNetos,
     loading, lastUpdated, catalogLoading,
-  } = usePublicDashboardFilter();
+  } = usePublicDashboardFilter(token);
 
   const periodLabel = isAllMonths
     ? `Acumulado ${dashYear}`
