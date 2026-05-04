@@ -234,7 +234,7 @@ const Dashboard = () => {
         borderBottom: "1px solid rgba(0,0,0,0.04)",
       }}>
         <div className="absolute inset-0 pointer-events-none">
-          <img src={acLogo} alt="" className="absolute right-[120px] top-1/2 -translate-y-1/2 h-[85%] object-contain object-right" style={{ width: "22%", opacity: 0.95 }} />
+          <img src={acLogo} alt="" className="absolute right-[196px] top-1/2 -translate-y-1/2 h-[85%] object-contain object-right" style={{ width: "22%", opacity: 0.95 }} />
           <div className="absolute inset-0" style={{ background: "linear-gradient(to right, hsl(120 30% 82%) 35%, hsl(120 30% 82% / 0.6) 50%, transparent 75%)" }} />
         </div>
         <div className="max-w-7xl mx-auto px-5 py-5 flex items-center gap-6 relative z-10">
