@@ -429,12 +429,19 @@ const SimMap = ({ route }: { route: SimRoute }) => {
   }, [points, trail, op_lat, op_lng]);
 
   return (
-    <div className="relative rounded-xl overflow-hidden border border-border bg-gradient-to-br from-slate-50 to-slate-100 shadow-inner" style={{ height: 500 }}>
-      <svg className="w-full h-full" viewBox={viewBox} preserveAspectRatio="xMidYMid meet">
+    <div className="relative rounded-xl overflow-hidden border border-border shadow-inner" style={{ height: 500 }}>
+      {/* Mapa estático simulado de Querétaro (OpenStreetMap) */}
+      <img
+        src="https://staticmap.openstreetmap.de/staticmap.php?center=20.5888,-100.3899&zoom=12&size=1200x600&maptype=mapnik"
+        alt="Mapa de Querétaro, México"
+        className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none"
+        draggable={false}
+        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+      />
+      {/* Velo claro para legibilidad */}
+      <div className="absolute inset-0 bg-white/35" />
+      <svg className="relative w-full h-full" viewBox={viewBox} preserveAspectRatio="xMidYMid meet">
         <defs>
-          <pattern id="sim-grid" width="50" height="50" patternUnits="userSpaceOnUse">
-            <path d="M 50 0 L 0 0 0 50" fill="none" stroke="hsl(var(--border))" strokeWidth="0.5" opacity="0.5" />
-          </pattern>
           <filter id="sim-glow">
             <feGaussianBlur stdDeviation="3" result="blur" />
             <feMerge>
@@ -443,7 +450,6 @@ const SimMap = ({ route }: { route: SimRoute }) => {
             </feMerge>
           </filter>
         </defs>
-        <rect width="100%" height="100%" fill="url(#sim-grid)" />
 
         {/* Línea de ruta optimizada */}
         {points.length > 1 && (
