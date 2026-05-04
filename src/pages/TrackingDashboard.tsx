@@ -515,9 +515,6 @@ const SimMap = ({ route }: { route: SimRoute }) => {
           <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-slate-400" /> Pendiente</span>
         </div>
       </div>
-      <div className="absolute top-3 right-3 bg-amber-100 text-amber-900 text-[10px] px-2 py-1 rounded-md font-semibold border border-amber-300">
-        SIMULACIÓN · Querétaro
-      </div>
     </div>
   );
 };
