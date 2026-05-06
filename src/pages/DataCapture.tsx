@@ -316,19 +316,12 @@ const DataCapture = () => {
                         <div className="text-[11px] text-muted-foreground">{entry.material.code}</div>
                       </div>
 
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={entry.isConfirmed ? "" : (entry.kg || "")}
-                        onChange={e => {
-                          const val = e.target.value;
-                          if (val === "" || /^\d*\.?\d*$/.test(val)) {
-                            handleKgChange(entry.material.code, parseFloat(val) || 0);
-                          }
-                        }}
+                      <KgInput
+                        materialCode={entry.material.code}
+                        defaultValue={entry.isConfirmed ? 0 : entry.kg}
+                        isBattery={isBattery}
                         disabled={entry.isConfirmed && !permissions.canReopenCapture}
-                        className="win-input !w-32 text-right font-semibold text-base tabular-nums"
-                        placeholder="0.00"
+                        onChange={handleKgChange}
                       />
                       <span className="text-xs text-muted-foreground font-medium">{isBattery ? "pzas" : "kg"}</span>
 
