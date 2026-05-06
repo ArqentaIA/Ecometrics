@@ -123,6 +123,16 @@ export function useDashboardFilter() {
     };
     window.addEventListener('focus', handleFocus);
 
+    // BFCache restore (back/forward navigation): refresh when page is shown
+    const handlePageShow = (e: PageTransitionEvent) => {
+      console.log('DASHBOARD_DEBUG: pageshow event, persisted=', e.persisted, 'refreshing...');
+      loadDashboardCaptures();
+    };
+    window.addEventListener('pageshow', handlePageShow);
+
+    // Immediate refresh on mount/route entry
+    loadDashboardCaptures();
+
     // Cross-route capture-confirmed event
     const handleCaptureConfirmed = () => {
       console.log('DASHBOARD_DEBUG: capture-confirmed event received');
@@ -134,6 +144,7 @@ export function useDashboardFilter() {
       clearInterval(pollId);
       document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('pageshow', handlePageShow);
       window.removeEventListener('capture-confirmed', handleCaptureConfirmed);
       supabase.removeChannel(channel);
     };
