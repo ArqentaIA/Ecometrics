@@ -254,8 +254,15 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
 
       setCatalogLoading(false);
     }
-    loadCatalogAndFactors();
-  }, []);
+    if (!sessionReady) return;
+    if (user) {
+      loadCatalogAndFactors();
+    } else {
+      setCatalog([]);
+      setVersionedFactors({});
+      setCatalogLoading(false);
+    }
+  }, [sessionReady, user]);
 
   // ─── Load Captures ───
   const loadCaptures = useCallback(async () => {
