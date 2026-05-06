@@ -59,10 +59,10 @@ const ReportView = forwardRef<HTMLDivElement, ReportViewProps>(
         {/* Header */}
         <div className="flex items-center justify-between px-8 py-5" style={{ background: "linear-gradient(135deg, #e8f5e9, #f1f8e9)", borderBottom: "2px solid #4CAF50" }}>
           <div className="flex items-center gap-4">
-            <img src={logoImrGris} alt="IMR Group" className="h-14 w-auto" />
+            <img src={logoImrGris} alt="IRM Circular Intelligence" className="h-14 w-auto" />
             <img src={logoAC} alt="Asociación de Recicladores del Estado de Querétaro A.C." className="h-16 w-auto" />
             <div>
-              <h1 className="text-[16px] font-bold tracking-tight uppercase text-gray-800">IMR Circular Intelligence</h1>
+              <h1 className="text-[16px] font-bold tracking-tight uppercase text-gray-800">IRM Circular Intelligence</h1>
               <p className="text-[11px] text-gray-500 mt-0.5">{periodLabel}</p>
             </div>
           </div>
