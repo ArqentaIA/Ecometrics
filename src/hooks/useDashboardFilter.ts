@@ -144,6 +144,7 @@ export function useDashboardFilter() {
       clearInterval(pollId);
       document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('pageshow', handlePageShow);
       window.removeEventListener('capture-confirmed', handleCaptureConfirmed);
       supabase.removeChannel(channel);
     };
