@@ -93,7 +93,7 @@ const Login = () => {
           </form>
         </div>
         <p className="text-center text-[10px] text-muted-foreground mt-4 opacity-60">
-          EcoMetrics IRM v2.0 · Plataforma de Sustentabilidad
+          IMR Circular Intelligence v2.0 · Plataforma de Sustentabilidad
         </p>
       </div>
     </div>
