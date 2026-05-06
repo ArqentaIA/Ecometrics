@@ -72,6 +72,71 @@ const CostInput = ({ materialCode, defaultValue, onCommit }: {
   );
 };
 
+/**
+ * Input para kg con soporte de gramos (3 decimales).
+ * Ej: 200.020 = 200 kg + 20 g. Para baterías acepta solo enteros (piezas).
+ */
+const KgInput = ({ materialCode, defaultValue, isBattery, disabled, onChange }: {
+  materialCode: string;
+  defaultValue: number;
+  isBattery: boolean;
+  disabled: boolean;
+  onChange: (code: string, val: number) => void;
+}) => {
+  const formatVal = (v: number) =>
+    v > 0 ? (isBattery ? String(Math.round(v)) : v.toFixed(3).replace(/\.?0+$/, "")) : "";
+  const [raw, setRaw] = useState(() => formatVal(defaultValue));
+  const committed = useRef(defaultValue);
+
+  // Sync if external value changes (e.g. clearAll / confirm)
+  if (defaultValue !== committed.current && !document.activeElement?.closest(`[data-kg="${materialCode}"]`)) {
+    committed.current = defaultValue;
+    setRaw(formatVal(defaultValue));
+  }
+
+  const regex = isBattery ? /^\d*$/ : /^\d*\.?\d{0,3}$/;
+
+  return (
+    <div data-kg={materialCode} className="contents">
+      <input
+        type="text"
+        inputMode={isBattery ? "numeric" : "decimal"}
+        value={raw}
+        disabled={disabled}
+        onChange={e => {
+          const val = e.target.value;
+          if (val === "" || regex.test(val)) {
+            setRaw(val);
+            const num = parseFloat(val);
+            if (!isNaN(num)) {
+              committed.current = num;
+              onChange(materialCode, num);
+            } else if (val === "") {
+              committed.current = 0;
+              onChange(materialCode, 0);
+            }
+          }
+        }}
+        onBlur={() => {
+          const num = parseFloat(raw);
+          if (!isNaN(num) && num >= 0) {
+            const formatted = isBattery ? String(Math.round(num)) : num.toFixed(3).replace(/\.?0+$/, "");
+            setRaw(formatted);
+            committed.current = isBattery ? Math.round(num) : num;
+            onChange(materialCode, committed.current);
+          } else {
+            setRaw("");
+            committed.current = 0;
+            onChange(materialCode, 0);
+          }
+        }}
+        className="win-input !w-32 text-right font-semibold text-base tabular-nums"
+        placeholder={isBattery ? "0" : "0.000"}
+      />
+    </div>
+  );
+};
+
 const DataCapture = () => {
   const {
     materialEntries, setMaterialKg, setCostPerKg, costPerKgMap, clearAll,
@@ -251,19 +316,12 @@ const DataCapture = () => {
                         <div className="text-[11px] text-muted-foreground">{entry.material.code}</div>
                       </div>
 
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={entry.isConfirmed ? "" : (entry.kg || "")}
-                        onChange={e => {
-                          const val = e.target.value;
-                          if (val === "" || /^\d*\.?\d*$/.test(val)) {
-                            handleKgChange(entry.material.code, parseFloat(val) || 0);
-                          }
-                        }}
+                      <KgInput
+                        materialCode={entry.material.code}
+                        defaultValue={entry.isConfirmed ? 0 : entry.kg}
+                        isBattery={isBattery}
                         disabled={entry.isConfirmed && !permissions.canReopenCapture}
-                        className="win-input !w-32 text-right font-semibold text-base tabular-nums"
-                        placeholder="0.00"
+                        onChange={handleKgChange}
                       />
                       <span className="text-xs text-muted-foreground font-medium">{isBattery ? "pzas" : "kg"}</span>
 
