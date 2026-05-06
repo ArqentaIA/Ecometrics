@@ -49,7 +49,7 @@ const CertificationBlock = ({
             </div>
             <div className="col-span-2">
               <span className="text-muted-foreground">Sistema:</span>{" "}
-              <span className="font-semibold text-foreground">ECOMETRICS</span>
+              <span className="font-semibold text-foreground">IRM Circular Intelligence</span>
             </div>
           </div>
         </div>
@@ -65,7 +65,7 @@ const CertificationBlock = ({
           Los factores de conversión utilizados se basan en metodologías y referencias técnicas reconocidas internacionalmente, como el GHG Protocol, el EPA Waste Reduction Model (WARM) v16 (diciembre 2023) y literatura especializada del sector de reciclaje, lo que permite estimar de forma consistente y verificable los impactos ambientales asociados a la recuperación de materiales.
         </p>
         <p className="text-[11px] leading-relaxed text-[hsl(220,9%,46%)]">
-          Este documento ha sido generado automáticamente por el sistema ECOMETRICS y cuenta con mecanismos de integridad y trazabilidad. Cualquier alteración posterior invalida su autenticidad.
+          Este documento ha sido generado automáticamente por el sistema IRM Circular Intelligence y cuenta con mecanismos de integridad y trazabilidad. Cualquier alteración posterior invalida su autenticidad.
         </p>
       </div>
     </div>
