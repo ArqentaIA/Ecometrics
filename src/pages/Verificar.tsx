@@ -60,7 +60,7 @@ const Verificar = () => {
         <div className="w-full max-w-lg">
           <div className="text-center mb-6">
             <h2 className="text-xl font-bold text-gray-800 mb-1">Verificación de Reporte</h2>
-            <p className="text-xs text-gray-500">Valide la autenticidad e integridad de un documento certificado por ECOMETRICS</p>
+            <p className="text-xs text-gray-500">Valide la autenticidad e integridad de un documento certificado por IRM Circular Intelligence</p>
           </div>
 
           <div className="rounded-xl bg-white p-6 shadow-lg border border-gray-200">
@@ -141,7 +141,7 @@ const Verificar = () => {
           </div>
 
           <p className="text-[10px] text-gray-400 text-center mt-6 max-w-sm mx-auto leading-relaxed">
-            Este módulo permite verificar la autenticidad e integridad de reportes generados por el sistema ECOMETRICS.
+            Este módulo permite verificar la autenticidad e integridad de reportes generados por el sistema IRM Circular Intelligence.
             No se exponen datos financieros ni información sensible.
           </p>
         </div>
@@ -150,7 +150,7 @@ const Verificar = () => {
       {/* Footer */}
       <footer className="w-full border-t border-gray-200 py-3">
         <p className="text-[9px] text-gray-400 text-center">
-          © {new Date().getFullYear()} ECOMETRICS — IRM Circular Intelligence. Sistema de integridad y trazabilidad documental.
+          © {new Date().getFullYear()} IRM Circular Intelligence. Sistema de integridad y trazabilidad documental.
         </p>
       </footer>
     </div>
