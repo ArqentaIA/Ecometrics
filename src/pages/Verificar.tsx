@@ -46,10 +46,10 @@ const Verificar = () => {
       {/* Header */}
       <header className="w-full border-b" style={{ borderColor: "#c8e6c9", background: "rgba(255,255,255,0.85)", backdropFilter: "blur(8px)" }}>
         <div className="max-w-2xl mx-auto px-6 py-4 flex items-center gap-4">
-          <img src={logoImrGris} alt="IMR Group" className="h-10 w-auto" />
+          <img src={logoImrGris} alt="IRM Circular Intelligence" className="h-10 w-auto" />
           <img src={logoAC} alt="Asociación de Recicladores del Estado de Querétaro A.C." className="h-12 w-auto" />
           <div>
-            <h1 className="text-sm font-bold tracking-tight text-gray-800 uppercase">IMR Circular Intelligence</h1>
+            <h1 className="text-sm font-bold tracking-tight text-gray-800 uppercase">IRM Circular Intelligence</h1>
             <p className="text-[10px] text-gray-500">Sistema de Integridad Documental</p>
           </div>
         </div>
@@ -150,7 +150,7 @@ const Verificar = () => {
       {/* Footer */}
       <footer className="w-full border-t border-gray-200 py-3">
         <p className="text-[9px] text-gray-400 text-center">
-          © {new Date().getFullYear()} ECOMETRICS — IMR Group. Sistema de integridad y trazabilidad documental.
+          © {new Date().getFullYear()} ECOMETRICS — IRM Circular Intelligence. Sistema de integridad y trazabilidad documental.
         </p>
       </footer>
     </div>

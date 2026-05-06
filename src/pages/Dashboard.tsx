@@ -238,9 +238,9 @@ const Dashboard = () => {
           <div className="absolute inset-0" style={{ background: "linear-gradient(to right, hsl(120 30% 82%) 35%, hsl(120 30% 82% / 0.6) 50%, transparent 75%)" }} />
         </div>
         <div className="max-w-7xl mx-auto px-5 py-5 flex items-center gap-6 relative z-10">
-          <img src={logoImrGris} alt="IMR Circular Intelligence" className="h-20 w-auto object-contain" />
+          <img src={logoImrGris} alt="IRM Circular Intelligence" className="h-20 w-auto object-contain" />
           <div className="flex-1 text-center">
-            <h1 className="font-heading text-[28px] font-bold text-foreground tracking-tight uppercase">IMR Circular Intelligence</h1>
+            <h1 className="font-heading text-[28px] font-bold text-foreground tracking-tight uppercase">IRM Circular Intelligence</h1>
           </div>
 
         </div>

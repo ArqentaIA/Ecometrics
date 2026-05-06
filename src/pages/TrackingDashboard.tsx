@@ -209,7 +209,7 @@ const TrackingDashboard = () => {
       <Navigation />
       <main className="max-w-7xl mx-auto px-5 py-6">
         <div className="text-center mb-4">
-          <h1 className="font-heading text-[24px] font-bold text-foreground tracking-tight uppercase">IMR Circular Intelligence</h1>
+          <h1 className="font-heading text-[24px] font-bold text-foreground tracking-tight uppercase">IRM Circular Intelligence</h1>
         </div>
         <header className="mb-5 flex items-start justify-between gap-4">
           <div>
@@ -223,7 +223,7 @@ const TrackingDashboard = () => {
             </p>
           </div>
           <div className="flex items-center gap-6 shrink-0">
-            <img src={logoIMR} alt="IMR" className="h-20 w-auto object-contain" />
+            <img src={logoIMR} alt="IRM Circular Intelligence" className="h-20 w-auto object-contain" />
             <img src={logoAC} alt="Asociación de Recicladores del Estado de Querétaro A.C." className="h-20 w-auto object-contain" />
           </div>
         </header>
