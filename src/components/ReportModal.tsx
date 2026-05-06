@@ -100,8 +100,11 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
       const imgData = canvas.toDataURL("image/png");
       pdf.addImage(imgData, "PNG", 0, 0, pdfW, pdfH);
 
-      const folio = cert?.folio ?? "REPORT";
-      pdf.save(`ecometrics-${dashYear}-${folio}.pdf`);
+      const now = new Date();
+      const pad = (n: number) => String(n).padStart(2, "0");
+      const fecha = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`;
+      const hora = `${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+      pdf.save(`IRM Circular Intelligence-${fecha}-${hora}.pdf`);
     } finally {
       setGenerating(false);
     }
