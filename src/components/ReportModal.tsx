@@ -154,9 +154,12 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <h2 className="font-heading text-lg font-bold">
-            {step === "select" ? "📄 Seleccionar y Generar Reporte" : "📄 Vista Previa del Reporte"}
-          </h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-xl leading-none">&times;</button>
+            {step === "select"
+              ? "📄 Seleccionar y Generar Reporte"
+              : step === "recipient"
+                ? "🏢 Datos del destinatario"
+                : "📄 Vista Previa del Reporte"}
+
         </div>
 
         {step === "select" ? (
