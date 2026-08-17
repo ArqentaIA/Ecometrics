@@ -26,16 +26,33 @@ interface ReportModalProps {
   confirmedEntries: MaterialEntry[];
 }
 
+export interface ReportRecipient {
+  empresa: string;
+  direccion: string;
+  rfc: string;
+  atencion: string;
+}
+
+const RFC_RE = /^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/;
+
 const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, confirmedEntries }: ReportModalProps) => {
   const { user } = useEcoMetrics();
   const [clientType, setClientType] = useState("corporativo");
-  const [step, setStep] = useState<"select" | "preview">("select");
+  const [step, setStep] = useState<"select" | "recipient" | "preview">("select");
   const [generating, setGenerating] = useState(false);
+  const [recipient, setRecipient] = useState<ReportRecipient>({ empresa: "", direccion: "", rfc: "", atencion: "" });
   const [cert, setCert] = useState<{
     folio: string; firma: string; hash: string; datasetId: string;
     fechaEmision: string; totalRegistros: number;
   } | null>(null);
   const reportRef = useRef<HTMLDivElement>(null);
+
+  const recipientValid =
+    recipient.empresa.trim().length > 1 &&
+    recipient.direccion.trim().length > 5 &&
+    RFC_RE.test(recipient.rfc.trim().toUpperCase()) &&
+    recipient.atencion.trim().length > 2;
+
 
   const generateCertification = useCallback(async () => {
     if (confirmedEntries.length === 0) {
