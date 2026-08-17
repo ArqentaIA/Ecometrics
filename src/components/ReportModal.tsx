@@ -67,7 +67,17 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
       const folio = generateFolio(now);
       const datasetId = generateDatasetId(now);
       const canonicalDataset = buildCanonicalDataset(confirmedEntries);
-      const parametros = { year: dashYear, months: selectedMonths ?? "all", clientType };
+      const destinatario = clientType === "corporativo"
+        ? {
+            empresa: recipient.empresa.trim(),
+            direccion: recipient.direccion.trim(),
+            rfc: recipient.rfc.trim().toUpperCase(),
+            atencion: recipient.atencion.trim(),
+          }
+        : null;
+      const parametros = { year: dashYear, months: selectedMonths ?? "all", clientType, ...(destinatario ? { destinatario } : {}) };
+      setFrozenRecipient(destinatario);
+
 
       const hash = await computeSHA256({
         folio, tipoReporte: "reporte_visual",
