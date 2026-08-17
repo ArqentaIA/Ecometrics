@@ -159,8 +159,10 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
               : step === "recipient"
                 ? "🏢 Datos del destinatario"
                 : "📄 Vista Previa del Reporte"}
-
+          </h2>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-xl leading-none">&times;</button>
         </div>
+
 
         {step === "select" ? (
           <div className="p-8">
