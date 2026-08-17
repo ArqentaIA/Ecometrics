@@ -194,7 +194,7 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
             <div className="flex justify-end gap-3">
               <button onClick={onClose} className="win-btn-standard text-sm">Cancelar</button>
               <button
-                onClick={generateCertification}
+                onClick={handlePrimary}
                 disabled={generating || confirmedEntries.length === 0}
                 className="win-btn-standard text-sm bg-primary text-primary-foreground hover:bg-primary/90"
               >
@@ -202,7 +202,73 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
               </button>
             </div>
           </div>
+        ) : step === "recipient" ? (
+          <div className="p-8">
+            <p className="text-sm text-muted-foreground mb-6">
+              Capture los datos de la empresa a quien será dirigido el Reporte Corporativo / ESG.
+            </p>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="md:col-span-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Nombre de la Empresa *</label>
+                <input
+                  value={recipient.empresa}
+                  onChange={e => setRecipient(r => ({ ...r, empresa: e.target.value }))}
+                  placeholder="Ej. Industrias del Bajío S.A. de C.V."
+                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dirección *</label>
+                <textarea
+                  value={recipient.direccion}
+                  onChange={e => setRecipient(r => ({ ...r, direccion: e.target.value }))}
+                  rows={3}
+                  placeholder="Calle y número, colonia, ciudad, estado, C.P."
+                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm resize-y"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">RFC *</label>
+                <input
+                  value={recipient.rfc}
+                  onChange={e => setRecipient(r => ({ ...r, rfc: e.target.value.toUpperCase().replace(/\s+/g, "") }))}
+                  onBlur={e => setRecipient(r => ({ ...r, rfc: e.target.value.trim().toUpperCase() }))}
+                  maxLength={13}
+                  placeholder="XAXX010101000"
+                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm font-mono uppercase"
+                />
+                {recipient.rfc.length > 0 && !RFC_RE.test(recipient.rfc.trim().toUpperCase()) && (
+                  <p className="text-[11px] text-destructive mt-1">Formato de RFC inválido (12 o 13 caracteres).</p>
+                )}
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Con AT'N *</label>
+                <input
+                  value={recipient.atencion}
+                  onChange={e => setRecipient(r => ({ ...r, atencion: e.target.value }))}
+                  placeholder="Ing. Juan Pérez Martínez — Director de Sustentabilidad"
+                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-between gap-3 mt-8">
+              <button onClick={() => setStep("select")} className="win-btn-standard text-sm">Cancelar</button>
+              <button
+                onClick={generateCertification}
+                disabled={!recipientValid || generating || confirmedEntries.length === 0}
+                className="win-btn-standard text-sm bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              >
+                {generating ? "⏳ Generando..." : "Continuar a Vista Previa"}
+              </button>
+            </div>
+          </div>
         ) : (
+
           <div className="p-4">
             {/* Action bar */}
             <div className="flex items-center justify-between mb-4 px-2">
