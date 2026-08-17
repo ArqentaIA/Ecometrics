@@ -81,7 +81,23 @@ const ReportView = forwardRef<HTMLDivElement, ReportViewProps>(
           </div>
         </div>
 
+        {/* Destinatario (solo Corporativo / ESG) */}
+        {recipient && (
+          <div className="px-8 pt-5">
+            <div className="rounded-lg px-5 py-4" style={{ background: "#F7FAF7", borderLeft: "3px solid #4CAF50", border: "1px solid #E3EDE3" }}>
+              <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-gray-500 mb-1.5">Preparado para</p>
+              <p className="text-[13px] font-bold text-gray-800 uppercase leading-tight">{recipient.empresa}</p>
+              <p className="text-[10px] text-gray-600 mt-0.5 whitespace-pre-line leading-snug">{recipient.direccion}</p>
+              <div className="flex flex-wrap gap-x-8 gap-y-1 mt-2">
+                <p className="text-[10px] text-gray-700"><span className="font-semibold">RFC:</span> <span className="font-mono">{recipient.rfc}</span></p>
+                <p className="text-[10px] text-gray-700"><span className="font-semibold">CON AT'N:</span> {recipient.atencion}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* KPI Summary */}
+
         <div className="px-8 py-5">
           <h2 className="text-[13px] font-bold uppercase tracking-wider text-gray-700 mb-3">Indicadores Clave de Impacto</h2>
           <div className="grid grid-cols-6 gap-3">
