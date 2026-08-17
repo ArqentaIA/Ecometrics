@@ -41,6 +41,7 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
   const [step, setStep] = useState<"select" | "recipient" | "preview">("select");
   const [generating, setGenerating] = useState(false);
   const [recipient, setRecipient] = useState<ReportRecipient>({ empresa: "", direccion: "", rfc: "", atencion: "" });
+  const [frozenRecipient, setFrozenRecipient] = useState<ReportRecipient | null>(null);
   const [cert, setCert] = useState<{
     folio: string; firma: string; hash: string; datasetId: string;
     fechaEmision: string; totalRegistros: number;
