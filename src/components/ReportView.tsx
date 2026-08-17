@@ -13,6 +13,12 @@ interface ReportViewProps {
   dashYear: number;
   totals: KPITotals;
   confirmedEntries: MaterialEntry[];
+  recipient?: {
+    empresa: string;
+    direccion: string;
+    rfc: string;
+    atencion: string;
+  } | null;
   cert: {
     folio: string;
     firma: string;
@@ -22,6 +28,7 @@ interface ReportViewProps {
     totalRegistros: number;
   } | null;
 }
+
 
 const KPIBlock = ({ label, value, unit, color }: { label: string; value: string; unit: string; color: string }) => (
   <div className="flex flex-col items-center p-3 rounded-lg" style={{ background: `${color}12`, border: `1px solid ${color}30` }}>
