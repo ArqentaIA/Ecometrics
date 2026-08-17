@@ -26,16 +26,34 @@ interface ReportModalProps {
   confirmedEntries: MaterialEntry[];
 }
 
+export interface ReportRecipient {
+  empresa: string;
+  direccion: string;
+  rfc: string;
+  atencion: string;
+}
+
+const RFC_RE = /^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/;
+
 const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, confirmedEntries }: ReportModalProps) => {
   const { user } = useEcoMetrics();
   const [clientType, setClientType] = useState("corporativo");
-  const [step, setStep] = useState<"select" | "preview">("select");
+  const [step, setStep] = useState<"select" | "recipient" | "preview">("select");
   const [generating, setGenerating] = useState(false);
+  const [recipient, setRecipient] = useState<ReportRecipient>({ empresa: "", direccion: "", rfc: "", atencion: "" });
+  const [frozenRecipient, setFrozenRecipient] = useState<ReportRecipient | null>(null);
   const [cert, setCert] = useState<{
     folio: string; firma: string; hash: string; datasetId: string;
     fechaEmision: string; totalRegistros: number;
   } | null>(null);
   const reportRef = useRef<HTMLDivElement>(null);
+
+  const recipientValid =
+    recipient.empresa.trim().length > 1 &&
+    recipient.direccion.trim().length > 5 &&
+    RFC_RE.test(recipient.rfc.trim().toUpperCase()) &&
+    recipient.atencion.trim().length > 2;
+
 
   const generateCertification = useCallback(async () => {
     if (confirmedEntries.length === 0) {
@@ -50,7 +68,17 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
       const folio = generateFolio(now);
       const datasetId = generateDatasetId(now);
       const canonicalDataset = buildCanonicalDataset(confirmedEntries);
-      const parametros = { year: dashYear, months: selectedMonths ?? "all", clientType };
+      const destinatario = clientType === "corporativo"
+        ? {
+            empresa: recipient.empresa.trim(),
+            direccion: recipient.direccion.trim(),
+            rfc: recipient.rfc.trim().toUpperCase(),
+            atencion: recipient.atencion.trim(),
+          }
+        : null;
+      const parametros = { year: dashYear, months: selectedMonths ?? "all", clientType, ...(destinatario ? { destinatario } : {}) };
+      setFrozenRecipient(destinatario);
+
 
       const hash = await computeSHA256({
         folio, tipoReporte: "reporte_visual",
@@ -73,7 +101,17 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
     } finally {
       setGenerating(false);
     }
-  }, [confirmedEntries, dashYear, selectedMonths, clientType, user]);
+  }, [confirmedEntries, dashYear, selectedMonths, clientType, user, recipient]);
+
+  const handlePrimary = useCallback(() => {
+    if (clientType === "corporativo") {
+      setStep("recipient");
+      return;
+    }
+    setFrozenRecipient(null);
+    generateCertification();
+  }, [clientType, generateCertification]);
+
 
   const exportPDF = useCallback(async () => {
     if (!reportRef.current) return;
@@ -116,10 +154,15 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <h2 className="font-heading text-lg font-bold">
-            {step === "select" ? "📄 Seleccionar y Generar Reporte" : "📄 Vista Previa del Reporte"}
+            {step === "select"
+              ? "📄 Seleccionar y Generar Reporte"
+              : step === "recipient"
+                ? "🏢 Datos del destinatario"
+                : "📄 Vista Previa del Reporte"}
           </h2>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-xl leading-none">&times;</button>
         </div>
+
 
         {step === "select" ? (
           <div className="p-8">
@@ -151,7 +194,7 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
             <div className="flex justify-end gap-3">
               <button onClick={onClose} className="win-btn-standard text-sm">Cancelar</button>
               <button
-                onClick={generateCertification}
+                onClick={handlePrimary}
                 disabled={generating || confirmedEntries.length === 0}
                 className="win-btn-standard text-sm bg-primary text-primary-foreground hover:bg-primary/90"
               >
@@ -159,7 +202,73 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
               </button>
             </div>
           </div>
+        ) : step === "recipient" ? (
+          <div className="p-8">
+            <p className="text-sm text-muted-foreground mb-6">
+              Capture los datos de la empresa a quien será dirigido el Reporte Corporativo / ESG.
+            </p>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="md:col-span-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Nombre de la Empresa *</label>
+                <input
+                  value={recipient.empresa}
+                  onChange={e => setRecipient(r => ({ ...r, empresa: e.target.value }))}
+                  placeholder="Ej. Industrias del Bajío S.A. de C.V."
+                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dirección *</label>
+                <textarea
+                  value={recipient.direccion}
+                  onChange={e => setRecipient(r => ({ ...r, direccion: e.target.value }))}
+                  rows={3}
+                  placeholder="Calle y número, colonia, ciudad, estado, C.P."
+                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm resize-y"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">RFC *</label>
+                <input
+                  value={recipient.rfc}
+                  onChange={e => setRecipient(r => ({ ...r, rfc: e.target.value.toUpperCase().replace(/\s+/g, "") }))}
+                  onBlur={e => setRecipient(r => ({ ...r, rfc: e.target.value.trim().toUpperCase() }))}
+                  maxLength={13}
+                  placeholder="XAXX010101000"
+                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm font-mono uppercase"
+                />
+                {recipient.rfc.length > 0 && !RFC_RE.test(recipient.rfc.trim().toUpperCase()) && (
+                  <p className="text-[11px] text-destructive mt-1">Formato de RFC inválido (12 o 13 caracteres).</p>
+                )}
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Con AT'N *</label>
+                <input
+                  value={recipient.atencion}
+                  onChange={e => setRecipient(r => ({ ...r, atencion: e.target.value }))}
+                  placeholder="Ing. Juan Pérez Martínez — Director de Sustentabilidad"
+                  className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-between gap-3 mt-8">
+              <button onClick={() => setStep("select")} className="win-btn-standard text-sm">Cancelar</button>
+              <button
+                onClick={generateCertification}
+                disabled={!recipientValid || generating || confirmedEntries.length === 0}
+                className="win-btn-standard text-sm bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              >
+                {generating ? "⏳ Generando..." : "Continuar a Vista Previa"}
+              </button>
+            </div>
+          </div>
         ) : (
+
           <div className="p-4">
             {/* Action bar */}
             <div className="flex items-center justify-between mb-4 px-2">
@@ -185,6 +294,8 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
                 totals={totals}
                 confirmedEntries={confirmedEntries}
                 cert={cert}
+                recipient={frozenRecipient}
+
               />
             </div>
 
