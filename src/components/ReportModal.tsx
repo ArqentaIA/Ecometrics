@@ -101,7 +101,17 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
     } finally {
       setGenerating(false);
     }
-  }, [confirmedEntries, dashYear, selectedMonths, clientType, user]);
+  }, [confirmedEntries, dashYear, selectedMonths, clientType, user, recipient]);
+
+  const handlePrimary = useCallback(() => {
+    if (clientType === "corporativo") {
+      setStep("recipient");
+      return;
+    }
+    setFrozenRecipient(null);
+    generateCertification();
+  }, [clientType, generateCertification]);
+
 
   const exportPDF = useCallback(async () => {
     if (!reportRef.current) return;
