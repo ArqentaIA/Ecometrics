@@ -294,6 +294,8 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
                 totals={totals}
                 confirmedEntries={confirmedEntries}
                 cert={cert}
+                recipient={frozenRecipient}
+
               />
             </div>
 
