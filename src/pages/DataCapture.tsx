@@ -471,9 +471,21 @@ const DataCapture = () => {
         </div>
       ) : (
         <div className="max-w-6xl mx-auto px-5 pb-8">
-          <ExcelUploadProcessor />
+          {/* Importación deshabilitada temporalmente (Fase 1 — trazabilidad por cliente).
+              ExcelUploadProcessor y excelValidator se conservan intactos para el rediseño. */}
+          <div className="win-card p-6 border border-border text-center">
+            <p className="text-3xl mb-2">🚫</p>
+            <p className="text-sm font-semibold text-foreground">
+              Importación temporalmente no disponible — pendiente de rediseño.
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Utiliza la captura por material mientras se habilita la trazabilidad por cliente.
+            </p>
+          </div>
+          {false && <ExcelUploadProcessor />}
         </div>
       )}
+
     </div>
   );
 };
