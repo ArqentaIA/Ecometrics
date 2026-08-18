@@ -425,16 +425,20 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
           if (error) {
             lastError = error.message;
             // Only retry on network-like errors, not validation errors
-            if (error.message.includes("network") || error.message.includes("fetch") || error.message.includes("Failed") || error.code === "PGRST000" || !error.code) {
+            const isNetworkLike = error.message.includes("network") || error.message.includes("fetch") || error.message.includes("Failed") || error.code === "PGRST000" || !error.code;
+            if (isNetworkLike) {
               console.warn(`Captura intento ${attempt}/${MAX_RETRIES} falló (red):`, error.message);
               if (attempt < MAX_RETRIES) {
                 await new Promise(r => setTimeout(r, RETRY_DELAY));
                 continue;
               }
+              // Último intento de red fallido → cae al fallback de localStorage
+              break;
             }
-            // Non-retryable error — return immediately
+            // Error no reintentable (validación / permisos) — no encolar
             return { error: lastError };
           }
+
 
           // Success
           lastError = null;
