@@ -61,6 +61,9 @@ interface EcoMetricsState {
   captureVersion: number;
   savingCapture: boolean;
   saveCapture: (code: string) => Promise<{ error: string | null }>;
+  selectedClienteId: string | null;
+  setSelectedClienteId: (id: string | null) => void;
+  pendingIncidencias: number;
   loadCaptures: () => Promise<void>;
   loadingCaptures: boolean;
   confirmedTotals: KPITotals;
@@ -83,6 +86,9 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
   const [loadingCaptures, setLoadingCaptures] = useState(false);
   const [proveedorMap, setProveedorMapState] = useState<Record<string, string>>({});
   const [captureVersion, setCaptureVersion] = useState(0);
+  // Cliente activo de captura (Fase 2 — trazabilidad). Sin autoselección.
+  const [selectedClienteId, setSelectedClienteId] = useState<string | null>(null);
+  const [pendingIncidencias, setPendingIncidencias] = useState(0);
 
   // Catalog state
   const [catalog, setCatalog] = useState<CatalogMaterial[]>([]);
@@ -158,12 +164,27 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
 
     (async () => {
       const stillPending: any[] = [];
+      let incidencias = 0;
       for (const item of pending) {
-        const { _failedAt, _error, ...snapshot } = item;
+        const { _failedAt, _error, _incidencia, ...snapshot } = item;
+        // Entradas antiguas sin cliente_id NO se sincronizan silenciosamente.
+        if (!snapshot.cliente_id) {
+          incidencias++;
+          stillPending.push({ ...item, _incidencia: "SIN_CLIENTE_ID" });
+          continue;
+        }
         const { error } = await supabase.from("material_captures").insert(snapshot as any);
         if (error) {
           stillPending.push(item);
         }
+      }
+      setPendingIncidencias(incidencias);
+      if (incidencias > 0) {
+        toast({
+          title: "Capturas locales sin cliente",
+          description: `${incidencias} captura(s) pendiente(s) no tienen cliente asignado y NO se sincronizaron. Requieren resolución manual.`,
+          variant: "destructive",
+        });
       }
       if (stillPending.length === 0) {
         localStorage.removeItem(PENDING_KEY);
@@ -371,6 +392,9 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     const prov = proveedorMap[code] ?? "";
     if (!prov) return { error: "Debe seleccionar un proveedor" };
 
+    // Fase 2 — trazabilidad por cliente: obligatorio y explícito
+    if (!selectedClienteId) return { error: "Debe seleccionar un cliente antes de confirmar la captura" };
+
     // Get active versioned factor
     const factor = versionedFactors[code] ?? null;
 
@@ -384,6 +408,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
         ...buildCaptureSnapshot(material, kg, user.id, currentMonth + 1, currentYear, cost, factor),
         proveedor: prov,
         capture_role: userRole ?? 'user',
+        cliente_id: selectedClienteId,
       };
 
       // ─── Retry logic: 3 attempts, 2s delay ───
@@ -452,7 +477,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
     } finally {
       setSavingCapture(false);
     }
-  }, [user, catalog, kgMap, costPerKgMap, proveedorMap, currentMonth, currentYear, loadCaptures, versionedFactors]);
+  }, [user, catalog, kgMap, costPerKgMap, proveedorMap, currentMonth, currentYear, loadCaptures, versionedFactors, selectedClienteId, userRole]);
 
   // ─── Derived: material entries with live KPIs from engine ───
   const materialEntries: MaterialEntry[] = useMemo(() =>
@@ -518,6 +543,7 @@ export function EcoMetricsProvider({ children }: { children: React.ReactNode }) 
       currentMonth, currentYear, setCurrentMonth, setCurrentYear,
       catalog, catalogLoading, versionedFactors,
       materialEntries, setMaterialKg, setCostPerKg, costPerKgMap,
+      selectedClienteId, setSelectedClienteId, pendingIncidencias,
       proveedorMap, setProveedor, clearAll,
       kpiTotals, totalKg,
       refreshData, lastUpdated, captureVersion,

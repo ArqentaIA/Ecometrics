@@ -4,6 +4,8 @@ import Navigation from "@/components/Navigation";
 import HeaderLogos from "@/components/HeaderLogos";
 import ImpactCards from "@/components/ImpactCards";
 import ExcelUploadProcessor from "@/components/ExcelUploadProcessor";
+import NuevoClienteModal from "@/components/NuevoClienteModal";
+import { useClientes, type NuevoClienteInput } from "@/hooks/useClientes";
 import { formatKPI } from "@/lib/calculationEngine";
 
 const MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
@@ -143,7 +145,19 @@ const DataCapture = () => {
     currentMonth, setCurrentMonth, currentYear, setCurrentYear,
     saveCapture, catalogLoading, catalog, permissions, roleLabel,
     proveedorMap, setProveedor,
+    selectedClienteId, setSelectedClienteId, isLoggedIn,
   } = useEcoMetrics();
+
+  const { clientes, loading: clientesLoading, canCreate, createCliente } = useClientes(isLoggedIn);
+  const [showNuevoCliente, setShowNuevoCliente] = useState(false);
+  const clienteActivo = clientes.find(c => c.id === selectedClienteId) ?? null;
+
+  const handleCreateCliente = useCallback(async (input: NuevoClienteInput) => {
+    const { cliente, error } = await createCliente(input);
+    if (error) return { error };
+    if (cliente) setSelectedClienteId(cliente.id);
+    return { error: null };
+  }, [createCliente, setSelectedClienteId]);
 
   const [activeTab, setActiveTab] = useState(0);
   const [openImpact, setOpenImpact] = useState<Record<string, boolean>>({});
@@ -257,6 +271,49 @@ const DataCapture = () => {
           </div>
         </div>
       </div>
+
+      {/* Cliente (Fase 2 — trazabilidad por cliente) */}
+      <div className="max-w-6xl mx-auto px-5 mb-5">
+        <div className="rounded-xl border border-border bg-card/60 backdrop-blur-sm p-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm font-semibold">Cliente</span>
+            <select
+              value={selectedClienteId ?? ""}
+              onChange={e => setSelectedClienteId(e.target.value || null)}
+              className="win-input text-sm min-w-[260px]"
+            >
+              <option value="">{clientesLoading ? "Cargando clientes…" : "— Seleccione un cliente —"}</option>
+              {clientes.map(c => (
+                <option key={c.id} value={c.id}>{c.nombre}</option>
+              ))}
+            </select>
+            {canCreate && (
+              <button
+                type="button"
+                onClick={() => setShowNuevoCliente(true)}
+                className="win-btn-standard text-xs px-3"
+              >
+                + Nuevo cliente
+              </button>
+            )}
+          </div>
+          <div className="mt-2 text-xs">
+            {clienteActivo ? (
+              <span className="text-primary font-semibold">Cliente activo: {clienteActivo.nombre}</span>
+            ) : (
+              <span className="text-destructive font-medium">
+                Sin cliente seleccionado — no es posible confirmar capturas.
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <NuevoClienteModal
+        open={showNuevoCliente}
+        onClose={() => setShowNuevoCliente(false)}
+        onCreate={handleCreateCliente}
+      />
 
       {/* Tabs */}
       <div className="max-w-6xl mx-auto px-5 mb-6">
@@ -374,12 +431,15 @@ const DataCapture = () => {
                         onClick={() => handleConfirm(entry.material.code)}
                         disabled={
                           !entry.kg ||
+                          !selectedClienteId ||
                           !(proveedorMap[entry.material.code]) ||
                           (state.confirmed && !state.pending) ||
                           (!permissions.canConfirmCapture && !permissions.canEditPrice)
                         }
                         title={
-                          !proveedorMap[entry.material.code]
+                          !selectedClienteId
+                            ? "Seleccione un cliente para confirmar"
+                            : !proveedorMap[entry.material.code]
                             ? "Seleccione un proveedor para confirmar"
                             : !permissions.canConfirmCapture && !permissions.canEditPrice
                               ? "No tienes permiso para confirmar capturas"
