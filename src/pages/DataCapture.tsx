@@ -261,23 +261,32 @@ const DataCapture = () => {
       {/* Tabs */}
       <div className="max-w-6xl mx-auto px-5 mb-6">
         <div className="flex gap-0 border-b border-border">
-          {["📋 Captura por Material", "📂 Subir Excel / CSV"].map((t, i) => (
-            <button
-              key={t}
-              onClick={() => setActiveTab(i)}
-              className={`relative pb-3 px-4 text-sm transition-all duration-150 ${
-                activeTab === i
-                  ? "text-foreground font-semibold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {t}
-              {activeTab === i && (
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-[3px] bg-primary rounded-t-full" />
-              )}
-            </button>
-          ))}
+          {["📋 Captura por Material", "📂 Subir Excel / CSV"].map((t, i) => {
+            const disabled = i === 1;
+            return (
+              <button
+                key={t}
+                onClick={() => { if (!disabled) setActiveTab(i); }}
+                disabled={disabled}
+                title={disabled ? "Importación temporalmente no disponible — pendiente de rediseño." : undefined}
+                className={`relative pb-3 px-4 text-sm transition-all duration-150 ${
+                  disabled
+                    ? "text-muted-foreground/50 cursor-not-allowed"
+                    : activeTab === i
+                      ? "text-foreground font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {t}
+                {disabled && <span className="ml-1.5 text-[10px] align-middle">🚫</span>}
+                {!disabled && activeTab === i && (
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-[3px] bg-primary rounded-t-full" />
+                )}
+              </button>
+            );
+          })}
         </div>
+
       </div>
 
       {activeTab === 0 ? (
@@ -462,9 +471,21 @@ const DataCapture = () => {
         </div>
       ) : (
         <div className="max-w-6xl mx-auto px-5 pb-8">
-          <ExcelUploadProcessor />
+          {/* Importación deshabilitada temporalmente (Fase 1 — trazabilidad por cliente).
+              ExcelUploadProcessor y excelValidator se conservan intactos para el rediseño. */}
+          <div className="win-card p-6 border border-border text-center">
+            <p className="text-3xl mb-2">🚫</p>
+            <p className="text-sm font-semibold text-foreground">
+              Importación temporalmente no disponible — pendiente de rediseño.
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Utiliza la captura por material mientras se habilita la trazabilidad por cliente.
+            </p>
+          </div>
+          {false && <ExcelUploadProcessor />}
         </div>
       )}
+
     </div>
   );
 };

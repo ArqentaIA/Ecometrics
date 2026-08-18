@@ -113,10 +113,65 @@ export type Database = {
         }
         Relationships: []
       }
+      clientes: {
+        Row: {
+          activo: boolean
+          contacto: string | null
+          correo: string | null
+          created_at: string
+          created_by: string | null
+          direccion: string | null
+          es_publico_general: boolean
+          id: string
+          nombre: string
+          notas: string | null
+          razon_social: string | null
+          rfc: string | null
+          telefono: string | null
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          activo?: boolean
+          contacto?: string | null
+          correo?: string | null
+          created_at?: string
+          created_by?: string | null
+          direccion?: string | null
+          es_publico_general?: boolean
+          id?: string
+          nombre: string
+          notas?: string | null
+          razon_social?: string | null
+          rfc?: string | null
+          telefono?: string | null
+          tipo?: string
+          updated_at?: string
+        }
+        Update: {
+          activo?: boolean
+          contacto?: string | null
+          correo?: string | null
+          created_at?: string
+          created_by?: string | null
+          direccion?: string | null
+          es_publico_general?: boolean
+          id?: string
+          nombre?: string
+          notas?: string | null
+          razon_social?: string | null
+          rfc?: string | null
+          telefono?: string | null
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       material_captures: {
         Row: {
           capture_origin: string | null
           capture_role: string | null
+          cliente_id: string | null
           confirmed_at: string | null
           confirmed_by: string | null
           cost_per_kg_applied: number | null
@@ -159,6 +214,7 @@ export type Database = {
         Insert: {
           capture_origin?: string | null
           capture_role?: string | null
+          cliente_id?: string | null
           confirmed_at?: string | null
           confirmed_by?: string | null
           cost_per_kg_applied?: number | null
@@ -201,6 +257,7 @@ export type Database = {
         Update: {
           capture_origin?: string | null
           capture_role?: string | null
+          cliente_id?: string | null
           confirmed_at?: string | null
           confirmed_by?: string | null
           cost_per_kg_applied?: number | null
@@ -241,6 +298,13 @@ export type Database = {
           yield_applied?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "material_captures_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "material_captures_temporary_material_id_fkey"
             columns: ["temporary_material_id"]
@@ -454,6 +518,7 @@ export type Database = {
         Row: {
           activo: boolean
           cliente: string
+          cliente_id: string | null
           fecha_creacion: string
           fecha_vencimiento: string | null
           id: string
@@ -464,6 +529,7 @@ export type Database = {
         Insert: {
           activo?: boolean
           cliente: string
+          cliente_id?: string | null
           fecha_creacion?: string
           fecha_vencimiento?: string | null
           id?: string
@@ -474,6 +540,7 @@ export type Database = {
         Update: {
           activo?: boolean
           cliente?: string
+          cliente_id?: string | null
           fecha_creacion?: string
           fecha_vencimiento?: string | null
           id?: string
@@ -481,7 +548,15 @@ export type Database = {
           pin?: string
           token?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "public_tokens_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       report_audit_log: {
         Row: {
@@ -524,6 +599,42 @@ export type Database = {
           usuario_id?: string
         }
         Relationships: []
+      }
+      reporte_clientes: {
+        Row: {
+          cliente_id: string
+          created_at: string
+          id: string
+          reporte_id: string
+        }
+        Insert: {
+          cliente_id: string
+          created_at?: string
+          id?: string
+          reporte_id: string
+        }
+        Update: {
+          cliente_id?: string
+          created_at?: string
+          id?: string
+          reporte_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reporte_clientes_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reporte_clientes_reporte_id_fkey"
+            columns: ["reporte_id"]
+            isOneToOne: false
+            referencedRelation: "report_audit_log"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       system_parameters: {
         Row: {
@@ -653,6 +764,38 @@ export type Database = {
         }
         Relationships: []
       }
+      usuario_clientes: {
+        Row: {
+          cliente_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          cliente_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          cliente_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usuario_clientes_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -702,6 +845,11 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_global_role: { Args: { _user_id: string }; Returns: boolean }
+      user_can_access_cliente: {
+        Args: { _cliente_id: string; _user_id: string }
         Returns: boolean
       }
       validate_public_token: { Args: { _token: string }; Returns: boolean }
