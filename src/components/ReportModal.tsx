@@ -48,11 +48,6 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
   } | null>(null);
   const reportRef = useRef<HTMLDivElement>(null);
 
-  const recipientComplete =
-    recipient.empresa.trim().length > 1 &&
-    recipient.direccion.trim().length > 5 &&
-    RFC_RE.test(recipient.rfc.trim().toUpperCase()) &&
-    recipient.atencion.trim().length > 2;
 
 
   const generateCertification = useCallback(async () => {
