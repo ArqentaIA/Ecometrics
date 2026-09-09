@@ -259,7 +259,7 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
               <button onClick={() => setStep("select")} className="win-btn-standard text-sm">Cancelar</button>
               <button
                 onClick={generateCertification}
-                disabled={!recipientValid || generating || confirmedEntries.length === 0}
+                disabled={generating}
                 className="win-btn-standard text-sm bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
               >
                 {generating ? "⏳ Generando..." : "Continuar a Vista Previa"}
