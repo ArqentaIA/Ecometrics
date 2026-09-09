@@ -48,7 +48,7 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
   } | null>(null);
   const reportRef = useRef<HTMLDivElement>(null);
 
-  const recipientValid =
+  const recipientComplete =
     recipient.empresa.trim().length > 1 &&
     recipient.direccion.trim().length > 5 &&
     RFC_RE.test(recipient.rfc.trim().toUpperCase()) &&
@@ -56,11 +56,6 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
 
 
   const generateCertification = useCallback(async () => {
-    if (confirmedEntries.length === 0) {
-      alert("No hay datos confirmados para generar el reporte.");
-      return;
-    }
-
     setGenerating(true);
     try {
       const now = new Date();
