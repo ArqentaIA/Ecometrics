@@ -193,7 +193,7 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
               <button onClick={onClose} className="win-btn-standard text-sm">Cancelar</button>
               <button
                 onClick={handlePrimary}
-                disabled={generating || confirmedEntries.length === 0}
+                disabled={generating}
                 className="win-btn-standard text-sm bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 {generating ? "⏳ Generando..." : "Generar Vista Previa"}
