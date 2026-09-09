@@ -204,6 +204,7 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
           <div className="p-8">
             <p className="text-sm text-muted-foreground mb-6">
               Capture los datos de la empresa a quien será dirigido el Reporte Corporativo / ESG.
+              Puede dejar campos vacíos y continuar; los datos faltantes aparecerán como “—”.
             </p>
 
             <div className="grid gap-4 md:grid-cols-2">
