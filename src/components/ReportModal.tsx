@@ -204,7 +204,7 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="md:col-span-2">
-                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Nombre de la Empresa *</label>
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Nombre de la Empresa</label>
                 <input
                   value={recipient.empresa}
                   onChange={e => setRecipient(r => ({ ...r, empresa: e.target.value }))}
@@ -214,7 +214,7 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
               </div>
 
               <div className="md:col-span-2">
-                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dirección *</label>
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dirección</label>
                 <textarea
                   value={recipient.direccion}
                   onChange={e => setRecipient(r => ({ ...r, direccion: e.target.value }))}
@@ -225,7 +225,7 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">RFC *</label>
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">RFC</label>
                 <input
                   value={recipient.rfc}
                   onChange={e => setRecipient(r => ({ ...r, rfc: e.target.value.toUpperCase().replace(/\s+/g, "") }))}
@@ -240,7 +240,7 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Con AT'N *</label>
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Con AT'N</label>
                 <input
                   value={recipient.atencion}
                   onChange={e => setRecipient(r => ({ ...r, atencion: e.target.value }))}
