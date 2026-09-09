@@ -63,12 +63,15 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
       const folio = generateFolio(now);
       const datasetId = generateDatasetId(now);
       const canonicalDataset = buildCanonicalDataset(confirmedEntries);
-      const destinatario = clientType === "corporativo"
+      const anyRecipient =
+        recipient.empresa.trim() || recipient.direccion.trim() ||
+        recipient.rfc.trim() || recipient.atencion.trim();
+      const destinatario = clientType === "corporativo" && anyRecipient
         ? {
-            empresa: recipient.empresa.trim(),
-            direccion: recipient.direccion.trim(),
-            rfc: recipient.rfc.trim().toUpperCase(),
-            atencion: recipient.atencion.trim(),
+            empresa: recipient.empresa.trim() || "—",
+            direccion: recipient.direccion.trim() || "—",
+            rfc: recipient.rfc.trim().toUpperCase() || "—",
+            atencion: recipient.atencion.trim() || "—",
           }
         : null;
       const parametros = { year: dashYear, months: selectedMonths ?? "all", clientType, ...(destinatario ? { destinatario } : {}) };
