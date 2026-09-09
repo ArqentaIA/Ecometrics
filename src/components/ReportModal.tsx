@@ -48,19 +48,9 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
   } | null>(null);
   const reportRef = useRef<HTMLDivElement>(null);
 
-  const recipientValid =
-    recipient.empresa.trim().length > 1 &&
-    recipient.direccion.trim().length > 5 &&
-    RFC_RE.test(recipient.rfc.trim().toUpperCase()) &&
-    recipient.atencion.trim().length > 2;
 
 
   const generateCertification = useCallback(async () => {
-    if (confirmedEntries.length === 0) {
-      alert("No hay datos confirmados para generar el reporte.");
-      return;
-    }
-
     setGenerating(true);
     try {
       const now = new Date();
@@ -68,12 +58,15 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
       const folio = generateFolio(now);
       const datasetId = generateDatasetId(now);
       const canonicalDataset = buildCanonicalDataset(confirmedEntries);
-      const destinatario = clientType === "corporativo"
+      const anyRecipient =
+        recipient.empresa.trim() || recipient.direccion.trim() ||
+        recipient.rfc.trim() || recipient.atencion.trim();
+      const destinatario = clientType === "corporativo" && anyRecipient
         ? {
-            empresa: recipient.empresa.trim(),
-            direccion: recipient.direccion.trim(),
-            rfc: recipient.rfc.trim().toUpperCase(),
-            atencion: recipient.atencion.trim(),
+            empresa: recipient.empresa.trim() || "—",
+            direccion: recipient.direccion.trim() || "—",
+            rfc: recipient.rfc.trim().toUpperCase() || "—",
+            atencion: recipient.atencion.trim() || "—",
           }
         : null;
       const parametros = { year: dashYear, months: selectedMonths ?? "all", clientType, ...(destinatario ? { destinatario } : {}) };
@@ -195,7 +188,7 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
               <button onClick={onClose} className="win-btn-standard text-sm">Cancelar</button>
               <button
                 onClick={handlePrimary}
-                disabled={generating || confirmedEntries.length === 0}
+                disabled={generating}
                 className="win-btn-standard text-sm bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 {generating ? "⏳ Generando..." : "Generar Vista Previa"}
@@ -206,11 +199,12 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
           <div className="p-8">
             <p className="text-sm text-muted-foreground mb-6">
               Capture los datos de la empresa a quien será dirigido el Reporte Corporativo / ESG.
+              Puede dejar campos vacíos y continuar; los datos faltantes aparecerán como “—”.
             </p>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="md:col-span-2">
-                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Nombre de la Empresa *</label>
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Nombre de la Empresa</label>
                 <input
                   value={recipient.empresa}
                   onChange={e => setRecipient(r => ({ ...r, empresa: e.target.value }))}
@@ -220,7 +214,7 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
               </div>
 
               <div className="md:col-span-2">
-                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dirección *</label>
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dirección</label>
                 <textarea
                   value={recipient.direccion}
                   onChange={e => setRecipient(r => ({ ...r, direccion: e.target.value }))}
@@ -231,7 +225,7 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">RFC *</label>
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">RFC</label>
                 <input
                   value={recipient.rfc}
                   onChange={e => setRecipient(r => ({ ...r, rfc: e.target.value.toUpperCase().replace(/\s+/g, "") }))}
@@ -246,7 +240,7 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Con AT'N *</label>
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Con AT'N</label>
                 <input
                   value={recipient.atencion}
                   onChange={e => setRecipient(r => ({ ...r, atencion: e.target.value }))}
@@ -260,7 +254,7 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
               <button onClick={() => setStep("select")} className="win-btn-standard text-sm">Cancelar</button>
               <button
                 onClick={generateCertification}
-                disabled={!recipientValid || generating || confirmedEntries.length === 0}
+                disabled={generating}
                 className="win-btn-standard text-sm bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
               >
                 {generating ? "⏳ Generando..." : "Continuar a Vista Previa"}
