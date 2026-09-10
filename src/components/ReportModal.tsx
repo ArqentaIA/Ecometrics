@@ -238,7 +238,14 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
             atencion: recipient.atencion.trim() || "—",
           }
         : null;
-      const parametros = { year: dashYear, months: selectedMonths ?? "all", clientType, ...(destinatario ? { destinatario } : {}) };
+      const parametros = {
+        year: dashYear,
+        months: fMes === ALL ? (selectedMonths ?? "all") : [Number(fMes)],
+        clientType,
+        filtro_cliente: fCliente === ALL ? "todos" : fCliente,
+        filtro_material: fMaterial === ALL ? "todos" : fMaterial,
+        ...(destinatario ? { destinatario } : {}),
+      };
       setFrozenRecipient(destinatario);
 
 
