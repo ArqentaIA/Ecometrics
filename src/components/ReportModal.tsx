@@ -1,11 +1,12 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import {
   generateFolio, generateDatasetId, computeSHA256,
   deriveSignature, buildCanonicalDataset,
 } from "@/lib/reportCertification";
-import ReportView from "@/components/ReportView";
+import ReportView, { type BreakdownGroupView } from "@/components/ReportView";
+import { useReportBreakdown, type BreakdownRow } from "@/hooks/useReportBreakdown";
 import type { MaterialEntry, KPITotals } from "@/context/EcoMetricsContext";
 import html2canvas from "html2canvas-pro";
 import { jsPDF } from "jspdf";
@@ -16,6 +17,10 @@ const CLIENT_TYPES = [
   { value: "comercial", label: "Comercial / Proveedores" },
   { value: "interno", label: "Interno / Operativo" },
 ];
+
+const MONTH_LABELS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+const ALL = "__ALL__";
 
 interface ReportModalProps {
   onClose: () => void;
@@ -48,6 +53,170 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
   } | null>(null);
   const reportRef = useRef<HTMLDivElement>(null);
 
+  // ---- Filtros del reporte (heredan del dashboard, ajustables aquí) ----
+  const { rows: allRows, loading: rowsLoading } = useReportBreakdown(dashYear, true);
+  const [fCliente, setFCliente] = useState<string>(ALL);
+  const [fMaterial, setFMaterial] = useState<string>(ALL);
+  const [fMes, setFMes] = useState<string>(
+    selectedMonths && selectedMonths.length === 1 ? String(selectedMonths[0]) : ALL
+  );
+
+  // Base: hereda los meses seleccionados en el dashboard
+  const baseRows = useMemo(
+    () => (selectedMonths ? allRows.filter(r => selectedMonths.includes(r.month)) : allRows),
+    [allRows, selectedMonths]
+  );
+
+  const clienteOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    baseRows.forEach(r => map.set(r.clienteId, r.clienteNombre));
+    return [...map.entries()].sort((a, b) => a[1].localeCompare(b[1]));
+  }, [baseRows]);
+
+  const materialOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    baseRows
+      .filter(r => fCliente === ALL || r.clienteId === fCliente)
+      .forEach(r => map.set(r.materialCode, r.materialName));
+    return [...map.entries()].sort((a, b) => a[1].localeCompare(b[1]));
+  }, [baseRows, fCliente]);
+
+  const mesOptions = useMemo(() => {
+    const set = new Set<number>();
+    baseRows
+      .filter(r => (fCliente === ALL || r.clienteId === fCliente) && (fMaterial === ALL || r.materialCode === fMaterial))
+      .forEach(r => set.add(r.month));
+    return [...set].sort((a, b) => a - b);
+  }, [baseRows, fCliente, fMaterial]);
+
+  const filteredRows: BreakdownRow[] = useMemo(
+    () =>
+      baseRows.filter(
+        r =>
+          (fCliente === ALL || r.clienteId === fCliente) &&
+          (fMaterial === ALL || r.materialCode === fMaterial) &&
+          (fMes === ALL || r.month === Number(fMes))
+      ),
+    [baseRows, fCliente, fMaterial, fMes]
+  );
+
+  const filtersActive = fCliente !== ALL || fMaterial !== ALL || fMes !== ALL;
+  const useBreakdown = allRows.length > 0;
+
+  const filtersLabel = useMemo(() => {
+    const parts: string[] = [];
+    parts.push(`Cliente: ${fCliente === ALL ? "Todos" : (clienteOptions.find(c => c[0] === fCliente)?.[1] ?? "—")}`);
+    parts.push(`Material: ${fMaterial === ALL ? "Todos" : (materialOptions.find(m => m[0] === fMaterial)?.[1] ?? "—")}`);
+    parts.push(`Mes: ${fMes === ALL ? "Todos" : MONTH_LABELS[Number(fMes) - 1]}`);
+    return parts.join(" · ");
+  }, [fCliente, fMaterial, fMes, clienteOptions, materialOptions]);
+
+  // Agrupación cliente → (material, mes)
+  const breakdown: BreakdownGroupView[] = useMemo(() => {
+    const groups = new Map<string, BreakdownGroupView>();
+    const agg = new Map<string, { g: string; row: BreakdownRow; kg: number; netos: number; co2: number; energia: number; agua: number; arboles: number; economic: number }>();
+
+    filteredRows.forEach(r => {
+      const key = `${r.clienteNombre}||${r.materialCode}||${r.month}`;
+      const prev = agg.get(key);
+      const isBattery = r.materialCode === "BATERIAS";
+      const valid = r.kpis.impacto_valido;
+      const item = prev ?? { g: r.clienteNombre, row: r, kg: 0, netos: 0, co2: 0, energia: 0, agua: 0, arboles: 0, economic: 0 };
+      item.kg += r.kgBrutos;
+      item.netos += isBattery ? 0 : r.kpis.kg_netos;
+      if (valid && r.kpis.uses_co2) item.co2 += r.kpis.co2;
+      if (valid && r.kpis.uses_energia) item.energia += r.kpis.energia;
+      if (valid && r.kpis.uses_agua) item.agua += r.kpis.agua;
+      if (valid && r.kpis.uses_arboles) item.arboles += r.kpis.arboles;
+      item.economic += r.kpis.economic_impact;
+      agg.set(key, item);
+    });
+
+    [...agg.values()]
+      .sort((a, b) =>
+        a.g.localeCompare(b.g) ||
+        a.row.materialName.localeCompare(b.row.materialName) ||
+        a.row.month - b.row.month
+      )
+      .forEach(item => {
+        const r = item.row;
+        const isBattery = r.materialCode === "BATERIAS";
+        const valid = r.kpis.impacto_valido;
+        let g = groups.get(item.g);
+        if (!g) {
+          g = { clienteNombre: item.g, rows: [], totals: { kgBrutos: 0, kgNetos: 0, co2: 0, energia: 0, agua: 0, arboles: 0, economic: 0 } };
+          groups.set(item.g, g);
+        }
+        g.rows.push({
+          materialName: r.materialName,
+          materialCode: r.materialCode,
+          month: r.month,
+          kgBrutos: item.kg,
+          kgNetos: isBattery ? null : item.netos,
+          co2: valid && r.kpis.uses_co2 ? item.co2 : null,
+          energia: valid && r.kpis.uses_energia ? item.energia : null,
+          agua: valid && r.kpis.uses_agua ? item.agua : null,
+          arboles: valid && r.kpis.uses_arboles ? item.arboles : null,
+          economic: item.economic,
+        });
+        g.totals.kgBrutos += item.kg;
+        g.totals.kgNetos += isBattery ? 0 : item.netos;
+        g.totals.co2 += item.co2;
+        g.totals.energia += item.energia;
+        g.totals.agua += item.agua;
+        g.totals.arboles += item.arboles;
+        g.totals.economic += item.economic;
+      });
+
+    return [...groups.values()];
+  }, [filteredRows]);
+
+  // Totales y entradas por material derivados de los filtros
+  const effectiveTotals: KPITotals = useMemo(() => {
+    if (!useBreakdown || !filtersActive) return totals;
+    return filteredRows.reduce<KPITotals>(
+      (acc, r) => ({
+        arboles: acc.arboles + r.kpis.arboles,
+        co2: acc.co2 + r.kpis.co2,
+        energia: acc.energia + r.kpis.energia,
+        agua: acc.agua + r.kpis.agua,
+        kgBrutos: acc.kgBrutos + r.kgBrutos,
+        kgNetos: acc.kgNetos + r.kpis.kg_netos,
+        economicImpact: acc.economicImpact + r.kpis.economic_impact,
+      }),
+      { arboles: 0, co2: 0, energia: 0, agua: 0, kgBrutos: 0, kgNetos: 0, economicImpact: 0 }
+    );
+  }, [useBreakdown, filtersActive, filteredRows, totals]);
+
+  const effectiveEntries: MaterialEntry[] = useMemo(() => {
+    if (!useBreakdown || !filtersActive) return confirmedEntries;
+    const byCode = new Map<string, MaterialEntry>();
+    filteredRows.forEach(r => {
+      const prev = byCode.get(r.materialCode);
+      if (!prev) {
+        byCode.set(r.materialCode, {
+          material: r.material,
+          kg: r.kgBrutos,
+          kpis: { ...r.kpis },
+          isConfirmed: true,
+        });
+      } else {
+        prev.kg += r.kgBrutos;
+        prev.kpis.kg_netos += r.kpis.kg_netos;
+        prev.kpis.co2 += r.kpis.co2;
+        prev.kpis.energia += r.kpis.energia;
+        prev.kpis.agua += r.kpis.agua;
+        prev.kpis.arboles += r.kpis.arboles;
+        prev.kpis.economic_impact += r.kpis.economic_impact;
+      }
+    });
+    return [...byCode.values()];
+  }, [useBreakdown, filtersActive, filteredRows, confirmedEntries]);
+
+  const effectivePeriodLabel = fMes === ALL ? periodLabel : `${MONTH_LABELS[Number(fMes) - 1]} ${dashYear}`;
+
+
+
 
 
   const generateCertification = useCallback(async () => {
@@ -57,7 +226,7 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
       const timestamp = now.toISOString();
       const folio = generateFolio(now);
       const datasetId = generateDatasetId(now);
-      const canonicalDataset = buildCanonicalDataset(confirmedEntries);
+      const canonicalDataset = buildCanonicalDataset(effectiveEntries);
       const anyRecipient =
         recipient.empresa.trim() || recipient.direccion.trim() ||
         recipient.rfc.trim() || recipient.atencion.trim();
@@ -69,7 +238,14 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
             atencion: recipient.atencion.trim() || "—",
           }
         : null;
-      const parametros = { year: dashYear, months: selectedMonths ?? "all", clientType, ...(destinatario ? { destinatario } : {}) };
+      const parametros = {
+        year: dashYear,
+        months: fMes === ALL ? (selectedMonths ?? "all") : [Number(fMes)],
+        clientType,
+        filtro_cliente: fCliente === ALL ? "todos" : fCliente,
+        filtro_material: fMaterial === ALL ? "todos" : fMaterial,
+        ...(destinatario ? { destinatario } : {}),
+      };
       setFrozenRecipient(destinatario);
 
 
@@ -84,17 +260,17 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
           folio, hash_sha256: hash, firma_digital: firma,
           dataset_id: datasetId, tipo_reporte: "reporte_visual",
           usuario_id: user.id, fecha_generacion: timestamp,
-          parametros_json: parametros, total_registros: confirmedEntries.length,
+          parametros_json: parametros, total_registros: effectiveEntries.length,
         });
         if (error) console.error("CERT_ERROR", error);
       }
 
-      setCert({ folio, firma, hash, datasetId, fechaEmision: timestamp, totalRegistros: confirmedEntries.length });
+      setCert({ folio, firma, hash, datasetId, fechaEmision: timestamp, totalRegistros: effectiveEntries.length });
       setStep("preview");
     } finally {
       setGenerating(false);
     }
-  }, [confirmedEntries, dashYear, selectedMonths, clientType, user, recipient]);
+  }, [effectiveEntries, dashYear, selectedMonths, clientType, user, recipient, fCliente, fMaterial, fMes]);
 
   const handlePrimary = useCallback(() => {
     if (clientType === "corporativo") {
@@ -179,9 +355,60 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
               ))}
             </div>
 
+            {/* Filtros del reporte */}
+            <div className="mb-6">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                Alcance del reporte {rowsLoading && <span className="font-normal normal-case">(cargando…)</span>}
+              </p>
+              <div className="grid gap-3 md:grid-cols-3">
+                <div>
+                  <label className="text-[11px] text-muted-foreground">Cliente</label>
+                  <select
+                    value={fCliente}
+                    onChange={e => { setFCliente(e.target.value); setFMaterial(ALL); setFMes(ALL); }}
+                    className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                  >
+                    <option value={ALL}>Todos los clientes</option>
+                    {clienteOptions.map(([id, nombre]) => (
+                      <option key={id} value={id}>{nombre}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] text-muted-foreground">Material</label>
+                  <select
+                    value={fMaterial}
+                    onChange={e => { setFMaterial(e.target.value); setFMes(ALL); }}
+                    className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                  >
+                    <option value={ALL}>Todos los materiales</option>
+                    {materialOptions.map(([code, name]) => (
+                      <option key={code} value={code}>{name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] text-muted-foreground">Mes</label>
+                  <select
+                    value={fMes}
+                    onChange={e => setFMes(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                  >
+                    <option value={ALL}>Todos los meses</option>
+                    {mesOptions.map(m => (
+                      <option key={m} value={String(m)}>{MONTH_LABELS[m - 1]}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
             <div className="flex items-center gap-3 text-[11px] text-muted-foreground mb-6 px-3 py-2 bg-muted/50 rounded-lg">
               <span>📊</span>
-              <span>Período: <strong>{periodLabel}</strong> • {confirmedEntries.length} materiales confirmados</span>
+              <span>
+                Período: <strong>{effectivePeriodLabel}</strong> • {effectiveEntries.length} materiales •{" "}
+                {filteredRows.length} capturas confirmadas
+              </span>
             </div>
 
             <div className="flex justify-end gap-3">
@@ -283,13 +510,14 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
               <ReportView
                 ref={reportRef}
                 clientType={CLIENT_TYPES.find(c => c.value === clientType)?.label ?? clientType}
-                periodLabel={periodLabel}
+                periodLabel={effectivePeriodLabel}
                 dashYear={dashYear}
-                totals={totals}
-                confirmedEntries={confirmedEntries}
+                totals={effectiveTotals}
+                confirmedEntries={effectiveEntries}
                 cert={cert}
                 recipient={frozenRecipient}
-
+                breakdown={useBreakdown ? breakdown : null}
+                filtersLabel={filtersLabel}
               />
             </div>
 
