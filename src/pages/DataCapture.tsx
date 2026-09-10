@@ -221,7 +221,7 @@ const DataCapture = () => {
         [code]: { ...prev[code], feedbackVisible: false },
       }));
     }, 2000);
-  }, [saveCapture]);
+  }, [saveCapture, catalog, costPerKgMap, materialEntries]);
 
   const formatTimestamp = (d: Date) => {
     const day = d.getDate().toString().padStart(2, "0");
