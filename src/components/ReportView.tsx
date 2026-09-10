@@ -70,7 +70,7 @@ const KPIBlock = ({ label, value, unit, color }: { label: string; value: string;
 );
 
 const ReportView = forwardRef<HTMLDivElement, ReportViewProps>(
-  ({ clientType, periodLabel, dashYear, totals, confirmedEntries, recipient, cert }, ref) => {
+  ({ clientType, periodLabel, dashYear, totals, confirmedEntries, recipient, cert, breakdown, filtersLabel }, ref) => {
     const now = cert ? new Date(cert.fechaEmision) : new Date();
 
     // Flag: at least one confirmed material has valid agua factor
