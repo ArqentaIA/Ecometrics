@@ -1,11 +1,12 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEcoMetrics } from "@/context/EcoMetricsContext";
 import {
   generateFolio, generateDatasetId, computeSHA256,
   deriveSignature, buildCanonicalDataset,
 } from "@/lib/reportCertification";
-import ReportView from "@/components/ReportView";
+import ReportView, { type BreakdownGroupView } from "@/components/ReportView";
+import { useReportBreakdown, type BreakdownRow } from "@/hooks/useReportBreakdown";
 import type { MaterialEntry, KPITotals } from "@/context/EcoMetricsContext";
 import html2canvas from "html2canvas-pro";
 import { jsPDF } from "jspdf";
@@ -16,6 +17,10 @@ const CLIENT_TYPES = [
   { value: "comercial", label: "Comercial / Proveedores" },
   { value: "interno", label: "Interno / Operativo" },
 ];
+
+const MONTH_LABELS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+const ALL = "__ALL__";
 
 interface ReportModalProps {
   onClose: () => void;
