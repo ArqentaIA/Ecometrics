@@ -355,9 +355,60 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
               ))}
             </div>
 
+            {/* Filtros del reporte */}
+            <div className="mb-6">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                Alcance del reporte {rowsLoading && <span className="font-normal normal-case">(cargando…)</span>}
+              </p>
+              <div className="grid gap-3 md:grid-cols-3">
+                <div>
+                  <label className="text-[11px] text-muted-foreground">Cliente</label>
+                  <select
+                    value={fCliente}
+                    onChange={e => { setFCliente(e.target.value); setFMaterial(ALL); setFMes(ALL); }}
+                    className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                  >
+                    <option value={ALL}>Todos los clientes</option>
+                    {clienteOptions.map(([id, nombre]) => (
+                      <option key={id} value={id}>{nombre}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] text-muted-foreground">Material</label>
+                  <select
+                    value={fMaterial}
+                    onChange={e => { setFMaterial(e.target.value); setFMes(ALL); }}
+                    className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                  >
+                    <option value={ALL}>Todos los materiales</option>
+                    {materialOptions.map(([code, name]) => (
+                      <option key={code} value={code}>{name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] text-muted-foreground">Mes</label>
+                  <select
+                    value={fMes}
+                    onChange={e => setFMes(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                  >
+                    <option value={ALL}>Todos los meses</option>
+                    {mesOptions.map(m => (
+                      <option key={m} value={String(m)}>{MONTH_LABELS[m - 1]}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
             <div className="flex items-center gap-3 text-[11px] text-muted-foreground mb-6 px-3 py-2 bg-muted/50 rounded-lg">
               <span>📊</span>
-              <span>Período: <strong>{periodLabel}</strong> • {confirmedEntries.length} materiales confirmados</span>
+              <span>
+                Período: <strong>{effectivePeriodLabel}</strong> • {effectiveEntries.length} materiales •{" "}
+                {filteredRows.length} capturas confirmadas
+              </span>
             </div>
 
             <div className="flex justify-end gap-3">
