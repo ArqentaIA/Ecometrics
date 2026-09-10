@@ -13,6 +13,7 @@ import AdminTokens from "./pages/AdminTokens";
 import NotFound from "./pages/NotFound";
 import Verificar from "./pages/Verificar";
 import Registros from "./pages/Registros";
+import HistorialReportes from "./pages/HistorialReportes";
 import TrackingDashboard from "./pages/TrackingDashboard";
 import TrackingOperator from "./pages/TrackingOperator";
 
@@ -33,6 +34,7 @@ const AppRoutes = () => {
       <Route path="/public-dashboard" element={<PublicDashboard />} />
       <Route path="/public-kpis" element={<PublicKPIs />} />
       <Route path="/registros" element={<ProtectedRoute><Registros /></ProtectedRoute>} />
+      <Route path="/reportes" element={<ProtectedRoute><HistorialReportes /></ProtectedRoute>} />
       <Route path="/admin/tokens" element={<ProtectedRoute><AdminTokens /></ProtectedRoute>} />
       <Route path="/verificar" element={<Verificar />} />
       <Route path="/tracking" element={<TrackingOperator />} />
