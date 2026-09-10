@@ -35,7 +35,7 @@ const CostInput = ({ materialCode, defaultValue, onCommit }: {
 
   return (
     <div className="flex items-center gap-1" data-cost={materialCode}>
-      <span className="text-[11px] text-muted-foreground whitespace-nowrap">$/kg</span>
+      
       <input
         type="text"
         inputMode="decimal"
