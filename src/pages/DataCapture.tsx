@@ -450,6 +450,9 @@ const DataCapture = () => {
                       {/* Economic impact calculated */}
                       {entry.kg > 0 && (
                         <div className="shrink-0 px-2 py-1 rounded-md bg-accent/50 text-xs font-semibold text-foreground whitespace-nowrap">
+                          <span className="text-muted-foreground font-normal">
+                            {entry.kg} {isBattery ? "pzas" : "kg"} × ${(costPerKgMap[entry.material.code] ?? entry.material.default_cost_per_kg ?? 0).toFixed(2)} ={" "}
+                          </span>
                           💰 ${formatKPI("economic_impact", entry.kpis.economic_impact)} <span className="text-muted-foreground font-normal">MXN</span>
                         </div>
                       )}
