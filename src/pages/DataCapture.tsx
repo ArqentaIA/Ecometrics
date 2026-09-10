@@ -399,30 +399,40 @@ const DataCapture = () => {
                         <div className="text-[11px] text-muted-foreground">{entry.material.code}</div>
                       </div>
 
-                      <KgInput
-                        materialCode={entry.material.code}
-                        defaultValue={entry.isConfirmed ? 0 : entry.kg}
-                        isBattery={isBattery}
-                        disabled={entry.isConfirmed && !permissions.canReopenCapture}
-                        onChange={handleKgChange}
-                      />
-                      <span className="text-xs text-muted-foreground font-medium">{isBattery ? "pzas" : "kg"}</span>
+                      {/* PESO — dato principal obligatorio */}
+                      <div className="flex flex-col gap-0.5 shrink-0">
+                        <span className="text-[10px] font-bold uppercase tracking-wide text-primary">
+                          {isBattery ? "Piezas *" : "Peso (kg) *"}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <KgInput
+                            materialCode={entry.material.code}
+                            defaultValue={entry.isConfirmed ? 0 : entry.kg}
+                            isBattery={isBattery}
+                            disabled={entry.isConfirmed && !permissions.canReopenCapture}
+                            onChange={handleKgChange}
+                          />
+                          <span className="text-xs text-muted-foreground font-medium">{isBattery ? "pzas" : "kg"}</span>
+                        </div>
+                      </div>
 
-                      {/* Cost per kg field — editable only for Admin/Dirección */}
-                      {permissions.canEditPrice ? (
-                        <CostInput
-                          materialCode={entry.material.code}
-                          defaultValue={costPerKgMap[entry.material.code] ?? entry.material.default_cost_per_kg ?? 0}
-                          onCommit={(code, val) => setCostPerKg(code, val)}
-                        />
-                      ) : (
-                        <div className="flex items-center gap-1">
-                          <span className="text-[11px] text-muted-foreground whitespace-nowrap">{isBattery ? "$/pza" : "$/kg"}</span>
+                      {/* MONTO — opcional, separado del peso */}
+                      <div className="flex flex-col gap-0.5 shrink-0 pl-3 border-l border-border/60">
+                        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                          Monto {isBattery ? "$/pza" : "$/kg"} (opcional)
+                        </span>
+                        {permissions.canEditPrice ? (
+                          <CostInput
+                            materialCode={entry.material.code}
+                            defaultValue={costPerKgMap[entry.material.code] ?? entry.material.default_cost_per_kg ?? 0}
+                            onCommit={(code, val) => setCostPerKg(code, val)}
+                          />
+                        ) : (
                           <span className="win-input !w-24 text-right font-semibold text-sm tabular-nums bg-muted/50 cursor-not-allowed opacity-75">
                             {(costPerKgMap[entry.material.code] ?? entry.material.default_cost_per_kg ?? 0).toFixed(2)}
                           </span>
-                        </div>
-                      )}
+                        )}
+                      </div>
 
                       {/* Proveedor selector */}
                       <select
