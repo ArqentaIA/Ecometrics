@@ -34,6 +34,7 @@ const AppRoutes = () => {
       <Route path="/public-dashboard" element={<PublicDashboard />} />
       <Route path="/public-kpis" element={<PublicKPIs />} />
       <Route path="/registros" element={<ProtectedRoute><Registros /></ProtectedRoute>} />
+      <Route path="/reportes" element={<ProtectedRoute><HistorialReportes /></ProtectedRoute>} />
       <Route path="/admin/tokens" element={<ProtectedRoute><AdminTokens /></ProtectedRoute>} />
       <Route path="/verificar" element={<Verificar />} />
       <Route path="/tracking" element={<TrackingOperator />} />
