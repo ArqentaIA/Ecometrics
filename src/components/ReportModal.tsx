@@ -226,7 +226,7 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
       const timestamp = now.toISOString();
       const folio = generateFolio(now);
       const datasetId = generateDatasetId(now);
-      const canonicalDataset = buildCanonicalDataset(confirmedEntries);
+      const canonicalDataset = buildCanonicalDataset(effectiveEntries);
       const anyRecipient =
         recipient.empresa.trim() || recipient.direccion.trim() ||
         recipient.rfc.trim() || recipient.atencion.trim();
