@@ -205,6 +205,65 @@ const ReportView = forwardRef<HTMLDivElement, ReportViewProps>(
           </table>
         </div>
 
+        {/* Desglose por Cliente / Material / Mes */}
+        {breakdown && breakdown.length > 0 && (
+          <div className="px-8 pb-4">
+            <h2 className="text-[13px] font-bold uppercase tracking-wider text-gray-700 mb-1">Desglose por Cliente, Material y Mes</h2>
+            {filtersLabel && <p className="text-[9px] text-gray-500 mb-2">Filtros: {filtersLabel}</p>}
+            {breakdown.map(g => (
+              <div key={g.clienteNombre} className="mb-4" style={{ breakInside: "avoid" }}>
+                <p className="text-[11px] font-bold text-gray-800 uppercase px-2 py-1 rounded-t" style={{ background: "#E8F5E9" }}>
+                  {g.clienteNombre}
+                </p>
+                <table className="w-full text-[10px] border-collapse">
+                  <thead>
+                    <tr style={{ background: "#F1F8E9", color: "#2E7D32" }}>
+                      <th className="px-2 py-1 text-left font-semibold">Material</th>
+                      <th className="px-2 py-1 text-left font-semibold">Mes</th>
+                      <th className="px-2 py-1 text-right font-semibold">KG Brutos</th>
+                      <th className="px-2 py-1 text-right font-semibold">KG Netos</th>
+                      <th className="px-2 py-1 text-right font-semibold">CO₂e</th>
+                      <th className="px-2 py-1 text-right font-semibold">Energía</th>
+                      <th className="px-2 py-1 text-right font-semibold">Agua</th>
+                      <th className="px-2 py-1 text-right font-semibold">Árboles</th>
+                      <th className="px-2 py-1 text-right font-semibold">MXN</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {g.rows.map((r, i) => {
+                      const num = (v: number | null) =>
+                        v == null ? "—" : v.toLocaleString("es-MX", { maximumFractionDigits: 2 });
+                      return (
+                        <tr key={`${r.materialCode}-${r.month}-${i}`} style={{ background: i % 2 === 0 ? "#FAFAFA" : "white" }}>
+                          <td className="px-2 py-1 font-medium">{r.materialName}</td>
+                          <td className="px-2 py-1 text-gray-500">{MONTH_NAMES[r.month - 1] ?? r.month}</td>
+                          <td className="px-2 py-1 text-right font-semibold">{r.kgBrutos.toLocaleString("es-MX", { maximumFractionDigits: 2 })}</td>
+                          <td className="px-2 py-1 text-right">{num(r.kgNetos)}</td>
+                          <td className="px-2 py-1 text-right">{num(r.co2)}</td>
+                          <td className="px-2 py-1 text-right">{num(r.energia)}</td>
+                          <td className="px-2 py-1 text-right">{num(r.agua)}</td>
+                          <td className="px-2 py-1 text-right">{num(r.arboles)}</td>
+                          <td className="px-2 py-1 text-right">${r.economic.toLocaleString("es-MX", { maximumFractionDigits: 2 })}</td>
+                        </tr>
+                      );
+                    })}
+                    <tr className="font-bold" style={{ background: "#EEF7EE" }}>
+                      <td className="px-2 py-1" colSpan={2}>Subtotal</td>
+                      <td className="px-2 py-1 text-right">{g.totals.kgBrutos.toLocaleString("es-MX", { maximumFractionDigits: 2 })}</td>
+                      <td className="px-2 py-1 text-right">{g.totals.kgNetos.toLocaleString("es-MX", { maximumFractionDigits: 2 })}</td>
+                      <td className="px-2 py-1 text-right">{g.totals.co2.toLocaleString("es-MX", { maximumFractionDigits: 2 })}</td>
+                      <td className="px-2 py-1 text-right">{g.totals.energia.toLocaleString("es-MX", { maximumFractionDigits: 2 })}</td>
+                      <td className="px-2 py-1 text-right">{g.totals.agua.toLocaleString("es-MX", { maximumFractionDigits: 2 })}</td>
+                      <td className="px-2 py-1 text-right">{g.totals.arboles.toLocaleString("es-MX", { maximumFractionDigits: 2 })}</td>
+                      <td className="px-2 py-1 text-right">${g.totals.economic.toLocaleString("es-MX", { maximumFractionDigits: 2 })}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Certification Block */}
         {cert && (
           <div className="px-8 pb-4">
