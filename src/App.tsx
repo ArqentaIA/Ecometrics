@@ -13,6 +13,7 @@ import AdminTokens from "./pages/AdminTokens";
 import NotFound from "./pages/NotFound";
 import Verificar from "./pages/Verificar";
 import Registros from "./pages/Registros";
+import HistorialReportes from "./pages/HistorialReportes";
 import TrackingDashboard from "./pages/TrackingDashboard";
 import TrackingOperator from "./pages/TrackingOperator";
 
