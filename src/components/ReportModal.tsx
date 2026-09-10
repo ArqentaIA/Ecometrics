@@ -459,13 +459,14 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
               <ReportView
                 ref={reportRef}
                 clientType={CLIENT_TYPES.find(c => c.value === clientType)?.label ?? clientType}
-                periodLabel={periodLabel}
+                periodLabel={effectivePeriodLabel}
                 dashYear={dashYear}
-                totals={totals}
-                confirmedEntries={confirmedEntries}
+                totals={effectiveTotals}
+                confirmedEntries={effectiveEntries}
                 cert={cert}
                 recipient={frozenRecipient}
-
+                breakdown={useBreakdown ? breakdown : null}
+                filtersLabel={filtersLabel}
               />
             </div>
 
