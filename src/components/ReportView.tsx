@@ -7,12 +7,43 @@ import { formatKPI } from "@/lib/calculationEngine";
 import type { MaterialEntry } from "@/context/EcoMetricsContext";
 import type { KPITotals } from "@/context/EcoMetricsContext";
 
+export interface BreakdownRowView {
+  materialName: string;
+  materialCode: string;
+  month: number;
+  kgBrutos: number;
+  kgNetos: number | null;
+  co2: number | null;
+  energia: number | null;
+  agua: number | null;
+  arboles: number | null;
+  economic: number;
+}
+
+export interface BreakdownGroupView {
+  clienteNombre: string;
+  rows: BreakdownRowView[];
+  totals: {
+    kgBrutos: number;
+    kgNetos: number;
+    co2: number;
+    energia: number;
+    agua: number;
+    arboles: number;
+    economic: number;
+  };
+}
+
+const MONTH_NAMES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
 interface ReportViewProps {
   clientType: string;
   periodLabel: string;
   dashYear: number;
   totals: KPITotals;
   confirmedEntries: MaterialEntry[];
+  breakdown?: BreakdownGroupView[] | null;
+  filtersLabel?: string | null;
   recipient?: {
     empresa: string;
     direccion: string;
