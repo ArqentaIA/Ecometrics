@@ -260,17 +260,17 @@ const ReportModal = ({ onClose, periodLabel, dashYear, selectedMonths, totals, c
           folio, hash_sha256: hash, firma_digital: firma,
           dataset_id: datasetId, tipo_reporte: "reporte_visual",
           usuario_id: user.id, fecha_generacion: timestamp,
-          parametros_json: parametros, total_registros: confirmedEntries.length,
+          parametros_json: parametros, total_registros: effectiveEntries.length,
         });
         if (error) console.error("CERT_ERROR", error);
       }
 
-      setCert({ folio, firma, hash, datasetId, fechaEmision: timestamp, totalRegistros: confirmedEntries.length });
+      setCert({ folio, firma, hash, datasetId, fechaEmision: timestamp, totalRegistros: effectiveEntries.length });
       setStep("preview");
     } finally {
       setGenerating(false);
     }
-  }, [confirmedEntries, dashYear, selectedMonths, clientType, user, recipient]);
+  }, [effectiveEntries, dashYear, selectedMonths, clientType, user, recipient, fCliente, fMaterial, fMes]);
 
   const handlePrimary = useCallback(() => {
     if (clientType === "corporativo") {
