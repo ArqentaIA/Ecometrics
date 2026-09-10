@@ -188,6 +188,23 @@ const DataCapture = () => {
   }, [setMaterialKg]);
 
   const handleConfirm = useCallback(async (code: string) => {
+    // Aviso anti-error: precio desproporcionado respecto al catálogo
+    const mat = catalog.find(m => m.code === code);
+    const precio = costPerKgMap[code] ?? mat?.default_cost_per_kg ?? 0;
+    const referencia = mat?.default_cost_per_kg ?? 0;
+    const desproporcionado =
+      precio > 0 && ((referencia > 0 && precio > referencia * 10) || (referencia === 0 && precio > 500));
+    if (desproporcionado) {
+      const kg = materialEntries.find(e => e.material.code === code)?.kg ?? 0;
+      const ok = window.confirm(
+        `Verifica el dato antes de guardar:\n\n` +
+        `Peso: ${kg} kg\nMonto por kg: $${precio.toFixed(2)}\nTotal: $${(kg * precio).toFixed(2)} MXN\n\n` +
+        `El monto por kg es mucho mayor al de referencia ($${referencia.toFixed(2)}). ` +
+        `¿Deseas continuar de todas formas?`
+      );
+      if (!ok) return;
+    }
+
     const result = await saveCapture(code);
     if (result.error) {
       console.error("Error saving capture:", result.error);
