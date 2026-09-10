@@ -35,7 +35,7 @@ const CostInput = ({ materialCode, defaultValue, onCommit }: {
 
   return (
     <div className="flex items-center gap-1" data-cost={materialCode}>
-      <span className="text-[11px] text-muted-foreground whitespace-nowrap">$/kg</span>
+      
       <input
         type="text"
         inputMode="decimal"
@@ -188,6 +188,23 @@ const DataCapture = () => {
   }, [setMaterialKg]);
 
   const handleConfirm = useCallback(async (code: string) => {
+    // Aviso anti-error: precio desproporcionado respecto al catálogo
+    const mat = catalog.find(m => m.code === code);
+    const precio = costPerKgMap[code] ?? mat?.default_cost_per_kg ?? 0;
+    const referencia = mat?.default_cost_per_kg ?? 0;
+    const desproporcionado =
+      precio > 0 && ((referencia > 0 && precio > referencia * 10) || (referencia === 0 && precio > 500));
+    if (desproporcionado) {
+      const kg = materialEntries.find(e => e.material.code === code)?.kg ?? 0;
+      const ok = window.confirm(
+        `Verifica el dato antes de guardar:\n\n` +
+        `Peso: ${kg} kg\nMonto por kg: $${precio.toFixed(2)}\nTotal: $${(kg * precio).toFixed(2)} MXN\n\n` +
+        `El monto por kg es mucho mayor al de referencia ($${referencia.toFixed(2)}). ` +
+        `¿Deseas continuar de todas formas?`
+      );
+      if (!ok) return;
+    }
+
     const result = await saveCapture(code);
     if (result.error) {
       console.error("Error saving capture:", result.error);
@@ -204,7 +221,7 @@ const DataCapture = () => {
         [code]: { ...prev[code], feedbackVisible: false },
       }));
     }, 2000);
-  }, [saveCapture]);
+  }, [saveCapture, catalog, costPerKgMap, materialEntries]);
 
   const formatTimestamp = (d: Date) => {
     const day = d.getDate().toString().padStart(2, "0");
@@ -382,30 +399,40 @@ const DataCapture = () => {
                         <div className="text-[11px] text-muted-foreground">{entry.material.code}</div>
                       </div>
 
-                      <KgInput
-                        materialCode={entry.material.code}
-                        defaultValue={entry.isConfirmed ? 0 : entry.kg}
-                        isBattery={isBattery}
-                        disabled={entry.isConfirmed && !permissions.canReopenCapture}
-                        onChange={handleKgChange}
-                      />
-                      <span className="text-xs text-muted-foreground font-medium">{isBattery ? "pzas" : "kg"}</span>
+                      {/* PESO — dato principal obligatorio */}
+                      <div className="flex flex-col gap-0.5 shrink-0">
+                        <span className="text-[10px] font-bold uppercase tracking-wide text-primary">
+                          {isBattery ? "Piezas *" : "Peso (kg) *"}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <KgInput
+                            materialCode={entry.material.code}
+                            defaultValue={entry.isConfirmed ? 0 : entry.kg}
+                            isBattery={isBattery}
+                            disabled={entry.isConfirmed && !permissions.canReopenCapture}
+                            onChange={handleKgChange}
+                          />
+                          <span className="text-xs text-muted-foreground font-medium">{isBattery ? "pzas" : "kg"}</span>
+                        </div>
+                      </div>
 
-                      {/* Cost per kg field — editable only for Admin/Dirección */}
-                      {permissions.canEditPrice ? (
-                        <CostInput
-                          materialCode={entry.material.code}
-                          defaultValue={costPerKgMap[entry.material.code] ?? entry.material.default_cost_per_kg ?? 0}
-                          onCommit={(code, val) => setCostPerKg(code, val)}
-                        />
-                      ) : (
-                        <div className="flex items-center gap-1">
-                          <span className="text-[11px] text-muted-foreground whitespace-nowrap">{isBattery ? "$/pza" : "$/kg"}</span>
+                      {/* MONTO — opcional, separado del peso */}
+                      <div className="flex flex-col gap-0.5 shrink-0 pl-3 border-l border-border/60">
+                        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                          Monto {isBattery ? "$/pza" : "$/kg"} (opcional)
+                        </span>
+                        {permissions.canEditPrice ? (
+                          <CostInput
+                            materialCode={entry.material.code}
+                            defaultValue={costPerKgMap[entry.material.code] ?? entry.material.default_cost_per_kg ?? 0}
+                            onCommit={(code, val) => setCostPerKg(code, val)}
+                          />
+                        ) : (
                           <span className="win-input !w-24 text-right font-semibold text-sm tabular-nums bg-muted/50 cursor-not-allowed opacity-75">
                             {(costPerKgMap[entry.material.code] ?? entry.material.default_cost_per_kg ?? 0).toFixed(2)}
                           </span>
-                        </div>
-                      )}
+                        )}
+                      </div>
 
                       {/* Proveedor selector */}
                       <select
@@ -423,6 +450,9 @@ const DataCapture = () => {
                       {/* Economic impact calculated */}
                       {entry.kg > 0 && (
                         <div className="shrink-0 px-2 py-1 rounded-md bg-accent/50 text-xs font-semibold text-foreground whitespace-nowrap">
+                          <span className="text-muted-foreground font-normal">
+                            {entry.kg} {isBattery ? "pzas" : "kg"} × ${(costPerKgMap[entry.material.code] ?? entry.material.default_cost_per_kg ?? 0).toFixed(2)} ={" "}
+                          </span>
                           💰 ${formatKPI("economic_impact", entry.kpis.economic_impact)} <span className="text-muted-foreground font-normal">MXN</span>
                         </div>
                       )}
