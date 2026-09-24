@@ -72,7 +72,7 @@ export function abbreviateHash(hash: string, length = 20): string {
 }
 
 /** URL base pública oficial del sistema */
-const APP_PUBLIC_URL = "https://www.ecometrics.sbs";
+const APP_PUBLIC_URL = "https://www.irm-ici.site";
 
 /** URL de verificación — siempre usa dominio oficial, nunca preview/Lovable */
 export function getVerificationUrl(folio: string): string | null {
