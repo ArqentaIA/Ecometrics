@@ -34,7 +34,7 @@ const ShareModal = ({ onClose }: ShareModalProps) => {
   };
 
   const url = selectedToken
-    ? `https://www.ecometrics.sbs/public-dashboard?token=${selectedToken}`
+    ? `https://www.irm-ici.site/public-dashboard?token=${selectedToken}`
     : "";
   const iframe = `<iframe src="${url}" width="100%" height="600" frameborder="0"></iframe>`;
 

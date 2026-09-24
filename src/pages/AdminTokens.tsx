@@ -24,8 +24,8 @@ interface PublicToken {
   fecha_vencimiento: string | null;
 }
 
-const BASE_URL = "https://www.ecometrics.sbs/public-dashboard";
-const KPIS_URL = "https://www.ecometrics.sbs/public-kpis";
+const BASE_URL = "https://www.irm-ici.site/public-dashboard";
+const KPIS_URL = "https://www.irm-ici.site/public-kpis";
 
 const generateToken = () => {
   const bytes = crypto.getRandomValues(new Uint8Array(24));
